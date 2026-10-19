@@ -4,40 +4,16 @@
     "api/index.php": {
       "runtime": "vercel-php@0.7.4",
       "maxDuration": 30
-    },
-    "api/health.php": {
-      "runtime": "vercel-php@0.7.4",
-      "maxDuration": 10
-    },
-    "api/page.php": {
-      "runtime": "vercel-php@0.7.4",
-      "maxDuration": 30
-    },
-    "api/auth/*.php": {
-      "runtime": "vercel-php@0.7.4",
-      "maxDuration": 30
-    },
-    "api/content/*.php": {
-      "runtime": "vercel-php@0.7.4",
-      "maxDuration": 30
-    },
-    "api/forms/*.php": {
-      "runtime": "vercel-php@0.7.4",
-      "maxDuration": 30
-    },
-    "api/media/*.php": {
-      "runtime": "vercel-php@0.7.4",
-      "maxDuration": 30
-    },
-    "api/public/*.php": {
-      "runtime": "vercel-php@0.7.4",
-      "maxDuration": 30
     }
   },
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
+      "src": "^/api/?$",
+      "dest": "/api/index.php"
+    },
+    {
+      "src": "^/api/(.+)$",
+      "dest": "/api/index.php?__path=$1"
     },
     {
       "src": "/",

@@ -30,10 +30,21 @@ require_once __DIR__ . '/../config/config.php';
 // Clear any output that may have been generated
 ob_clean();
 
-// Get request method and path
+// Get request method and path.
+// Every /api/* URL is rewritten to this file. __path is the original path
+// after /api, so handlers keep working as one function.
 $method = $_SERVER['REQUEST_METHOD'];
-$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$path = str_replace('/api', '', $path);
+$rawPath = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
+if (isset($_GET['__path']) && $_GET['__path'] !== '') {
+    $rawPath = '/api/' . ltrim((string) $_GET['__path'], '/');
+    unset($_GET['__path'], $_REQUEST['__path']);
+    if (isset($_SERVER['QUERY_STRING'])) {
+        parse_str($_SERVER['QUERY_STRING'], $queryParams);
+        unset($queryParams['__path']);
+        $_SERVER['QUERY_STRING'] = http_build_query($queryParams);
+    }
+}
+$path = preg_replace('#^/api#', '', $rawPath, 1);
 $pathParts = array_filter(explode('/', $path));
 
 // Route the request
