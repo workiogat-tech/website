@@ -477,22 +477,14 @@ function updateMediaStats() {
     }
 }
 
-// Make functions globally accessible
-window.showNewSectionModal = function() {
-    document.getElementById('newSectionModal').style.display = 'flex';
-};
-
-window.closeNewSectionModal = function() {
-    document.getElementById('newSectionModal').style.display = 'none';
-};
-
-// Also keep local references for backward compatibility
 function showNewSectionModal() {
-    window.showNewSectionModal();
+    const modal = document.getElementById('newSectionModal');
+    if (modal) modal.style.display = 'flex';
 }
 
 function closeNewSectionModal() {
-    window.closeNewSectionModal();
+    const modal = document.getElementById('newSectionModal');
+    if (modal) modal.style.display = 'none';
 }
 
 async function handleCreateSection(event) {
@@ -524,6 +516,7 @@ async function handleCreateSection(event) {
         mediaSections.push(...window.mediaSections);
         updateSectionDropdowns();
         updateSectionFilters();
+        updateMediaStats();
         
         // Auto-select the newly created section
         document.getElementById('uploadSection').value = newSection.id;
@@ -618,4 +611,12 @@ document.getElementById('uploadSection')?.addEventListener('change', function() 
 document.getElementById('newSectionModal')?.addEventListener('click', function(e) {
     if (e.target === this) closeNewSectionModal();
 });
+
+// Inline onclick handlers look these up on the page, not inside this script.
+window.showNewSectionModal = showNewSectionModal;
+window.closeNewSectionModal = closeNewSectionModal;
+window.handleCreateSection = handleCreateSection;
+window.handleFileUpload = handleFileUpload;
+window.deleteMedia = deleteMedia;
+window.setSelectedSection = setSelectedSection;
 </script>
