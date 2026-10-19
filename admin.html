@@ -1060,6 +1060,74 @@
             }
         }
         
+        // Top-level const/let cannot be declared again when a tab is opened twice.
+        function makeScriptReloadable(code) {
+            let out = '';
+            let i = 0;
+            let depth = 0;
+            let quote = null;
+            let escape = false;
+            let lineComment = false;
+            let blockComment = false;
+            while (i < code.length) {
+                const c = code[i];
+                const next = code[i + 1] || '';
+                if (c === '\n') {
+                    lineComment = false;
+                    out += c;
+                    i++;
+                    continue;
+                }
+                if (lineComment || blockComment) {
+                    out += c;
+                    if (blockComment && c === '*' && next === '/') {
+                        out += next;
+                        blockComment = false;
+                        i += 2;
+                        continue;
+                    }
+                    i++;
+                    continue;
+                }
+                if (quote) {
+                    out += c;
+                    if (escape) escape = false;
+                    else if (c === '\\') escape = true;
+                    else if (c === quote) quote = null;
+                    i++;
+                    continue;
+                }
+                if (c === '/' && next === '/') {
+                    lineComment = true;
+                    out += c;
+                    i++;
+                    continue;
+                }
+                if (c === '/' && next === '*') {
+                    blockComment = true;
+                    out += c + next;
+                    i += 2;
+                    continue;
+                }
+                if (c === "'" || c === '"' || c === '`') {
+                    quote = c;
+                    out += c;
+                    i++;
+                    continue;
+                }
+                if (c === '{') depth++;
+                else if (c === '}') depth = Math.max(0, depth - 1);
+                else if (depth === 0 && (code.startsWith('const ', i) || code.startsWith('let ', i))) {
+                    out += 'var ';
+                    i += code.startsWith('const ', i) ? 6 : 4;
+                    continue;
+                }
+                out += c;
+                i++;
+            }
+            return out;
+        }
+
         // Helper function to process tab content
         function processTabContent(html, tabName, contentContainer) {
             // Filter out any PHP code that might have leaked through
@@ -1084,23 +1152,17 @@
                     const newScript = document.createElement('script');
                     newScript.setAttribute('data-tab-script', tabName);
                     if (script.src) {
-                        newScript.src = script.src;
-                        // For external scripts, wait for load
+                        const rawSrc = script.getAttribute('src') || '';
+                        newScript.src = rawSrc.replace(/^\.\.\//, '');
                         newScript.onerror = function() {
-                            console.warn('Failed to load script:', script.src);
+                            console.warn('Failed to load script:', newScript.src);
                         };
                     } else {
-                        // For inline scripts, wrap in try-catch to prevent syntax errors from breaking the page
                         const scriptContent = script.textContent || script.innerHTML || '';
                         if (scriptContent.trim()) {
-                            // Wrap script content in try-catch to handle errors gracefully
-                            newScript.textContent = `
-                                try {
-                                    ${scriptContent}
-                                } catch (scriptError) {
-                                    console.error('Error in tab script:', scriptError);
-                                }
-                            `;
+                            // Run the tab script as-is. Wrapping it in try/catch
+                            // breaks scripts that already contain try blocks.
+                            newScript.textContent = makeScriptReloadable(scriptContent);
                         }
                     }
                     if (contentContainer) {
@@ -1113,10 +1175,14 @@
             
             // Trigger any initialization functions that might be waiting for DOMContentLoaded
             setTimeout(() => {
-                if (typeof initClubsTab === 'function') initClubsTab();
-                if (typeof initSponsorshipTab === 'function') initSponsorshipTab();
-                if (typeof initGivebackTab === 'function') initGivebackTab();
-                if (typeof initParentsTab === 'function') initParentsTab();
+                const initForTab = {
+                    clubs: window.initClubsTab,
+                    sponsorship: window.initSponsorshipTab,
+                    giveback: window.initGivebackTab,
+                    parents: window.initParentsTab
+                };
+                const init = initForTab[tabName];
+                if (typeof init === 'function') init();
             }, 100);
         }
         

@@ -224,7 +224,10 @@ const MediaStorage = {
                     created_at: new Date().toISOString()
                 };
                 media.push(newItem);
-                this.saveMedia(media);
+                if (!this.saveMedia(media)) {
+                    reject(new Error('Browser storage is full. Remove some media files and try a smaller image.'));
+                    return;
+                }
                 resolve(newItem);
             };
             reader.onerror = reject;

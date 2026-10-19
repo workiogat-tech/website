@@ -310,8 +310,8 @@ if (typeof window.heroData === 'undefined') {
 }
 
 // Use local references for convenience
-const heroSlides = window.heroSlides;
-const heroData = window.heroData;
+var heroSlides = window.heroSlides;
+var heroData = window.heroData;
 
 (async function() {
     await loadHeroData();
@@ -368,7 +368,6 @@ async function loadHeroData() {
             updateSubHeadlinePreview();
             updateSlidesDisplay();
             updateSliderPreview();
-        }
     } catch (error) {
         console.error('Error loading hero:', error);
     }
