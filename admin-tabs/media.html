@@ -137,7 +137,7 @@
                 <input type="color" name="color" value="#3B82F6" style="width: 100%; height: 50px; border-radius: 8px; border: 2px solid #e0e0e0; cursor: pointer;">
             </div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button type="submit" class="btn btn-primary" style="flex: 1;">Create Section</button>
+                <button type="button" class="btn btn-primary" style="flex: 1;" onclick="handleCreateSection(event)">Create Section</button>
                 <button type="button" onclick="closeNewSectionModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
             </div>
         </form>
@@ -160,12 +160,19 @@ const MediaStorage = {
     
     // Save sections to localStorage
     saveSections(sections) {
+        const payload = JSON.stringify(sections);
         try {
-            localStorage.setItem('media_sections', JSON.stringify(sections));
+            localStorage.setItem('media_sections', payload);
             return true;
         } catch (e) {
-            console.error('Failed to save sections:', e);
-            return false;
+            try {
+                localStorage.removeItem('media_items');
+                localStorage.setItem('media_sections', payload);
+                return true;
+            } catch (retryError) {
+                console.error('Failed to save sections:', retryError);
+                return false;
+            }
         }
     },
     
@@ -202,7 +209,9 @@ const MediaStorage = {
             created_at: new Date().toISOString()
         };
         sections.push(newSection);
-        this.saveSections(sections);
+        if (!this.saveSections(sections)) {
+            throw new Error('The section could not be saved in this browser.');
+        }
         return newSection;
     },
     
@@ -265,20 +274,26 @@ if (typeof window.selectedSection === 'undefined') {
     window.selectedSection = null;
 }
 
-// Use local aliases for cleaner code
-const mediaSections = window.mediaSections;
-const mediaItems = window.mediaItems;
-let selectedSection = window.selectedSection;
+// Keep one list. Replacing window.mediaSections and then clearing the old
+// array made a new section vanish from the screen.
+var mediaSections = window.mediaSections;
+var mediaItems = window.mediaItems;
+var selectedSection = window.selectedSection;
+
+function useSections(sections) {
+    window.mediaSections = sections;
+    mediaSections = sections;
+}
+
+function useItems(items) {
+    window.mediaItems = items;
+    mediaItems = items;
+}
 
 // Load media library on page load - NO PHP, only localStorage
 (function() {
-    // Load from localStorage only
-    window.mediaSections = MediaStorage.loadSections();
-    window.mediaItems = MediaStorage.loadMedia();
-    mediaSections.length = 0;
-    mediaSections.push(...window.mediaSections);
-    mediaItems.length = 0;
-    mediaItems.push(...window.mediaItems);
+    useSections(MediaStorage.loadSections());
+    useItems(MediaStorage.loadMedia());
     updateSectionDropdowns();
     updateSectionFilters();
     displayMedia();
@@ -286,10 +301,7 @@ let selectedSection = window.selectedSection;
 })();
 
 function loadMediaSections() {
-    // NO PHP - use localStorage only for images/media
-    window.mediaSections = MediaStorage.loadSections();
-    mediaSections.length = 0;
-    mediaSections.push(...window.mediaSections);
+    useSections(MediaStorage.loadSections());
     updateSectionDropdowns();
     updateSectionFilters();
 }
@@ -298,12 +310,9 @@ function loadMedia() {
     // NO PHP - use localStorage only for images/media
     let allMedia = MediaStorage.loadMedia();
     if (selectedSection) {
-        window.mediaItems = allMedia.filter(item => item.section_id == selectedSection);
-    } else {
-        window.mediaItems = allMedia;
+        allMedia = allMedia.filter(item => item.section_id == selectedSection);
     }
-    mediaItems.length = 0;
-    mediaItems.push(...window.mediaItems);
+    useItems(allMedia);
     displayMedia();
     updateMediaStats();
 }
@@ -360,16 +369,11 @@ function updateSectionFilters() {
     }
 }
 
-window.setSelectedSection = function(sectionId) {
+function setSelectedSection(sectionId) {
     window.selectedSection = sectionId;
     selectedSection = sectionId;
     loadMedia();
     updateSectionFilters();
-};
-
-// Keep local reference for backward compatibility
-function setSelectedSection(sectionId) {
-    window.setSelectedSection(sectionId);
 }
 
 function displayMedia() {
@@ -491,8 +495,8 @@ function closeNewSectionModal() {
 }
 
 async function handleCreateSection(event) {
-    event.preventDefault();
-    const form = event.target;
+    if (event) event.preventDefault();
+    const form = document.getElementById('newSectionForm');
     const formData = new FormData(form);
     const name = formData.get('name')?.trim();
     
@@ -501,10 +505,12 @@ async function handleCreateSection(event) {
         return;
     }
     
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = 'Creating...';
-    submitBtn.disabled = true;
+    const submitBtn = form.querySelector('button.btn-primary');
+    const originalText = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) {
+        submitBtn.textContent = 'Creating...';
+        submitBtn.disabled = true;
+    }
     
     try {
         // NO PHP - use client-side storage only for images/media
@@ -512,11 +518,8 @@ async function handleCreateSection(event) {
         showToast('Section created successfully!', 'success');
         closeNewSectionModal();
         form.reset();
-        
-        // Reload sections
-        window.mediaSections = MediaStorage.loadSections();
-        mediaSections.length = 0;
-        mediaSections.push(...window.mediaSections);
+
+        useSections(MediaStorage.loadSections());
         updateSectionDropdowns();
         updateSectionFilters();
         updateMediaStats();
@@ -533,8 +536,10 @@ async function handleCreateSection(event) {
         console.error('Error creating section:', error);
         showToast('Failed to create section: ' + error.message, 'error');
     } finally {
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        if (submitBtn) {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
     }
 }
 
