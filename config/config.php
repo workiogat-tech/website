@@ -146,6 +146,13 @@ ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.cookie_path', '/');
 
 if (session_status() === PHP_SESSION_NONE) {
-    session_set_save_handler(new PgSessionHandler(), true);
-    session_start();
+    $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    $requestPath = strtolower((string) ($_GET['__path'] ?? ($_SERVER['REQUEST_URI'] ?? '')));
+    $isPublicRead = ($requestMethod === 'GET' || $requestMethod === 'HEAD')
+        && (strpos($requestPath, 'public/') !== false || strpos($requestPath, 'health') !== false);
+    // Visitors reading the public site do not need a database session.
+    if (!$isPublicRead || !empty($_COOKIE['PHPSESSID'])) {
+        session_set_save_handler(new PgSessionHandler(), true);
+        session_start();
+    }
 }

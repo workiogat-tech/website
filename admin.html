@@ -724,7 +724,8 @@
                 submitBtn.textContent = '💾 Saving...';
                 submitBtn.disabled = true;
             }
-            
+
+            try {
             const formData = new FormData(form);
             const data = {};
             const action = form.action || form.getAttribute('action') || '';
@@ -840,71 +841,75 @@
                 data.payment_details = paymentDetails;
             }
             
-            // Save function that handles localStorage
-            const saveToStorage = () => {
-                try {
-                    if (typeof window.MediaStorage !== 'undefined' && window.MediaStorage.saveSettings) {
-                        window.MediaStorage.saveSettings(settingsKey, data);
-                        
-                        // Also save to ClientStorage for compatibility (if ClientStorage exists)
-                        if (typeof window.ClientStorage !== 'undefined') {
-                            // Map settings keys to ClientStorage keys
-                            const clientStorageMap = {
-                                'about': 'ABOUT_CONTENT',
-                                'hero': 'HERO_CONTENT',
-                                'branding': 'BRANDING',
-                                'contact': 'CONTACT_CONTENT',
-                                'footer': 'FOOTER_CONTENT'
-                            };
-                            
-                            const clientKey = clientStorageMap[settingsKey];
-                            if (clientKey && window.ClientStorage.KEYS && window.ClientStorage.KEYS[clientKey]) {
-                                const storageKey = window.ClientStorage.KEYS[clientKey];
-                                window.ClientStorage.set(storageKey, data);
-                            }
-                            
-                            // Also try direct method calls if available
-                            if (window.ClientStorage[settingsKey] && typeof window.ClientStorage[settingsKey].save === 'function') {
-                                window.ClientStorage[settingsKey].save(data).catch(e => console.warn('ClientStorage save warning:', e));
-                            }
-                        }
-                        
-                        // Trigger custom event to update frontend immediately
-                        // Use both same-window and cross-window events
-                        window.dispatchEvent(new CustomEvent('adminDataSaved', { 
-                            detail: { settingsKey, data } 
-                        }));
-                        
-                        // Also trigger storage event for cross-tab updates
-                        window.dispatchEvent(new StorageEvent('storage', {
-                            key: 'admin_settings_' + settingsKey,
-                            newValue: JSON.stringify(data),
-                            storageArea: localStorage
-                        }));
-                        
-                        return true;
-                    }
-                } catch (e) {
-                    console.error('Error saving to localStorage:', e);
+            // Save to the database. Browser storage is not the record.
+            const endpoint = (form.getAttribute('action') || '').trim();
+            if (!endpoint || endpoint === '#') {
+                showToast('This form is not connected to the database.', 'error');
+                if (submitBtn) {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
                 }
                 return false;
-            };
-            
-            // NO PHP - always use localStorage only
-            if (saveToStorage()) {
-                showToast('Settings saved successfully!', 'success');
-                if (submitBtn) {
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
+            }
+
+            const cleanValue = (value) => {
+                if (typeof value === 'string' && value.indexOf('data:') === 0) return '';
+                if (Array.isArray(value)) return value.map(cleanValue).filter(item => item !== '');
+                if (value && typeof value === 'object') {
+                    const copy = {};
+                    Object.keys(value).forEach((key) => {
+                        copy[key] = cleanValue(value[key]);
+                    });
+                    return copy;
                 }
-            } else {
-                showToast('Failed to save. Please check console for errors.', 'error');
-                if (submitBtn) {
-                    submitBtn.textContent = originalText;
-                    submitBtn.disabled = false;
+                return value;
+            };
+
+            for (const fileInput of fileInputs) {
+                if (!fileInput.files || fileInput.files.length === 0) continue;
+                const fieldName = fileInput.name || fileInput.id;
+                for (const file of fileInput.files) {
+                    const uploadData = new FormData();
+                    uploadData.append('file', file);
+                    const uploadResponse = await fetch('/api/media/upload.php', {
+                        method: 'POST',
+                        body: uploadData,
+                        credentials: 'same-origin'
+                    });
+                    const uploaded = await uploadResponse.json().catch(() => ({}));
+                    const url = uploaded.uploaded && uploaded.uploaded[0] && (uploaded.uploaded[0].file_url || uploaded.uploaded[0].file_path);
+                    if (!uploadResponse.ok || !url) {
+                        throw new Error((uploaded && uploaded.error) || 'The picture could not be uploaded.');
+                    }
+                    data[fieldName] = url;
                 }
             }
-            
+
+            const payload = cleanValue(data);
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json().catch(() => ({}));
+            if (!response.ok || result.error) {
+                throw new Error(result.error || 'The database did not save this change.');
+            }
+
+            showToast(result.message || 'Saved to the database.', 'success');
+            if (submitBtn) {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+            return false;
+        } catch (error) {
+            console.error('Database save failed:', error);
+            showToast(error.message || 'The database did not save this change.', 'error');
+            if (submitBtn) {
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
             return false;
         }
         

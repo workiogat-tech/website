@@ -117,10 +117,10 @@ let galleryImages = [];
     loadGalleryImages();
 })();
 
-function loadGallerySettings() {
+async function loadGallerySettings() {
     try {
-        // Use client-side storage - no PHP
-        gallerySettings = window.MediaStorage.loadSettings('gallery');
+        const response = await fetch('/api/content/gallery-settings.php', { credentials: 'same-origin', cache: 'no-store' });
+        gallerySettings = response.ok ? await response.json() : {};
         const heroImage = gallerySettings.hero_image || '';
         const input = document.getElementById('gallery_hero_image');
         if (input) {
@@ -132,32 +132,17 @@ function loadGallerySettings() {
     }
 }
 
-function loadGalleryImages() {
+async function loadGalleryImages() {
     try {
-        // Use client-side storage - get images from "Gallery" section
-        const allMedia = window.MediaStorage.loadMedia();
-        const sections = window.MediaStorage.loadSections();
-        
-        // Find Gallery section
-        const gallerySection = sections.find(s => 
-            s.name && s.name.toLowerCase() === 'gallery'
-        );
-        
-        if (gallerySection) {
-            // Filter images by gallery section
-            galleryImages = allMedia.filter(item => 
-                item.section_id == gallerySection.id || 
-                item.section_name && item.section_name.toLowerCase() === 'gallery'
-            );
-        } else {
-            // If no gallery section, show all images
-            galleryImages = allMedia;
-        }
-        
+        const response = await fetch('/api/media/list.php', { credentials: 'same-origin', cache: 'no-store' });
+        const data = await response.json();
+        const allMedia = response.ok && Array.isArray(data.media) ? data.media : [];
+        galleryImages = allMedia.filter(item => (item.section_name || '').toLowerCase() === 'gallery');
         displayGalleryImages();
     } catch (error) {
         console.error('Error loading gallery images:', error);
-        displayGalleryImages(); // Show empty state
+        galleryImages = [];
+        displayGalleryImages();
     }
 }
 
@@ -198,24 +183,32 @@ function updateGalleryHeroPreview(url) {
     }
 }
 
-// Save gallery settings to localStorage (no PHP needed)
-function handleGalleryFormSubmit(event, form) {
+async function handleGalleryFormSubmit(event, form) {
     event.preventDefault();
-    
-    const formData = new FormData(form);
-    const heroImage = formData.get('hero_image') || '';
-    
-    // Save to localStorage
-    gallerySettings = { hero_image: heroImage };
-    window.MediaStorage.saveSettings('gallery', gallerySettings);
-    
-    // Show success message
-    if (typeof showToast !== 'undefined') {
-        showToast('Gallery settings saved successfully! (Saved locally)', 'success');
-    } else {
-        alert('Gallery settings saved successfully! (Saved locally)');
+    const heroImage = new FormData(form).get('hero_image') || '';
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+        const response = await fetch('/api/content/gallery-settings.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hero_image: heroImage })
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.error) {
+            throw new Error(result.error || 'The database did not save the gallery image.');
+        }
+        if (typeof showToast !== 'undefined') {
+            showToast('Gallery image saved to the database.', 'success');
+        }
+    } catch (error) {
+        if (typeof showToast !== 'undefined') {
+            showToast(error.message || 'The database did not save the gallery image.', 'error');
+        }
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
     }
-    
     return false;
 }
 </script>

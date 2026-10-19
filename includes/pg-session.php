@@ -2,7 +2,7 @@
 /**
  * Stores PHP sessions in Supabase so logins survive Vercel's stateless filesystem.
  */
-class PgSessionHandler implements SessionHandlerInterface {
+class PgSessionHandler implements SessionHandlerInterface, SessionUpdateTimestampHandlerInterface {
     public function open(string $path, string $name): bool {
         return true;
     }
@@ -51,6 +51,15 @@ class PgSessionHandler implements SessionHandlerInterface {
             error_log('Session destroy failed: ' . $e->getMessage());
             return false;
         }
+    }
+
+    public function validateId(string $id): bool {
+        return true;
+    }
+
+    public function updateTimestamp(string $id, string $data): bool {
+        // Reading a page should not write the session back to the database.
+        return true;
     }
 
     public function gc(int $maxLifetime): int|false {

@@ -120,7 +120,8 @@
                                style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; color: #6b7280;"
                                value="" 
                                placeholder="Select image from media library"
-                               readonly>
+                               readonly
+                               onchange="updateHeroBackgroundPreview(this.value)">
                     </div>
                     <button type="button" 
                             onclick="openMediaLibrary('hero_background')" 
@@ -130,6 +131,7 @@
                         <span style="font-size: 20px; color: white;">🖼️</span>
                     </button>
                 </div>
+                <img id="heroBackgroundPreview" alt="" style="display: none; margin-top: 12px; width: 100%; max-height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb;">
             </div>
             
             <!-- Slide Images -->
@@ -317,15 +319,55 @@ var heroData = window.heroData;
     await loadHeroData();
 })();
 
+function usableHeroImage(url) {
+    return typeof url === 'string' && url.trim() !== '' && url.indexOf('data:') !== 0 && url.length < 2000;
+}
+
+function updateHeroBackgroundPreview(url) {
+    const preview = document.getElementById('heroBackgroundPreview');
+    if (!preview) return;
+    if (!usableHeroImage(url)) {
+        preview.style.display = 'none';
+        preview.removeAttribute('src');
+        return;
+    }
+    preview.src = url;
+    preview.style.display = 'block';
+}
+
 async function loadHeroData() {
     try {
-        // Load from client-side storage instead of PHP
-        heroData = await ClientStorage.hero.get();
+        heroData = {};
+        try {
+            const response = await fetch('/api/content/hero-content.php', { credentials: 'same-origin', cache: 'no-store' });
+            if (response.ok) {
+                const remote = await response.json();
+                if (remote && !remote.error && typeof remote === 'object' && !Array.isArray(remote)) {
+                    heroData = remote;
+                }
+            }
+        } catch (apiError) {
+            heroData = {};
+        }
+
+        const localHero = await ClientStorage.hero.get();
+        if (!heroData.background_image && (!heroData.slides || heroData.slides.length === 0)) {
+            if (localHero.background_image || (localHero.slides && localHero.slides.length)) {
+                heroData = Object.assign({}, localHero, heroData);
+                heroData.background_image = localHero.background_image || heroData.background_image || '';
+                heroData.slides = localHero.slides || heroData.slides || [];
+            }
+        }
+        if (!heroData.headline && !heroData.title) {
+            heroData = Object.assign({}, localHero, heroData);
+        }
+        window.heroData = heroData;
         
         document.getElementById('hero_headline').value = heroData.headline || heroData.title || 'Welcome to SJS';
             document.getElementById('hero_subheadline').value = heroData.subheadline || heroData.subtitle || 'Empowering minds, shaping futures';
             document.getElementById('hero_description').value = heroData.description || '';
-            document.getElementById('hero_background').value = heroData.background_image || '';
+            document.getElementById('hero_background').value = usableHeroImage(heroData.background_image) ? heroData.background_image : '';
+            updateHeroBackgroundPreview(document.getElementById('hero_background').value);
             
             const headlineColor = heroData.headline_color || heroData.headlineColor || '#ffffff';
             const subHeadlineColor = heroData.subheadline_color || heroData.subHeadlineColor || '#ffffff';
@@ -351,8 +393,8 @@ async function loadHeroData() {
                     const uniqueSlides = [];
                     const seen = [];
                     allSlides.forEach(slide => {
-                        const trimmed = slide ? slide.trim() : '';
-                        if (trimmed && !seen.includes(trimmed)) {
+                        const trimmed = slide ? String(slide).trim() : '';
+                        if (usableHeroImage(trimmed) && !seen.includes(trimmed)) {
                             uniqueSlides.push(trimmed);
                             seen.push(trimmed);
                         }
@@ -639,14 +681,15 @@ async function handleHeroFormSubmit(event, form) {
         window.heroSlides = [];
     }
     
-    const validSlides = window.heroSlides.filter(s => s && typeof s === 'string' && s.trim && s.trim());
+    const validSlides = window.heroSlides.filter(s => usableHeroImage(s));
     const uniqueSlides = [...new Set(validSlides)];
+    const backgroundImage = form.querySelector('input[name="background_image"]').value || '';
     
     const data = {
         headline: form.querySelector('input[name="headline"]').value || '',
         subheadline: form.querySelector('input[name="subheadline"]').value || '',
         description: form.querySelector('textarea[name="description"]').value || '',
-        background_image: form.querySelector('input[name="background_image"]').value || '',
+        background_image: usableHeroImage(backgroundImage) ? backgroundImage : '',
         headline_color: form.querySelector('input[name="headline_color"]').value || '#ffffff',
         subheadline_color: form.querySelector('input[name="subheadline_color"]').value || '#ffffff',
         slide_interval_ms: parseInt(form.querySelector('input[name="slide_interval_ms"]').value || 5000),
@@ -664,10 +707,18 @@ async function handleHeroFormSubmit(event, form) {
     submitBtn.disabled = true;
     
     try {
-        const result = await ClientStorage.hero.save(data);
+        const response = await fetch('/api/content/hero-content.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.error) {
+            throw new Error(result.error || 'The picture could not be saved.');
+        }
         
         if (result.success) {
-            // Trigger update event for immediate frontend refresh
             window.dispatchEvent(new CustomEvent('adminDataSaved', { 
                 detail: { settingsKey: 'hero', data: data } 
             }));

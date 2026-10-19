@@ -20,33 +20,31 @@ const HomepageLoader = {
         if (!heroSection) return;
         
         try {
-            // Try localStorage first (immediate updates)
+            const result = await this.fetchHomepage();
+            if (result && result.success && result.data && result.data.heroContent) {
+                this.renderHero(result.data.heroContent);
+                return;
+            }
+
             if (typeof window.ClientStorage !== 'undefined') {
                 const heroData = await window.ClientStorage.hero.get();
-                if (heroData && Object.keys(heroData).length > 0) {
+                const hasImage = heroData && (heroData.background_image || (heroData.slides && heroData.slides.length));
+                if (hasImage) {
                     this.renderHero(heroData);
-                    return;
                 }
             }
-            
-            // Try API if localStorage is empty
-            try {
-                const response = await fetch(`/api/public/homepage-data.php?t=${Date.now()}`);
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success && result.data.heroContent) {
-                        this.renderHero(result.data.heroContent);
-                        return;
-                    }
-                }
-            } catch (apiError) {
-                console.warn('API not available, using defaults');
-            }
-            
-            // NO PHP - use defaults if no localStorage data
         } catch (error) {
             console.error('Error loading hero content:', error);
         }
+    },
+
+    fetchHomepage() {
+        if (!this._homepagePromise) {
+            this._homepagePromise = fetch('/api/public/homepage-data.php', { cache: 'no-store' })
+                .then(response => response.ok ? response.json() : null)
+                .catch(() => null);
+        }
+        return this._homepagePromise;
     },
     
     renderHero(data) {
@@ -79,8 +77,8 @@ const HomepageLoader = {
         // Get slides
         let heroSlides = [];
         if (data.slides && Array.isArray(data.slides) && data.slides.length > 0) {
-            heroSlides = data.slides.filter(s => s && s.trim());
-        } else if (data.background_image) {
+            heroSlides = data.slides.filter(s => typeof s === 'string' && s.trim() && s.indexOf('data:') !== 0);
+        } else if (typeof data.background_image === 'string' && data.background_image && data.background_image.indexOf('data:') !== 0) {
             heroSlides = [data.background_image];
         }
         
@@ -206,16 +204,10 @@ const HomepageLoader = {
     
     async loadBranding() {
         try {
-            // Try localStorage first
-            if (typeof window.ClientStorage !== 'undefined') {
-                const branding = await window.ClientStorage.branding.get();
-                if (branding && Object.keys(branding).length > 0) {
-                    this.applyBranding(branding);
-                    return;
-                }
+            const result = await this.fetchHomepage();
+            if (result && result.success && result.data && result.data.branding) {
+                this.applyBranding(result.data.branding);
             }
-            
-            // NO PHP - use defaults if no localStorage data
         } catch (error) {
             console.error('Error loading branding:', error);
         }
@@ -256,14 +248,11 @@ const HomepageLoader = {
         try {
             // Try API first (always fresh data)
             try {
-                const response = await fetch(`/api/public/homepage-data.php?t=${Date.now()}`);
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success && result.data.threeColumnSections && result.data.threeColumnSections.length > 0) {
-                        this.renderThreeColumnSections(result.data.threeColumnSections);
-                        return;
-                    }
-                }
+            const result = await this.fetchHomepage();
+            if (result && result.success && result.data && result.data.threeColumnSections && result.data.threeColumnSections.length > 0) {
+                this.renderThreeColumnSections(result.data.threeColumnSections);
+                return;
+            }
             } catch (apiError) {
                 console.warn('API not available for three-column sections');
             }

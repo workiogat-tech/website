@@ -31,7 +31,7 @@ if ($method === 'GET') {
         }
         
         $users = $db->fetchAll("SELECT id, username, email, role, created_at FROM users ORDER BY created_at DESC");
-        echo json_encode(['success' => true, 'data' => $users]);
+        echo json_encode(['success' => true, 'users' => $users, 'data' => $users]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch users: ' . $e->getMessage()]);

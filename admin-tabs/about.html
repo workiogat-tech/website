@@ -644,7 +644,7 @@ function removeStatistic(button) {
     }
 }
 
-function handleAboutFormSubmit(event) {
+async function handleAboutFormSubmit(event) {
     event.preventDefault();
     const form = event.target;
     
@@ -707,21 +707,19 @@ function handleAboutFormSubmit(event) {
     const originalText = submitBtn.innerHTML;
     submitBtn.innerHTML = '<span>💾</span> Saving...';
     submitBtn.disabled = true;
-    
-    // Save using client-side storage - saves to both ClientStorage and MediaStorage
-    ClientStorage.about.save(data)
-        .then(result => {
-            if (result.success) {
-                // Also explicitly save to MediaStorage for compatibility
-                if (typeof window.MediaStorage !== 'undefined' && window.MediaStorage.saveSettings) {
-                    window.MediaStorage.saveSettings('about', data);
-                }
-                
-                // Trigger update event
-                window.dispatchEvent(new CustomEvent('adminDataSaved', { 
-                    detail: { settingsKey: 'about', data: data } 
-                }));
-                
+
+    try {
+        const response = await fetch('/api/content/about.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.error) {
+            throw new Error(result.error || 'The database did not save the About page.');
+        }
+        if (result.success || result.id) {
                 if (typeof showToast === 'function') {
                     showToast(result.message || 'About content saved successfully!', 'success');
                 } else {
@@ -732,18 +730,16 @@ function handleAboutFormSubmit(event) {
             } else {
                 throw new Error('Save failed');
             }
-        })
-        .catch(error => {
+    } catch (error) {
             console.error('Error saving about content:', error);
             if (typeof showToast === 'function') {
-                showToast('Failed to save about content. Please try again.', 'error');
+                showToast(error.message || 'Failed to save about content. Please try again.', 'error');
             } else {
                 alert('Failed to save about content. Please try again.');
             }
-        })
-        .finally(() => {
+    } finally {
             submitBtn.innerHTML = originalText;
             submitBtn.disabled = false;
-        });
+    }
 }
 </script>

@@ -209,21 +209,18 @@ const MediaStorage = {
     },
     
     // Add a new section
-    addSection(name, color) {
-        const sections = this.loadSections();
-        const newId = Date.now(); // Use timestamp as ID
-        const newSection = {
-            id: newId,
-            name: name,
-            color: color || '#3B82F6',
-            is_active: true,
-            created_at: new Date().toISOString()
-        };
-        sections.push(newSection);
-        if (!this.saveSections(sections)) {
-            throw new Error('The section could not be saved in this browser.');
+    async addSection(name, color) {
+        const response = await fetch('/api/media/sections.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'create_section', name: name, color: color || '#3B82F6' })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success || !data.section) {
+            throw new Error(data.error || 'The section could not be saved to the database.');
         }
-        return newSection;
+        return data.section;
     },
     
     // Add media item (with file as data URL)
@@ -309,29 +306,44 @@ function useItems(items) {
     mediaItems = items;
 }
 
-// Load media library on page load - NO PHP, only localStorage
-(function() {
-    useSections(MediaStorage.loadSections());
-    useItems(MediaStorage.loadMedia());
+(async function() {
+    try {
+        const response = await fetch('/api/media/sections.php', { credentials: 'same-origin', cache: 'no-store' });
+        const data = await response.json();
+        useSections(response.ok && Array.isArray(data.sections) ? data.sections : []);
+    } catch (error) {
+        useSections([]);
+    }
     updateSectionDropdowns();
     updateSectionFilters();
-    displayMedia();
+    await loadMedia();
     updateMediaStats();
 })();
 
-function loadMediaSections() {
-    useSections(MediaStorage.loadSections());
+async function loadMediaSections() {
+    try {
+        const response = await fetch('/api/media/sections.php', { credentials: 'same-origin', cache: 'no-store' });
+        const data = await response.json();
+        useSections(response.ok && Array.isArray(data.sections) ? data.sections : []);
+    } catch (error) {
+        useSections([]);
+    }
     updateSectionDropdowns();
     updateSectionFilters();
 }
 
-function loadMedia() {
-    // NO PHP - use localStorage only for images/media
-    let allMedia = MediaStorage.loadMedia();
-    if (selectedSection) {
-        allMedia = allMedia.filter(item => item.section_id == selectedSection);
+async function loadMedia() {
+    try {
+        const response = await fetch('/api/media/list.php', { credentials: 'same-origin', cache: 'no-store' });
+        const data = await response.json();
+        let allMedia = response.ok && Array.isArray(data.media) ? data.media : [];
+        if (selectedSection) {
+            allMedia = allMedia.filter(item => item.section_id == selectedSection);
+        }
+        useItems(allMedia);
+    } catch (error) {
+        useItems([]);
     }
-    useItems(allMedia);
     displayMedia();
     updateMediaStats();
 }
@@ -533,14 +545,12 @@ async function handleCreateSection(event) {
     
     try {
         // NO PHP - use client-side storage only for images/media
-        const newSection = MediaStorage.addSection(name, formData.get('color') || '#3B82F6');
+        const newSection = await MediaStorage.addSection(name, formData.get('color') || '#3B82F6');
         showToast('Section created successfully!', 'success');
         closeNewSectionModal();
         form.reset();
 
-        useSections(MediaStorage.loadSections());
-        updateSectionDropdowns();
-        updateSectionFilters();
+        await loadMediaSections();
         updateMediaStats();
         
         // Auto-select the newly created section

@@ -364,6 +364,13 @@ if ($method === 'GET') {
             $data['description_color'] = $input['description_color'] ?? $data['description_color'] ?? '#ffffff';
         }
         
+        if (!in_array('headline', $existingColumns, true) && in_array('title', $existingColumns, true)) {
+            $data['title'] = $input['headline'] ?? $input['title'] ?? ($data['title'] ?? '');
+        }
+        if (!in_array('subheadline', $existingColumns, true) && in_array('subtitle', $existingColumns, true)) {
+            $data['subtitle'] = $input['subheadline'] ?? $input['subtitle'] ?? ($data['subtitle'] ?? '');
+        }
+
         // Add slides as JSON (if column exists)
         if (in_array('slides', $existingColumns)) {
             if (!empty($slides)) {

@@ -11,7 +11,7 @@
             This is the large background image displayed at the top of the Testimonials page.
         </p>
         
-        <form method="POST" action="#" id="testimonialsHeaderForm" onsubmit="event.preventDefault(); handleAdminFormSubmit(event, this); return false;">
+        <form method="POST" action="api/content/testimonials-settings.php" id="testimonialsHeaderForm" onsubmit="event.preventDefault(); handleAdminFormSubmit(event, this); return false;">
             <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 20px;">
                 <div id="testimonialsHeroPreview" style="flex-shrink: 0; width: 160px; height: 96px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
                     <div style="text-align: center;">
@@ -70,7 +70,7 @@
             Configure how testimonials are displayed in the slider carousel.
         </p>
         
-        <form method="POST" action="#" id="testimonialsSliderForm" onsubmit="event.preventDefault(); handleAdminFormSubmit(event, this); return false;">
+        <form method="POST" action="api/content/testimonials-settings.php" id="testimonialsSliderForm" onsubmit="event.preventDefault(); handleAdminFormSubmit(event, this); return false;">
             <!-- Enable Slider Toggle -->
             <div class="form-group" style="margin-bottom: 25px;">
                 <label class="form-label" style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
@@ -568,18 +568,7 @@ async function handleAddTestimonial(event) {
         const text = await response.text();
         // Check if response is PHP code or HTML error page
         if (text.trim().startsWith('<?php') || text.trim().startsWith('<!DOCTYPE') || text.includes('Fatal error') || text.includes('Parse error')) {
-            // Fallback to localStorage
-            if (typeof window.ClientStorage !== 'undefined') {
-                const existing = window.ClientStorage.get(window.ClientStorage.KEYS.TESTIMONIALS, []);
-                data.id = Date.now();
-                existing.push(data);
-                window.ClientStorage.set(window.ClientStorage.KEYS.TESTIMONIALS, existing);
-                showToast('Testimonial added successfully! (Saved locally)', 'success');
-                closeAddTestimonialModal();
-                await loadTestimonials();
-                return;
-            }
-            throw new Error('PHP server not available and localStorage not available');
+            throw new Error('The database did not save this testimonial.');
         }
         const result = JSON.parse(text);
         if (result.error) {
@@ -591,21 +580,6 @@ async function handleAddTestimonial(event) {
         }
     } catch (error) {
         console.error('Save error:', error);
-        // Fallback to localStorage
-        if (typeof window.ClientStorage !== 'undefined') {
-            try {
-                const existing = window.ClientStorage.get(window.ClientStorage.KEYS.TESTIMONIALS, []);
-                data.id = Date.now();
-                existing.push(data);
-                window.ClientStorage.set(window.ClientStorage.KEYS.TESTIMONIALS, existing);
-                showToast('Testimonial added successfully! (Saved locally)', 'success');
-                closeAddTestimonialModal();
-                await loadTestimonials();
-                return;
-            } catch (e) {
-                console.error('LocalStorage save failed:', e);
-            }
-        }
         showToast('Save error: ' + error.message, 'error');
     }
 }

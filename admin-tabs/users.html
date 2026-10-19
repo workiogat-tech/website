@@ -53,13 +53,14 @@ let users = [];
 
 async function loadUsers() {
     try {
-        const response = await fetch('api/content/users.php');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.users) {
-                users = data.users;
-                displayUsers();
-            }
+        const response = await fetch('api/content/users.php', { credentials: 'same-origin' });
+        const data = await response.json().catch(() => ({}));
+        const list = data.users || data.data;
+        if (response.ok && data.success && Array.isArray(list)) {
+            users = list;
+            displayUsers();
+        } else {
+            document.getElementById('usersList').innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No users could be loaded.</div>';
         }
     } catch (error) {
         console.error('Error loading users:', error);

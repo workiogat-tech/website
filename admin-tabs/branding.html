@@ -135,7 +135,12 @@
 (async function() {
     try {
         // Ensure ClientStorage is loaded before use
-        let branding;
+        let branding = {};
+        try {
+            const response = await fetch('/api/content/branding.php', { credentials: 'same-origin', cache: 'no-store' });
+            if (response.ok) branding = await response.json();
+        } catch (loadError) {}
+        if (!branding || branding.error || !branding.school_name) {
         if (typeof window.ErrorHandler !== 'undefined') {
             const result = await window.ErrorHandler.ensureDependencies(['ClientStorage'], async () => {
                 return await ClientStorage.branding.get();
@@ -161,6 +166,7 @@
                 throw new Error('ClientStorage not available');
             }
             branding = await ClientStorage.branding.get();
+        }
         }
         
         document.getElementById('school_name').value = branding.school_name || 'SJS ACADEMY';
@@ -197,9 +203,18 @@ async function handleBrandingFormSubmit(event, form) {
             secondary_color: form.querySelector('[name="secondary_color"]').value || '#6B0000'
         };
         
-        const result = await ClientStorage.branding.save(data);
+        const response = await fetch('/api/content/branding.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.error) {
+            throw new Error(result.error || 'The database did not save branding.');
+        }
         
-        if (result.success) {
+        if (result.success || result.id) {
             // Trigger update event for immediate frontend refresh
             window.dispatchEvent(new CustomEvent('adminDataSaved', { 
                 detail: { settingsKey: 'branding', data: data } 

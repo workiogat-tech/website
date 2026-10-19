@@ -6,6 +6,52 @@
 const PageDataLoader = {
     baseURL: '/api/content',
     
+    async loadDb(key) {
+        const endpoints = {
+            about: 'about.php',
+            clubs: 'clubs.php',
+            curriculum: 'curriculum.php',
+            facilities: 'facilities-settings.php',
+            teachers: 'teachers-settings.php',
+            testimonials: 'testimonials-settings.php',
+            gallery: 'gallery-settings.php',
+            activities: 'activities-settings.php',
+            news: 'news-settings.php',
+            announcements: 'announcements-settings.php',
+            admission: 'admission.php',
+            background: 'school-background.php',
+            sponsorship: 'sponsorship.php',
+            giveback: 'giveback.php',
+            parents: 'parents.php',
+            'people-behind-school': 'people-behind-school.php',
+            resources: 'resources.php'
+        };
+        const lists = {
+            facilities: 'facilities.php',
+            teachers: 'teachers.php',
+            testimonials: 'testimonials.php',
+            activities: 'activities.php',
+            news: 'news.php',
+            announcements: 'announcements.php'
+        };
+        const read = async (path) => {
+            const response = await fetch(this.baseURL + '/' + path, { cache: 'no-store' });
+            if (!response.ok) return null;
+            return response.json();
+        };
+        try {
+            const row = await read(endpoints[key] || (key + '.php'));
+            const settings = (row && !row.error && !Array.isArray(row)) ? row : {};
+            if (lists[key]) {
+                const list = await read(lists[key]);
+                if (list && Array.isArray(list.data)) settings[key] = list.data;
+            }
+            return settings;
+        } catch (error) {
+            return {};
+        }
+    },
+
     // Helper to initialize MediaStorage
     initMediaStorage() {
         if (typeof window.MediaStorage === 'undefined') {
@@ -53,7 +99,7 @@ const PageDataLoader = {
     async loadAboutData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('about') || {};
+            const settings = await this.loadDb('about');
             const defaultData = this.getDefaultAboutData();
             
             // Merge saved settings with defaults
@@ -120,7 +166,7 @@ const PageDataLoader = {
     async loadClubsData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('clubs') || {};
+            const settings = await this.loadDb('clubs');
             const defaultData = this.getDefaultClubsData();
             
             return {
@@ -151,7 +197,7 @@ const PageDataLoader = {
     async loadCurriculumData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('curriculum') || {};
+            const settings = await this.loadDb('curriculum');
             const defaultData = this.getDefaultCurriculumData();
             
             return {
@@ -224,7 +270,7 @@ const PageDataLoader = {
     async loadFacilitiesData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('facilities') || {};
+            const settings = await this.loadDb('facilities');
             const defaultData = this.getDefaultFacilitiesData();
             
             return {
@@ -257,7 +303,7 @@ const PageDataLoader = {
     async loadTeachersData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('teachers') || {};
+            const settings = await this.loadDb('teachers');
             const defaultData = this.getDefaultTeachersData();
             
             return {
@@ -288,7 +334,7 @@ const PageDataLoader = {
     async loadTestimonialsData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('testimonials') || {};
+            const settings = await this.loadDb('testimonials');
             const defaultData = this.getDefaultTestimonialsData();
             
             return {
@@ -321,7 +367,7 @@ const PageDataLoader = {
             this.initMediaStorage();
             
             // Load gallery settings from localStorage
-            const gallerySettings = window.MediaStorage.loadSettings('gallery') || {};
+            const gallerySettings = await this.loadDb('gallery');
             
             // Load gallery images from localStorage
             const allMedia = window.MediaStorage.loadMedia();
@@ -383,7 +429,7 @@ const PageDataLoader = {
     async loadEventsData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('activities') || {};
+            const settings = await this.loadDb('activities');
             const defaultData = this.getDefaultEventsData();
             
             return {
@@ -414,7 +460,7 @@ const PageDataLoader = {
     async loadNewsData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('news') || {};
+            const settings = await this.loadDb('news');
             const defaultData = this.getDefaultNewsData();
             
             return {
@@ -445,7 +491,7 @@ const PageDataLoader = {
     async loadAnnouncementsData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('announcements') || {};
+            const settings = await this.loadDb('announcements');
             const defaultData = this.getDefaultAnnouncementsData();
             
             return {
@@ -476,7 +522,7 @@ const PageDataLoader = {
     async loadAdmissionData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('admission') || {};
+            const settings = await this.loadDb('admission');
             const defaultData = this.getDefaultAdmissionData();
             
             return {
@@ -533,7 +579,7 @@ const PageDataLoader = {
     async loadSchoolBackgroundData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('background') || {};
+            const settings = await this.loadDb('background');
             const defaultData = this.getDefaultSchoolBackgroundData();
             
             return {
@@ -582,7 +628,7 @@ const PageDataLoader = {
     async loadSponsorshipData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('sponsorship') || {};
+            const settings = await this.loadDb('sponsorship');
             const defaultData = this.getDefaultSponsorshipData();
             
             return {
@@ -651,7 +697,7 @@ const PageDataLoader = {
     async loadGiveBackData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('giveback') || {};
+            const settings = await this.loadDb('giveback');
             const defaultData = this.getDefaultGiveBackData();
             
             return {
@@ -686,7 +732,7 @@ const PageDataLoader = {
     async loadParentsData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('parents') || {};
+            const settings = await this.loadDb('parents');
             const defaultData = this.getDefaultParentsData();
             
             return {
@@ -735,7 +781,7 @@ const PageDataLoader = {
     async loadPeopleBehindSchoolData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('people-behind-school') || {};
+            const settings = await this.loadDb('people-behind-school');
             const defaultData = this.getDefaultPeopleBehindSchoolData();
             
             return {
@@ -769,7 +815,7 @@ const PageDataLoader = {
     async loadResourcesData() {
         try {
             this.initMediaStorage();
-            const settings = window.MediaStorage.loadSettings('resources') || {};
+            const settings = await this.loadDb('resources');
             const defaultData = this.getDefaultResourcesData();
             
             return {

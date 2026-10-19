@@ -5,26 +5,13 @@
 const HeaderLoader = {
     async load() {
         try {
-            // Try localStorage first (immediate updates from admin)
-            if (typeof window.ClientStorage !== 'undefined') {
-                const branding = await window.ClientStorage.branding.get();
-                const contact = await window.ClientStorage.contact.get();
-                
-                if (branding && Object.keys(branding).length > 0) {
-                    const data = {
-                        branding: branding,
-                        contactInfo: contact || {},
-                        navigation: [],
-                        navigationChildren: {}
-                    };
-                    this.render(data);
-                    this.init();
-                    
-                    return;
-                }
+            const response = await fetch('/api/public/header-data.php', { cache: 'no-store' });
+            const payload = await response.json();
+            if (response.ok && payload && payload.success && payload.data) {
+                this.render(payload.data);
+                this.init();
+                return;
             }
-            
-            // NO PHP - use default if no localStorage data
             this.renderDefault();
         } catch (error) {
             console.error('Error loading header:', error);

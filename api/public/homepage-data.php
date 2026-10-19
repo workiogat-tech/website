@@ -23,39 +23,65 @@ require_once __DIR__ . '/../../includes/image-helper.php';
 
 try {
     $db = getDB();
-    
-    // Fetch all homepage data
-    $data = [
-        'branding' => $db->fetchOne("SELECT * FROM branding WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: null,
-        'heroContent' => $db->fetchOne("SELECT * FROM hero_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: null,
-        'aboutContent' => $db->fetchOne("SELECT * FROM about_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: null,
-        'contactInfo' => $db->fetchOne("SELECT * FROM contact_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: null,
-        'teachers' => $db->fetchAll("SELECT * FROM teachers WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6") ?: [],
-        'testimonials' => $db->fetchAll("SELECT * FROM testimonials WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6") ?: [],
-        'activities' => $db->fetchAll("SELECT * FROM activities WHERE is_active = 1 ORDER BY date DESC LIMIT 6") ?: [],
-        'facilities' => $db->fetchAll("SELECT * FROM facilities WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6") ?: [],
-        'schoolLifeItems' => $db->fetchAll("SELECT * FROM school_life_items WHERE is_active = 1 ORDER BY order_index ASC") ?: [],
-        'academicsContent' => $db->fetchOne("SELECT * FROM academics_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: null,
-        'sportsItems' => $db->fetchAll("SELECT * FROM sports_items WHERE is_active = 1 ORDER BY order_index ASC") ?: [],
-        'sportsContent' => $db->fetchOne("SELECT * FROM sports_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: null,
-        'customSectionContent' => $db->fetchOne("SELECT * FROM custom_section_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: null,
-        'threeColumnSections' => $db->fetchAll("SELECT * FROM three_column_sections WHERE is_active = 1 ORDER BY order_index ASC") ?: [],
-    ];
-    
-    // Fetch gallery images
-    try {
-        $gallerySection = $db->fetchOne("SELECT * FROM media_sections WHERE name = 'Gallery' AND is_active = 1 LIMIT 1");
-        if ($gallerySection) {
-            $data['galleryImages'] = $db->fetchAll(
-                "SELECT * FROM media WHERE section_id = ? AND is_active = 1 AND (file_type LIKE 'image/%' OR filename LIKE '%.jpg' OR filename LIKE '%.jpeg' OR filename LIKE '%.png' OR filename LIKE '%.gif' OR filename LIKE '%.webp') ORDER BY created_at DESC LIMIT 6",
-                [$gallerySection['id']]
-            ) ?: [];
-        } else {
-            $data['galleryImages'] = [];
+
+    $packed = $db->fetchOne(
+        "SELECT
+            (SELECT row_to_json(x) FROM (SELECT * FROM branding WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1) x) AS branding,
+            (SELECT row_to_json(x) FROM (SELECT * FROM hero_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1) x) AS \"heroContent\",
+            (SELECT row_to_json(x) FROM (SELECT * FROM about_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1) x) AS \"aboutContent\",
+            (SELECT row_to_json(x) FROM (SELECT * FROM contact_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1) x) AS \"contactInfo\",
+            (SELECT COALESCE(json_agg(x ORDER BY x.created_at DESC), '[]'::json) FROM (SELECT * FROM teachers WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6) x) AS teachers,
+            (SELECT COALESCE(json_agg(x ORDER BY x.created_at DESC), '[]'::json) FROM (SELECT * FROM testimonials WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6) x) AS testimonials,
+            (SELECT COALESCE(json_agg(x ORDER BY x.date DESC), '[]'::json) FROM (SELECT * FROM activities WHERE is_active = 1 ORDER BY date DESC LIMIT 6) x) AS activities,
+            (SELECT COALESCE(json_agg(x ORDER BY x.created_at DESC), '[]'::json) FROM (SELECT * FROM facilities WHERE is_active = 1 ORDER BY created_at DESC LIMIT 6) x) AS facilities,
+            (SELECT COALESCE(json_agg(x ORDER BY x.order_index ASC), '[]'::json) FROM (SELECT * FROM school_life_items WHERE is_active = 1 ORDER BY order_index ASC) x) AS \"schoolLifeItems\",
+            (SELECT row_to_json(x) FROM (SELECT * FROM academics_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1) x) AS \"academicsContent\",
+            (SELECT COALESCE(json_agg(x ORDER BY x.order_index ASC), '[]'::json) FROM (SELECT * FROM sports_items WHERE is_active = 1 ORDER BY order_index ASC) x) AS \"sportsItems\",
+            (SELECT row_to_json(x) FROM (SELECT * FROM sports_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1) x) AS \"sportsContent\",
+            (SELECT row_to_json(x) FROM (SELECT * FROM custom_section_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1) x) AS \"customSectionContent\",
+            (SELECT COALESCE(json_agg(x ORDER BY x.order_index ASC), '[]'::json) FROM (SELECT * FROM three_column_sections WHERE is_active = 1 ORDER BY order_index ASC) x) AS \"threeColumnSections\",
+            (SELECT COALESCE(json_agg(m ORDER BY m.created_at DESC), '[]'::json) FROM (
+                SELECT media.* FROM media
+                JOIN media_sections ms ON ms.id = media.section_id
+                WHERE ms.name = 'Gallery' AND ms.is_active = 1 AND media.is_active = 1
+                  AND (media.file_type LIKE 'image/%' OR media.filename ILIKE '%.jpg' OR media.filename ILIKE '%.jpeg' OR media.filename ILIKE '%.png' OR media.filename ILIKE '%.gif' OR media.filename ILIKE '%.webp')
+                ORDER BY media.created_at DESC
+                LIMIT 6
+            ) m) AS \"galleryImages\""
+    );
+
+    $decodeObject = function ($value) {
+        if ($value === null || $value === '') {
+            return null;
         }
-    } catch (Exception $e) {
-        $data['galleryImages'] = [];
-    }
+        if (is_array($value)) {
+            return $value;
+        }
+        $decoded = json_decode($value, true);
+        return is_array($decoded) ? $decoded : null;
+    };
+    $decodeList = function ($value) use ($decodeObject) {
+        $decoded = $decodeObject($value);
+        return is_array($decoded) ? $decoded : [];
+    };
+
+    $data = [
+        'branding' => $decodeObject($packed['branding'] ?? null),
+        'heroContent' => $decodeObject($packed['heroContent'] ?? null),
+        'aboutContent' => $decodeObject($packed['aboutContent'] ?? null),
+        'contactInfo' => $decodeObject($packed['contactInfo'] ?? null),
+        'teachers' => $decodeList($packed['teachers'] ?? null),
+        'testimonials' => $decodeList($packed['testimonials'] ?? null),
+        'activities' => $decodeList($packed['activities'] ?? null),
+        'facilities' => $decodeList($packed['facilities'] ?? null),
+        'schoolLifeItems' => $decodeList($packed['schoolLifeItems'] ?? null),
+        'academicsContent' => $decodeObject($packed['academicsContent'] ?? null),
+        'sportsItems' => $decodeList($packed['sportsItems'] ?? null),
+        'sportsContent' => $decodeObject($packed['sportsContent'] ?? null),
+        'customSectionContent' => $decodeObject($packed['customSectionContent'] ?? null),
+        'threeColumnSections' => $decodeList($packed['threeColumnSections'] ?? null),
+        'galleryImages' => $decodeList($packed['galleryImages'] ?? null),
+    ];
     
     // Decode JSON fields
     if ($data['heroContent'] && isset($data['heroContent']['slides'])) {

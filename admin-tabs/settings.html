@@ -29,19 +29,11 @@
 
 <script>
 (async function() {
+    document.getElementById('phpVersion').textContent = 'PHP';
+    document.getElementById('dbName').textContent = 'Supabase';
+    document.getElementById('serverInfo').textContent = 'Vercel';
     try {
-        const response = await fetch('api/content/settings.php');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.settings) {
-                const settings = data.settings;
-                document.getElementById('session_timeout').value = settings.session_timeout || 30;
-                document.getElementById('max_upload_size').value = settings.max_upload_size || 50;
-            }
-        }
-        
-        // Try to get system info
-        const sysResponse = await fetch('api/health.php');
+        const sysResponse = await fetch('api/health.php', { cache: 'no-store' });
         if (sysResponse.ok) {
             const sysData = await sysResponse.json();
             if (sysData.php_version) document.getElementById('phpVersion').textContent = sysData.php_version;
@@ -50,9 +42,6 @@
         }
     } catch (error) {
         console.error('Error loading settings:', error);
-        document.getElementById('phpVersion').textContent = 'N/A';
-        document.getElementById('dbName').textContent = 'N/A';
-        document.getElementById('serverInfo').textContent = 'N/A';
     }
 })();
 </script>

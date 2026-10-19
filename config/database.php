@@ -49,7 +49,7 @@ class Database {
         }
 
         $dsn = sprintf(
-            'pgsql:host=%s;port=%s;dbname=%s;sslmode=%s',
+            'pgsql:host=%s;port=%s;dbname=%s;sslmode=%s;connect_timeout=5',
             $parts['host'],
             $parts['port'] ?? 5432,
             ltrim($parts['path'] ?? '/postgres', '/'),
@@ -211,6 +211,20 @@ class Database {
     private function ensureSchema(): void {
         static $ready = false;
         if ($ready) {
+            return;
+        }
+
+        // The full schema is dozens of statements. Running it on every request
+        // made the whole site wait on the database. Skip it once the tables exist.
+        $readyRow = $this->conn->query(
+            "SELECT to_regclass('public.users') IS NOT NULL
+                AND to_regclass('public.php_sessions') IS NOT NULL
+                AND to_regclass('public.hero_content') IS NOT NULL AS ready"
+        )->fetch();
+        $readyValue = $readyRow['ready'] ?? false;
+        $isReady = $readyValue === true || $readyValue === 1 || $readyValue === '1' || $readyValue === 't';
+        if ($isReady) {
+            $ready = true;
             return;
         }
 
