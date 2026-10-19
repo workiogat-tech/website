@@ -343,6 +343,15 @@
     </div>
     
     <script>
+        // Photo bytes were stored in the browser and filled its quota, which
+        // also froze the media picker while it tried to read them back.
+        try {
+            const storedMedia = localStorage.getItem('media_items');
+            if (storedMedia && (storedMedia.length > 200000 || storedMedia.indexOf('data:') !== -1)) {
+                localStorage.removeItem('media_items');
+            }
+        } catch (storageError) {}
+
         // Toast notification - Suppress technical errors from users
         window.showToast = function(message, type = 'success') {
             // Suppress technical error messages from being shown to users
@@ -403,11 +412,14 @@
                     loadMedia() {
                         try {
                             const stored = localStorage.getItem('media_items');
-                            if (!stored) return [];
+                            if (!stored || stored.length > 200000 || stored.indexOf('data:') !== -1) {
+                                if (stored) localStorage.removeItem('media_items');
+                                return [];
+                            }
                             const parsed = JSON.parse(stored);
                             return Array.isArray(parsed) ? parsed : [];
                         } catch (e) {
-                            console.error('Error loading media from storage:', e);
+                            localStorage.removeItem('media_items');
                             return [];
                         }
                     },
@@ -450,9 +462,11 @@
             
             // Show modal
             document.getElementById('mediaLibraryModal').style.display = 'flex';
-            
-            // Load immediately - synchronous, no delay
-            loadMediaLibrary();
+            const container = document.getElementById('mediaLibraryContent');
+            if (container) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Loading media...</div>';
+            }
+            setTimeout(loadMediaLibrary, 0);
         }
         
         function closeMediaLibrary() {
@@ -467,11 +481,14 @@
                 loadMedia() {
                     try {
                         const stored = localStorage.getItem('media_items');
-                        if (!stored) return [];
+                        if (!stored || stored.length > 200000 || stored.indexOf('data:') !== -1) {
+                            if (stored) localStorage.removeItem('media_items');
+                            return [];
+                        }
                         const parsed = JSON.parse(stored);
                         return Array.isArray(parsed) ? parsed : [];
                     } catch (e) {
-                        console.error('Error loading media from storage:', e);
+                        localStorage.removeItem('media_items');
                         return [];
                     }
                 },
@@ -512,47 +529,60 @@
             };
         }
         
+        function usableMediaUrl(item) {
+            const url = (item && (item.file_path || item.file_url || item.url)) || '';
+            return url && url.indexOf('data:') !== 0 && url.length < 2000;
+        }
+
+        function showMediaLibraryMessage(container, title, detail) {
+            container.innerHTML =
+                '<div style="text-align: center; padding: 40px; color: #999;">' +
+                '<div style="font-size: 48px; margin-bottom: 15px;">🖼️</div>' +
+                '<div style="font-size: 18px; margin-bottom: 10px; font-weight: 600;">' + title + '</div>' +
+                '<div style="font-size: 14px; margin-bottom: 20px;">' + detail + '</div>' +
+                '<button onclick="closeMediaLibrary(); if(window.loadTab) window.loadTab(\'media\');" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Go to Media Library</button>' +
+                '</div>';
+        }
+
         function loadMediaLibrary() {
-            // Load immediately - synchronous operation, no delays
             const container = document.getElementById('mediaLibraryContent');
             if (!container) {
-                console.error('Media library container not found');
                 return;
             }
-            
+
+            let localMedia = [];
             try {
-                // Ensure MediaStorage exists
-                if (typeof window.MediaStorage === 'undefined') {
-                    throw new Error('MediaStorage not initialized');
-                }
-                
-                // Use ONLY client-side storage - no PHP, no async, immediate load
-                const localMedia = window.MediaStorage.loadMedia();
-                window.adminMediaItems = Array.isArray(localMedia) ? localMedia : [];
-                
-                // Update UI immediately
-                if (window.adminMediaItems.length === 0) {
-                    container.innerHTML = 
-                        '<div style="text-align: center; padding: 40px; color: #999;">' +
-                        '<div style="font-size: 48px; margin-bottom: 15px;">🖼️</div>' +
-                        '<div style="font-size: 18px; margin-bottom: 10px; font-weight: 600;">No media files found</div>' +
-                        '<div style="font-size: 14px; margin-bottom: 20px;">Upload images in the Media Library tab to see them here.</div>' +
-                        '<button onclick="closeMediaLibrary(); if(window.loadTab) window.loadTab(\'media\');" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Go to Media Library</button>' +
-                        '</div>';
-                } else {
-                    // Display immediately - no delay
-                    displayMedia();
-                }
+                localMedia = (window.MediaStorage && window.MediaStorage.loadMedia()) || [];
             } catch (error) {
-                console.error('Error loading media library:', error);
-                container.innerHTML = 
-                    '<div style="text-align: center; padding: 40px; color: #999;">' +
-                    '<div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>' +
-                    '<div style="font-size: 18px; margin-bottom: 10px; font-weight: 600;">Error loading media</div>' +
-                    '<div style="font-size: 14px; margin-bottom: 20px;">' + (error.message || 'Unknown error') + '</div>' +
-                    '<button onclick="loadMediaLibrary()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Retry</button>' +
-                    '</div>';
+                localMedia = [];
             }
+            localMedia = localMedia.filter(usableMediaUrl);
+
+            fetch('/api/media/list.php', { credentials: 'same-origin' })
+                .then(response => response.ok ? response.json() : null)
+                .then(data => {
+                    const remote = (data && Array.isArray(data.media)) ? data.media.filter(usableMediaUrl) : [];
+                    const seen = {};
+                    window.adminMediaItems = remote.concat(localMedia).filter(item => {
+                        const url = item.file_path || item.file_url || item.url;
+                        if (seen[url]) return false;
+                        seen[url] = true;
+                        return true;
+                    });
+                    if (window.adminMediaItems.length === 0) {
+                        showMediaLibraryMessage(container, 'No media files found', 'Upload images in the Media Library tab to see them here.');
+                    } else {
+                        displayMedia();
+                    }
+                })
+                .catch(() => {
+                    window.adminMediaItems = localMedia;
+                    if (window.adminMediaItems.length === 0) {
+                        showMediaLibraryMessage(container, 'No media files found', 'Upload images in the Media Library tab to see them here.');
+                    } else {
+                        displayMedia();
+                    }
+                });
         }
         
         // Make sure MediaStorage is available globally
@@ -571,6 +601,9 @@
                     ${mediaItems.map(item => {
                         // Get URL - prioritize data URLs (from client-side storage)
                         let url = item.file_path || item.file_url || item.url || '';
+                        if (!url || url.indexOf('data:') === 0) {
+                            return '';
+                        }
                         const filename = item.original_name || item.filename || 'Image';
                         
                         // If it's a data URL, use it directly (from localStorage)
@@ -1261,10 +1294,14 @@
                         loadMedia() {
                             try {
                                 const stored = localStorage.getItem('media_items');
-                                if (!stored) return [];
+                                if (!stored || stored.length > 200000 || stored.indexOf('data:') !== -1) {
+                                    if (stored) localStorage.removeItem('media_items');
+                                    return [];
+                                }
                                 const parsed = JSON.parse(stored);
                                 return Array.isArray(parsed) ? parsed : [];
                             } catch (e) {
+                                localStorage.removeItem('media_items');
                                 return [];
                             }
                         },

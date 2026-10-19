@@ -151,12 +151,13 @@ foreach ($files as $file) {
     
     // Insert into database
     try {
-        // Validate section_id exists
-        if ($sectionId) {
-            $sectionCheck = $db->fetchOne("SELECT id FROM media_sections WHERE id = ? AND is_active = 1", [$sectionId]);
-            if (!$sectionCheck) {
-                $errors[] = $file['name'] . ': Selected section does not exist or is inactive';
-                continue;
+        // Browser sections use ids that are not database rows. Keep the file anyway.
+        $dbSectionId = null;
+        $sectionNumber = is_numeric($sectionId) ? (int) $sectionId : 0;
+        if ($sectionNumber > 0 && $sectionNumber < 2147483647) {
+            $sectionCheck = $db->fetchOne("SELECT id FROM media_sections WHERE id = ? AND is_active = 1", [$sectionNumber]);
+            if ($sectionCheck) {
+                $dbSectionId = $sectionCheck['id'];
             }
         }
         
@@ -164,7 +165,7 @@ foreach ($files as $file) {
             "INSERT INTO media (section_id, filename, original_name, file_path, file_size, file_type, created_at) 
              VALUES (?, ?, ?, ?, ?, ?, NOW())",
             [
-                $sectionId,
+                $dbSectionId,
                 $filename,
                 $file['name'],
                 $fileUrl,

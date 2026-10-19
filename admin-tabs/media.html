@@ -180,8 +180,14 @@ const MediaStorage = {
     loadMedia() {
         try {
             const stored = localStorage.getItem('media_items');
-            return stored ? JSON.parse(stored) : [];
+            if (!stored || stored.length > 200000 || stored.indexOf('data:') !== -1) {
+                if (stored) localStorage.removeItem('media_items');
+                return [];
+            }
+            const parsed = JSON.parse(stored);
+            return Array.isArray(parsed) ? parsed : [];
         } catch (e) {
+            localStorage.removeItem('media_items');
             return [];
         }
     },
@@ -217,30 +223,38 @@ const MediaStorage = {
     
     // Add media item (with file as data URL)
     addMediaItem(file, sectionId) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const media = this.loadMedia();
-                const newItem = {
-                    id: Date.now(),
-                    filename: file.name,
-                    original_name: file.name,
-                    file_path: e.target.result, // Data URL
-                    file_url: e.target.result,
-                    file_size: file.size,
-                    file_type: file.type,
-                    section_id: sectionId || null,
-                    created_at: new Date().toISOString()
-                };
-                media.push(newItem);
-                if (!this.saveMedia(media)) {
-                    reject(new Error('Browser storage is full. Remove some media files and try a smaller image.'));
-                    return;
-                }
-                resolve(newItem);
+        const formData = new FormData();
+        formData.append('file', file);
+        if (sectionId) formData.append('section_id', sectionId);
+        return fetch('/api/media/upload.php', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        }).then(async response => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success || !data.uploaded || !data.uploaded[0]) {
+                throw new Error(data.error || 'Upload failed');
+            }
+            const uploaded = data.uploaded[0];
+            const url = uploaded.file_url || uploaded.file_path;
+            const newItem = {
+                id: uploaded.media_id || Date.now(),
+                filename: file.name,
+                original_name: uploaded.filename || file.name,
+                file_path: url,
+                file_url: url,
+                file_size: file.size,
+                file_type: file.type,
+                section_id: sectionId || null,
+                created_at: new Date().toISOString()
             };
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
+            const media = this.loadMedia().filter(item => {
+                const itemUrl = item.file_path || item.file_url || '';
+                return itemUrl && itemUrl.indexOf('data:') !== 0;
+            });
+            media.push(newItem);
+            this.saveMedia(media);
+            return newItem;
         });
     },
     
