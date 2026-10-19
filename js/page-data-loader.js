@@ -12,11 +12,20 @@ const PageDataLoader = {
             window.MediaStorage = {
                 loadMedia() {
                     try {
+                        if (localStorage.getItem('media_photos_cleared') !== '1') {
+                            localStorage.removeItem('media_items');
+                            localStorage.setItem('media_photos_cleared', '1');
+                            return [];
+                        }
                         const stored = localStorage.getItem('media_items');
-                        if (!stored) return [];
+                        if (!stored || stored.length > 200000 || stored.indexOf('data:') !== -1) {
+                            if (stored) localStorage.removeItem('media_items');
+                            return [];
+                        }
                         const parsed = JSON.parse(stored);
                         return Array.isArray(parsed) ? parsed : [];
                     } catch (e) {
+                        try { localStorage.removeItem('media_items'); } catch (ignore) {}
                         return [];
                     }
                 },

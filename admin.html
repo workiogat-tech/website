@@ -343,14 +343,18 @@
     </div>
     
     <script>
-        // Photo bytes were stored in the browser and filled its quota, which
-        // also froze the media picker while it tried to read them back.
-        try {
-            const storedMedia = localStorage.getItem('media_items');
-            if (storedMedia && (storedMedia.length > 200000 || storedMedia.indexOf('data:') !== -1)) {
+        // Old photos were saved inside the browser and filled its storage.
+        // Reading that value back freezes the page, so delete it without reading it.
+        function purgeBrowserPhotos() {
+            try {
+                if (localStorage.getItem('media_photos_cleared') === '1') return;
                 localStorage.removeItem('media_items');
+                localStorage.setItem('media_photos_cleared', '1');
+            } catch (storageError) {
+                try { localStorage.removeItem('media_items'); } catch (ignore) {}
             }
-        } catch (storageError) {}
+        }
+        purgeBrowserPhotos();
 
         // Toast notification - Suppress technical errors from users
         window.showToast = function(message, type = 'success') {
@@ -410,18 +414,8 @@
             if (typeof window.MediaStorage === 'undefined') {
                 window.MediaStorage = {
                     loadMedia() {
-                        try {
-                            const stored = localStorage.getItem('media_items');
-                            if (!stored || stored.length > 200000 || stored.indexOf('data:') !== -1) {
-                                if (stored) localStorage.removeItem('media_items');
-                                return [];
-                            }
-                            const parsed = JSON.parse(stored);
-                            return Array.isArray(parsed) ? parsed : [];
-                        } catch (e) {
-                            localStorage.removeItem('media_items');
-                            return [];
-                        }
+                        purgeBrowserPhotos();
+                        return [];
                     },
                     saveMedia(media) {
                         try {
@@ -479,18 +473,8 @@
         if (typeof window.MediaStorage === 'undefined') {
             window.MediaStorage = {
                 loadMedia() {
-                    try {
-                        const stored = localStorage.getItem('media_items');
-                        if (!stored || stored.length > 200000 || stored.indexOf('data:') !== -1) {
-                            if (stored) localStorage.removeItem('media_items');
-                            return [];
-                        }
-                        const parsed = JSON.parse(stored);
-                        return Array.isArray(parsed) ? parsed : [];
-                    } catch (e) {
-                        localStorage.removeItem('media_items');
-                        return [];
-                    }
+                    purgeBrowserPhotos();
+                    return [];
                 },
                 saveMedia(media) {
                     try {
@@ -544,44 +528,43 @@
                 '</div>';
         }
 
+        function finishMediaLibrary(container, items) {
+            window.adminMediaItems = items || [];
+            if (!container) return;
+            if (window.adminMediaItems.length === 0) {
+                showMediaLibraryMessage(container, 'No photos yet', 'Upload images in the Media Library tab. New photos are stored online.');
+            } else {
+                displayMedia();
+            }
+        }
+
         function loadMediaLibrary() {
             const container = document.getElementById('mediaLibraryContent');
             if (!container) {
                 return;
             }
+            purgeBrowserPhotos();
+            let settled = false;
 
-            let localMedia = [];
-            try {
-                localMedia = (window.MediaStorage && window.MediaStorage.loadMedia()) || [];
-            } catch (error) {
-                localMedia = [];
-            }
-            localMedia = localMedia.filter(usableMediaUrl);
+            const timer = setTimeout(function () {
+                if (!settled) finishMediaLibrary(container, []);
+            }, 8000);
 
-            fetch('/api/media/list.php', { credentials: 'same-origin' })
+            fetch('/api/media/list.php', {
+                credentials: 'same-origin',
+                cache: 'no-store'
+            })
                 .then(response => response.ok ? response.json() : null)
                 .then(data => {
+                    settled = true;
+                    clearTimeout(timer);
                     const remote = (data && Array.isArray(data.media)) ? data.media.filter(usableMediaUrl) : [];
-                    const seen = {};
-                    window.adminMediaItems = remote.concat(localMedia).filter(item => {
-                        const url = item.file_path || item.file_url || item.url;
-                        if (seen[url]) return false;
-                        seen[url] = true;
-                        return true;
-                    });
-                    if (window.adminMediaItems.length === 0) {
-                        showMediaLibraryMessage(container, 'No media files found', 'Upload images in the Media Library tab to see them here.');
-                    } else {
-                        displayMedia();
-                    }
+                    finishMediaLibrary(container, remote);
                 })
                 .catch(() => {
-                    window.adminMediaItems = localMedia;
-                    if (window.adminMediaItems.length === 0) {
-                        showMediaLibraryMessage(container, 'No media files found', 'Upload images in the Media Library tab to see them here.');
-                    } else {
-                        displayMedia();
-                    }
+                    settled = true;
+                    clearTimeout(timer);
+                    finishMediaLibrary(container, []);
                 });
         }
         
@@ -1292,18 +1275,8 @@
                 if (typeof window.MediaStorage === 'undefined') {
                     window.MediaStorage = {
                         loadMedia() {
-                            try {
-                                const stored = localStorage.getItem('media_items');
-                                if (!stored || stored.length > 200000 || stored.indexOf('data:') !== -1) {
-                                    if (stored) localStorage.removeItem('media_items');
-                                    return [];
-                                }
-                                const parsed = JSON.parse(stored);
-                                return Array.isArray(parsed) ? parsed : [];
-                            } catch (e) {
-                                localStorage.removeItem('media_items');
-                                return [];
-                            }
+                            purgeBrowserPhotos();
+                            return [];
                         },
                         loadSections() {
                             try {
