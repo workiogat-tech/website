@@ -1,0 +1,13 @@
+{
+  "name": "excellence-academy",
+  "version": "1.0.0",
+  "description": "Excellence Academy School Management System",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "scripts": {
+    "vercel-build": "echo 'No build step required for PHP'"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

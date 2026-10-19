@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Facilities - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <h1 class="page-hero-title">School Facilities</h1>
+                    <p class="page-hero-subtitle">World-Class Facilities for Learning and Growth</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="facilities-section section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">World-Class Facilities</h2>
+                    <p class="section-subtitle">Our modern facilities provide students with the best environment for learning, creativity, and personal development across all areas of study.</p>
+                </div>
+                
+                <div id="facilities-container">
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">🏢</div>
+                        <h3 style="font-size: 28px; color: #333; margin-bottom: 10px;">No Facilities Yet</h3>
+                        <p style="color: #666; font-size: 16px;">Add facilities from the admin panel to display them here.</p>
+                    </div>
+                </div>
+
+                <div id="facilities-features" style="margin-top: 60px;"></div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            const data = await PageDataLoader.loadFacilitiesData();
+            const facilitiesContainer = document.getElementById('facilities-container');
+            const featuresContainer = document.getElementById('facilities-features');
+            
+            // Update hero
+            if (data.facilitiesSettings) {
+                const hero = document.querySelector('.page-hero-section');
+                if (data.facilitiesSettings.title) {
+                    const title = hero.querySelector('.page-hero-title');
+                    if (title) title.textContent = data.facilitiesSettings.title;
+                }
+                if (data.facilitiesSettings.subtitle) {
+                    const subtitle = hero.querySelector('.page-hero-subtitle');
+                    if (subtitle) subtitle.textContent = data.facilitiesSettings.subtitle;
+                }
+                if (data.facilitiesSettings.hero_image) {
+                    const bg = hero.querySelector('.page-hero-background');
+                    if (bg) {
+                        const heroImageUrl = data.facilitiesSettings.hero_image.replace(/'/g, "\\'");
+                        bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                    }
+                }
+            }
+            
+            // Render facilities
+            if (data.facilities && data.facilities.length > 0) {
+                let facilitiesHtml = '<div class="facilities-main-grid">';
+                data.facilities.forEach(facility => {
+                    const facilityImage = facility.image || 'https://images.pexels.com/photos/8199562/pexels-photo-8199562.jpeg?auto=compress&cs=tinysrgb&w=800';
+                    const labelText = facility.label || facility.name || '';
+                    facilitiesHtml += `
+                        <div class="facility-main-card">
+                            <div class="facility-main-image">
+                                <img src="${escapeHtml(facilityImage)}" alt="${escapeHtml(facility.name || '')}">
+                                <div class="facility-label" data-label="${escapeHtml(labelText.toLowerCase())}">
+                                    ${escapeHtml(labelText)}
+                                </div>
+                            </div>
+                            <div class="facility-main-content">
+                                <h3 class="facility-main-title">${escapeHtml(facility.name || '')}</h3>
+                                <p class="facility-main-description">${escapeHtml(facility.description || 'No description available.')}</p>
+                                ${facility.capacity ? `
+                                    <div class="facility-capacity">
+                                        <div class="facility-capacity-icon">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                                <circle cx="9" cy="7" r="4"></circle>
+                                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                            </svg>
+                                        </div>
+                                        <span>Capacity: ${escapeHtml(facility.capacity)} people</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                facilitiesHtml += '</div>';
+                facilitiesContainer.innerHTML = facilitiesHtml;
+            }
+            
+            // Render features
+            if (data.features && data.features.length > 0) {
+                const iconSvgs = {
+                    'Wifi': '<path d="M12 20h.01"></path><path d="M8.5 12.859a5 5 0 1 1 7 0"></path><path d="M5 8.859a9 9 0 1 1 14 0"></path><path d="M2 4.859a13 13 0 0 1 20 0"></path>',
+                    'Shield': '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>',
+                    'Zap': '<polyline points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polyline>',
+                    'Users': '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>',
+                    'Book': '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>',
+                    'GraduationCap': '<path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path>',
+                    'Monitor': '<rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line>',
+                    'Heart': '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>'
+                };
+                const iconColors = {
+                    'Wifi': {stroke: '#2563eb', fill: '#3b82f6', bg: 'linear-gradient(135deg, #dbeafe, #bfdbfe)', border: '#3b82f6'},
+                    'Shield': {stroke: '#059669', fill: '#10b981', bg: 'linear-gradient(135deg, #dcfce7, #bbf7d0)', border: '#10b981'},
+                    'Zap': {stroke: '#d97706', fill: '#f59e0b', bg: 'linear-gradient(135deg, #fef9c3, #fde68a)', border: '#f59e0b'},
+                    'Users': {stroke: '#7c3aed', fill: '#8b5cf6', bg: 'linear-gradient(135deg, #f3e8ff, #e9d5ff)', border: '#8b5cf6'},
+                    'Book': {stroke: '#dc2626', fill: '#ef4444', bg: 'linear-gradient(135deg, #fee2e2, #fecaca)', border: '#ef4444'},
+                    'GraduationCap': {stroke: '#0891b2', fill: '#06b6d4', bg: 'linear-gradient(135deg, #cffafe, #a5f3fc)', border: '#06b6d4'},
+                    'Monitor': {stroke: '#7c2d12', fill: '#92400e', bg: 'linear-gradient(135deg, #fed7aa, #fdba74)', border: '#92400e'},
+                    'Heart': {stroke: '#db2777', fill: '#ec4899', bg: 'linear-gradient(135deg, #fce7f3, #fbcfe8)', border: '#ec4899'}
+                };
+                let featuresHtml = `
+                    <div class="facilities-features-section">
+                        <div class="facilities-features-grid">
+                `;
+                data.features.forEach(feature => {
+                    const icon = feature.icon || 'Wifi';
+                    const iconColor = iconColors[icon] || iconColors['Wifi'];
+                    const iconSvg = iconSvgs[icon] || iconSvgs['Wifi'];
+                    featuresHtml += `
+                        <div class="facility-feature-card">
+                            <div class="feature-icon-circle" style="background: ${iconColor.bg}; border-color: ${iconColor.border};">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="${iconColor.fill}" stroke="${iconColor.stroke}" stroke-width="4.5" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.3));">
+                                    ${iconSvg}
+                                </svg>
+                            </div>
+                            <h4 class="feature-title">${escapeHtml((feature.title || '').toLowerCase())}</h4>
+                            <p class="feature-description" style="text-transform: lowercase; color: #6b7280;">${escapeHtml((feature.description || '').toLowerCase())}</p>
+                        </div>
+                    `;
+                });
+                featuresHtml += `
+                        </div>
+                    </div>
+                `;
+                featuresContainer.innerHTML = featuresHtml;
+            }
+        })();
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

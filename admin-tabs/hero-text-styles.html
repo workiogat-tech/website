@@ -1,0 +1,241 @@
+<div class="content-card">
+    <h2>📝 Hero Section Text Styles</h2>
+    <p style="margin-bottom: 30px; color: #666;">Customize text colors and styles for all hero sections across your website. These settings apply to page headers like "Our Teachers", "Clubs", "School Background", etc.</p>
+    
+    <form method="POST" action="api/content/hero-text-styles.php" id="heroTextStylesForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        
+        <!-- Title Styles Section -->
+        <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 25px; border-radius: 12px; border: 2px solid #0ea5e9; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">📌 Main Title (e.g., "Our Teachers", "Clubs")</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Title Text Color</label>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <input type="color" 
+                               id="title_color_picker"
+                               name="title_color" 
+                               value="#ffffff"
+                               style="width: 80px; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;"
+                               onchange="document.getElementById('title_color_text').value=this.value; updateTitlePreview();">
+                        <input type="text" 
+                               id="title_color_text"
+                               name="title_color_text" 
+                               value="#ffffff"
+                               class="form-input" 
+                               placeholder="#ffffff"
+                               style="flex: 1; max-width: 200px;"
+                               onchange="document.getElementById('title_color_picker').value=this.value; updateTitlePreview();"
+                               pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$">
+                        <div id="title_color_preview" style="width: 100px; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; background: #ffffff; color: #ffffff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                            Title
+                        </div>
+                    </div>
+                    <small style="color: #6b7280; display: block; margin-top: 5px;">💡 Use white (#ffffff) or light colors for dark backgrounds</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Title Font Size (px)</label>
+                    <input type="number" 
+                           name="title_font_size" 
+                           class="form-input" 
+                           id="title_font_size"
+                           value="64"
+                           min="24" 
+                           max="120" 
+                           step="1"
+                           onchange="updateTitlePreview();">
+                    <small style="color: #6b7280; display: block; margin-top: 5px;">Recommended: 48-72px for desktop</small>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Title Font Weight</label>
+                    <select name="title_font_weight" class="form-input" id="title_font_weight" onchange="updateTitlePreview();">
+                        <option value="300">Light (300)</option>
+                        <option value="400">Regular (400)</option>
+                        <option value="500">Medium (500)</option>
+                        <option value="600">Semi-Bold (600)</option>
+                        <option value="700" selected>Bold (700)</option>
+                        <option value="800">Extra Bold (800)</option>
+                        <option value="900">Black (900)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Subtitle Styles Section -->
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 25px; border-radius: 12px; border: 2px solid #f59e0b; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">📝 Subtitle</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Subtitle Text Color</label>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <input type="color" 
+                               id="subtitle_color_picker"
+                               name="subtitle_color" 
+                               value="#ffffff"
+                               style="width: 80px; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer;"
+                               onchange="document.getElementById('subtitle_color_text').value=this.value; updateSubtitlePreview();">
+                        <input type="text" 
+                               id="subtitle_color_text"
+                               name="subtitle_color_text" 
+                               value="#ffffff"
+                               class="form-input" 
+                               placeholder="#ffffff"
+                               style="flex: 1; max-width: 200px;"
+                               onchange="document.getElementById('subtitle_color_picker').value=this.value; updateSubtitlePreview();"
+                               pattern="^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$">
+                        <div id="subtitle_color_preview" style="width: 100px; height: 50px; border: 2px solid #e0e0e0; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: normal; background: #ffffff; color: #ffffff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                            Subtitle
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Subtitle Font Size (px)</label>
+                    <input type="number" 
+                           name="subtitle_font_size" 
+                           class="form-input" 
+                           id="subtitle_font_size"
+                           value="28"
+                           min="14" 
+                           max="60" 
+                           step="1"
+                           onchange="updateSubtitlePreview();">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Subtitle Font Weight</label>
+                    <select name="subtitle_font_weight" class="form-input" id="subtitle_font_weight" onchange="updateSubtitlePreview();">
+                        <option value="300" selected>Light (300)</option>
+                        <option value="400">Regular (400)</option>
+                        <option value="500">Medium (500)</option>
+                        <option value="600">Semi-Bold (600)</option>
+                        <option value="700">Bold (700)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Text Shadow Options -->
+        <div style="background: white; padding: 25px; border-radius: 12px; border: 2px solid #e0e0e0; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">✨ Text Shadow</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" 
+                               name="title_text_shadow" 
+                               value="1"
+                               id="title_text_shadow"
+                               checked
+                               onchange="updateTitlePreview();">
+                        Enable Title Text Shadow
+                    </label>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">
+                        <input type="checkbox" 
+                               name="subtitle_text_shadow" 
+                               value="1"
+                               id="subtitle_text_shadow"
+                               checked
+                               onchange="updateSubtitlePreview();">
+                        Enable Subtitle Text Shadow
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Live Preview -->
+        <div style="background: linear-gradient(135deg, #1e293b, #334155); padding: 40px; border-radius: 12px; margin-bottom: 30px; min-height: 300px; position: relative; overflow: hidden;">
+            <div style="position: relative; z-index: 1; text-align: center;">
+                <h3 style="color: white; margin-bottom: 20px; font-size: 18px;">Live Preview</h3>
+                <h1 id="preview_title" style="margin-bottom: 20px; font-size: 64px; font-weight: 700; color: #ffffff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">Welcome to SJS</h1>
+                <p id="preview_subtitle" style="margin-bottom: 15px; font-size: 28px; font-weight: 300; color: #ffffff; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">Empowering minds, shaping futures</p>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 30px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px 24px; font-size: 16px; font-weight: 600;">
+                💾 Save Hero Text Styles
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+(async function() {
+    try {
+        const response = await fetch('api/content/hero-text-styles.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.heroStyles) {
+                const styles = data.heroStyles;
+                document.getElementById('title_color_picker').value = styles.title_color || '#ffffff';
+                document.getElementById('title_color_text').value = styles.title_color || '#ffffff';
+                document.getElementById('title_font_size').value = styles.title_font_size || '64';
+                document.getElementById('title_font_weight').value = styles.title_font_weight || '700';
+                document.getElementById('title_text_shadow').checked = (styles.title_text_shadow ?? true) == true;
+                
+                document.getElementById('subtitle_color_picker').value = styles.subtitle_color || '#ffffff';
+                document.getElementById('subtitle_color_text').value = styles.subtitle_color || '#ffffff';
+                document.getElementById('subtitle_font_size').value = styles.subtitle_font_size || '28';
+                document.getElementById('subtitle_font_weight').value = styles.subtitle_font_weight || '300';
+                document.getElementById('subtitle_text_shadow').checked = (styles.subtitle_text_shadow ?? true) == true;
+                
+                updateTitlePreview();
+                updateSubtitlePreview();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading hero text styles:', error);
+    }
+})();
+
+function updateTitlePreview() {
+    const color = document.getElementById('title_color_text').value || '#ffffff';
+    const fontSize = document.getElementById('title_font_size').value || '64';
+    const fontWeight = document.getElementById('title_font_weight').value || '700';
+    const textShadow = document.getElementById('title_text_shadow').checked;
+    
+    const preview = document.getElementById('preview_title');
+    if (preview) {
+        preview.style.color = color;
+        preview.style.fontSize = fontSize + 'px';
+        preview.style.fontWeight = fontWeight;
+        preview.style.textShadow = textShadow ? '2px 2px 4px rgba(0,0,0,0.5)' : 'none';
+    }
+    
+    const colorPreview = document.getElementById('title_color_preview');
+    if (colorPreview) {
+        colorPreview.style.background = color;
+        colorPreview.style.color = color;
+        colorPreview.style.textShadow = textShadow ? '2px 2px 4px rgba(0,0,0,0.5)' : 'none';
+    }
+}
+
+function updateSubtitlePreview() {
+    const color = document.getElementById('subtitle_color_text').value || '#ffffff';
+    const fontSize = document.getElementById('subtitle_font_size').value || '28';
+    const fontWeight = document.getElementById('subtitle_font_weight').value || '300';
+    const textShadow = document.getElementById('subtitle_text_shadow').checked;
+    
+    const preview = document.getElementById('preview_subtitle');
+    if (preview) {
+        preview.style.color = color;
+        preview.style.fontSize = fontSize + 'px';
+        preview.style.fontWeight = fontWeight;
+        preview.style.textShadow = textShadow ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none';
+    }
+    
+    const colorPreview = document.getElementById('subtitle_color_preview');
+    if (colorPreview) {
+        colorPreview.style.background = color;
+        colorPreview.style.color = color;
+        colorPreview.style.textShadow = textShadow ? '1px 1px 2px rgba(0,0,0,0.5)' : 'none';
+    }
+}
+</script>

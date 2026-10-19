@@ -1,0 +1,237 @@
+<div class="content-card">
+    <h2>🧭 Navigation Menu Management</h2>
+    <p style="margin-bottom: 30px; color: #666;">Manage your website's header navigation menu. Add, edit, or reorder menu items.</p>
+    
+    <!-- Add New Menu Item Button -->
+    <div style="margin-bottom: 30px;">
+        <button class="btn btn-primary" onclick="showAddNavModal()">➕ Add Menu Item</button>
+    </div>
+    
+    <!-- Navigation Items List -->
+    <div id="navItemsList">
+        <div style="text-align: center; padding: 40px; color: #999;">
+            Loading navigation items...
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Navigation Item Modal -->
+<div id="navItemModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 12px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 24px; font-weight: bold; color: #333;" id="navModalTitle">Add Menu Item</h3>
+            <button onclick="closeNavModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">✕</button>
+        </div>
+        
+        <form id="navItemForm" onsubmit="handleNavItemSubmit(event); return false;" style="padding: 20px;">
+            <input type="hidden" id="navItemId" name="id" value="">
+            <input type="hidden" id="navItemParentId" name="parent_id" value="">
+            
+            <div class="form-group">
+                <label class="form-label">Label *</label>
+                <input type="text" name="label" id="navItemLabel" class="form-input" required>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">URL *</label>
+                <input type="text" name="url" id="navItemUrl" class="form-input" required placeholder="/page.html or https://...">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Icon (Emoji)</label>
+                <input type="text" name="icon" id="navItemIcon" class="form-input" placeholder="📄" maxlength="10">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Order Index</label>
+                <input type="number" name="order_index" id="navItemOrder" class="form-input" value="0" min="0">
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Menu Item</button>
+                <button type="button" onclick="closeNavModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let navItems = [];
+let parentItems = [];
+let childItems = {};
+
+(async function() {
+    await loadNavigation();
+})();
+
+async function loadNavigation() {
+    try {
+        const response = await fetch('api/content/navigation.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.navigation) {
+                navItems = data.navigation;
+                organizeNavItems();
+                displayNavigation();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading navigation:', error);
+    }
+}
+
+function organizeNavItems() {
+    parentItems = navItems.filter(item => !item.parent_id);
+    childItems = {};
+    navItems.forEach(item => {
+        if (item.parent_id) {
+            if (!childItems[item.parent_id]) {
+                childItems[item.parent_id] = [];
+            }
+            childItems[item.parent_id].push(item);
+        }
+    });
+}
+
+function displayNavigation() {
+    const list = document.getElementById('navItemsList');
+    if (parentItems.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: #f9fafb; border-radius: 12px; color: #6b7280;">
+                <p style="font-size: 18px; margin-bottom: 10px;">No navigation items yet</p>
+                <p>Click "Add Menu Item" to create your first menu item.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    list.innerHTML = parentItems.map(parent => `
+        <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="flex: 1;">
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        <span style="font-size: 20px;">${parent.icon || '📄'}</span>
+                        <div>
+                            <h4 style="margin: 0; font-size: 18px; color: #111827;">${parent.label}</h4>
+                            <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">${parent.url || 'No URL'}</p>
+                        </div>
+                    </div>
+                    ${childItems[parent.id] && childItems[parent.id].length > 0 ? `
+                        <div style="margin-top: 15px; padding-left: 40px; border-left: 3px solid #e5e7eb;">
+                            ${childItems[parent.id].map(child => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f9fafb; border-radius: 8px; margin-bottom: 8px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <span style="font-size: 16px;">${child.icon || '→'}</span>
+                                        <div>
+                                            <strong style="color: #374151;">${child.label}</strong>
+                                            <span style="color: #9ca3af; font-size: 12px; margin-left: 10px;">${child.url || ''}</span>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 10px;">
+                                        <button class="btn btn-sm" onclick="editNavItem(${child.id})" style="padding: 6px 12px; font-size: 12px;">✏️ Edit</button>
+                                        <button class="btn btn-sm" onclick="deleteNavItem(${child.id})" style="padding: 6px 12px; font-size: 12px; background: #ef4444; color: white;">🗑️ Delete</button>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="btn btn-sm" onclick="addChildNavItem(${parent.id})" style="padding: 8px 16px; font-size: 14px; background: #10b981; color: white;">➕ Add Sub-item</button>
+                    <button class="btn btn-sm" onclick="editNavItem(${parent.id})" style="padding: 8px 16px; font-size: 14px;">✏️ Edit</button>
+                    <button class="btn btn-sm" onclick="deleteNavItem(${parent.id})" style="padding: 8px 16px; font-size: 14px; background: #ef4444; color: white;">🗑️ Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAddNavModal() {
+    document.getElementById('navModalTitle').textContent = 'Add Menu Item';
+    document.getElementById('navItemForm').reset();
+    document.getElementById('navItemId').value = '';
+    document.getElementById('navItemParentId').value = '';
+    document.getElementById('navItemModal').style.display = 'flex';
+}
+
+function closeNavModal() {
+    document.getElementById('navItemModal').style.display = 'none';
+}
+
+function addChildNavItem(parentId) {
+    document.getElementById('navModalTitle').textContent = 'Add Sub-item';
+    document.getElementById('navItemForm').reset();
+    document.getElementById('navItemId').value = '';
+    document.getElementById('navItemParentId').value = parentId;
+    document.getElementById('navItemModal').style.display = 'flex';
+}
+
+function editNavItem(id) {
+    const item = navItems.find(n => n.id == id);
+    if (!item) return;
+    
+    document.getElementById('navModalTitle').textContent = 'Edit Menu Item';
+    document.getElementById('navItemId').value = item.id;
+    document.getElementById('navItemParentId').value = item.parent_id || '';
+    document.getElementById('navItemLabel').value = item.label || '';
+    document.getElementById('navItemUrl').value = item.url || '';
+    document.getElementById('navItemIcon').value = item.icon || '';
+    document.getElementById('navItemOrder').value = item.order_index || 0;
+    document.getElementById('navItemModal').style.display = 'flex';
+}
+
+async function handleNavItemSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+        if (value) data[key] = value;
+    });
+    
+    try {
+        const response = await fetch('api/content/navigation.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast(result.message || 'Menu item saved successfully!', 'success');
+            closeNavModal();
+            await loadNavigation();
+        } else {
+            showToast(result.error || 'Failed to save menu item', 'error');
+        }
+    } catch (error) {
+        console.error('Error saving navigation item:', error);
+        showToast('Failed to save menu item', 'error');
+    }
+}
+
+async function deleteNavItem(id) {
+    if (!confirm('Are you sure you want to delete this menu item?')) return;
+    
+    try {
+        const response = await fetch('api/content/navigation.php', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast('Menu item deleted successfully!', 'success');
+            await loadNavigation();
+        } else {
+            showToast(result.error || 'Failed to delete menu item', 'error');
+        }
+    } catch (error) {
+        console.error('Error deleting navigation item:', error);
+        showToast('Failed to delete menu item', 'error');
+    }
+}
+
+document.getElementById('navItemModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeNavModal();
+});
+</script>

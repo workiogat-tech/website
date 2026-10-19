@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clubs - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <h1 class="page-hero-title">Clubs</h1>
+                    <p class="page-hero-subtitle">Extracurricular Activities and Student Organizations</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Our Student Clubs</h2>
+                    <p class="section-subtitle">Join one of our many clubs and discover your passions while building lasting friendships and skills.</p>
+                </div>
+
+                <div id="clubs-container">
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">🎭</div>
+                        <h3 style="font-size: 28px; color: #333; margin-bottom: 10px;">No Clubs Yet</h3>
+                        <p style="color: #666; font-size: 16px;">Add clubs from the admin panel to display them here.</p>
+                    </div>
+                </div>
+
+                <div style="margin-top: 60px; background: var(--primary-color); color: white; padding: 40px; border-radius: 12px; text-align: center;">
+                    <h3 style="font-size: 28px; font-weight: bold; margin-bottom: 20px;">Interested in Joining a Club?</h3>
+                    <p style="font-size: 18px; margin-bottom: 30px; max-width: 600px; margin-left: auto; margin-right: auto; color: white;">Contact the school administration or speak with club coordinators to learn more about joining any of our clubs.</p>
+                    <a href="contact.html" class="btn btn-white" style="background: white; color: var(--primary-color); padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-block;">Contact Us</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        // Load and render clubs data
+        (async function() {
+            const data = await PageDataLoader.loadClubsData();
+            const container = document.getElementById('clubs-container');
+            
+            // Update hero
+            if (data.clubsContent) {
+                const hero = document.querySelector('.page-hero-section');
+                if (data.clubsContent.title) {
+                    const title = hero.querySelector('.page-hero-title');
+                    if (title) title.textContent = data.clubsContent.title;
+                }
+                if (data.clubsContent.subtitle) {
+                    const subtitle = hero.querySelector('.page-hero-subtitle');
+                    if (subtitle) subtitle.textContent = data.clubsContent.subtitle;
+                }
+                if (data.clubsContent.hero_image) {
+                    const bg = hero.querySelector('.page-hero-background');
+                    if (bg) {
+                        const heroImageUrl = data.clubsContent.hero_image.replace(/'/g, "\\'");
+                        bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                    }
+                }
+            }
+            
+            // Render clubs
+            if (data.clubs && data.clubs.length > 0) {
+                let clubsHtml = '<div class="clubs-list" style="display: grid; gap: 60px; margin-top: 40px;">';
+                data.clubs.forEach((club, index) => {
+                    const clubName = club.name || '';
+                    const clubImage = club.image || '';
+                    const clubDescription = club.description || '';
+                    
+                    // Skip empty clubs
+                    if (!clubName && !clubImage && !clubDescription) return;
+                    
+                    if (index % 2 === 0) {
+                        clubsHtml += `
+                            <div class="club-item" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+                                <div>
+                                    ${clubName ? `<h3 style="font-size: 32px; font-weight: bold; color: var(--text-color); margin-bottom: 20px;">${escapeHtml(clubName)}</h3>` : ''}
+                                    ${clubDescription ? `<p style="font-size: 18px; line-height: 1.8; color: var(--text-light);">${escapeHtml(clubDescription).replace(/\n/g, '<br>')}</p>` : ''}
+                                </div>
+                                <div>
+                                    ${clubImage ? `<img src="${escapeHtml(clubImage)}" alt="${escapeHtml(clubName)}" style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" onerror="this.style.display='none';">` : '<div style="width: 100%; height: 400px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 48px;">🎭</div>'}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        clubsHtml += `
+                            <div class="club-item" style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;">
+                                <div>
+                                    ${clubImage ? `<img src="${escapeHtml(clubImage)}" alt="${escapeHtml(clubName)}" style="width: 100%; height: 400px; object-fit: cover; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);" onerror="this.style.display='none';">` : '<div style="width: 100%; height: 400px; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 48px;">🎭</div>'}
+                                </div>
+                                <div>
+                                    ${clubName ? `<h3 style="font-size: 32px; font-weight: bold; color: var(--text-color); margin-bottom: 20px;">${escapeHtml(clubName)}</h3>` : ''}
+                                    ${clubDescription ? `<p style="font-size: 18px; line-height: 1.8; color: var(--text-light);">${escapeHtml(clubDescription).replace(/\n/g, '<br>')}</p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                clubsHtml += '</div>';
+                container.innerHTML = clubsHtml;
+            } else {
+                // Keep the default "No Clubs Yet" message
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">🎭</div>
+                        <h3 style="font-size: 28px; color: #333; margin-bottom: 10px;">No Clubs Yet</h3>
+                        <p style="color: #666; font-size: 16px;">Add clubs from the admin panel to display them here.</p>
+                    </div>
+                `;
+            }
+        })();
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

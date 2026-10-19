@@ -1,0 +1,35 @@
+# Serve HTML files if they exist, otherwise serve PHP (for frontend conversion)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /2026sjs/
+    
+    # If requesting root or index, prefer HTML if exists
+    RewriteCond %{REQUEST_URI} ^(/2026sjs/)?(index)?/?$
+    RewriteCond %{DOCUMENT_ROOT}/2026sjs/index.html -f
+    RewriteRule ^(index)?/?$ index.html [L]
+    
+    # If requesting a page without extension, check for HTML first, then PHP
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/2026sjs/$1.html -f
+    RewriteRule ^([^\.]+)$ $1.html [L]
+    
+    # Fallback to PHP if HTML doesn't exist
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^([^\.]+)$ $1.php [NC,L]
+
+# Default index files
+DirectoryIndex index.html index.php
+
+# PHP settings
+<IfModule mod_php7.c>
+    php_value display_errors 0
+    php_value log_errors 1
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>

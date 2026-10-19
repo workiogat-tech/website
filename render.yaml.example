@@ -1,0 +1,66 @@
+# Example render.yaml for External MySQL Database
+# Copy this to render.yaml and update with your MySQL connection details
+
+services:
+  # Web Service - PHP Application
+  - type: web
+    name: excellence-academy
+    runtime: php
+    plan: starter  # Options: starter, standard, pro
+    buildCommand: ""  # No build step needed for PHP
+    
+    envVars:
+      # Database Configuration - Set these manually in Render dashboard
+      # Get these values from your external MySQL provider (PlanetScale, Railway, etc.)
+      - key: DB_HOST
+        sync: false  # Set this manually in Render dashboard
+        # Example: your-db.planetscale.com or your-db.railway.app
+      - key: DB_PORT
+        sync: false
+        # Example: 3306 (default MySQL port)
+      - key: DB_NAME
+        sync: false
+        # Example: sjs
+      - key: DB_USER
+        sync: false
+        # Example: your-username
+      - key: DB_PASS
+        sync: false  # IMPORTANT: Mark as secret in Render dashboard
+        # Example: your-password (set as secret)
+      - key: DB_CHARSET
+        value: utf8mb4
+      
+      # SMTP Configuration (update these with your email settings)
+      - key: SMTP_HOST
+        value: smtp.gmail.com  # Update with your SMTP host
+      - key: SMTP_PORT
+        value: "587"  # Update if using different port (465 for SSL)
+      - key: SMTP_SECURE
+        value: "false"  # Set to "true" for SSL
+      - key: SMTP_USER
+        sync: false  # Set manually in Render dashboard
+        # Your email address
+      - key: SMTP_PASS
+        sync: false  # IMPORTANT: Mark as secret in Render dashboard
+        # Your email password or app-specific password
+      - key: SMTP_FROM_EMAIL
+        sync: false  # Set manually in Render dashboard
+        # From email address
+      - key: SMTP_FROM_NAME
+        value: "Excellence Academy"
+      
+      # Application Configuration
+      - key: ADMIN_EMAILS
+        sync: false  # Set manually if needed
+        # Comma-separated list of admin emails
+      - key: PHP_VERSION
+        value: "8.2"  # PHP version (8.0, 8.1, 8.2, or 8.3)
+      - key: TZ
+        value: "Africa/Kampala"  # Timezone
+
+  # NOTE: No database service here - using external MySQL
+  # Create your MySQL database on:
+  # - PlanetScale: https://planetscale.com
+  # - Railway: https://railway.app
+  # - AWS RDS: https://aws.amazon.com/rds
+  # - DigitalOcean: https://www.digitalocean.com/products/managed-databases

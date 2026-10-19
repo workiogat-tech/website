@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Admin panel styles */
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+        .admin-wrapper { display: flex; height: 100vh; }
+        .admin-sidebar {
+            width: 256px;
+            background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 50;
+        }
+        .admin-main {
+            flex: 1;
+            margin-left: 256px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .admin-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
+        }
+        .content-container { max-width: 1280px; margin: 0 auto; }
+        .content-card {
+            background: transparent;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: none;
+            margin-bottom: 40px;
+        }
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #4b5563;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .nav-tab.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+        .admin-topbar {
+            background: linear-gradient(135deg, #800020, #6B0000);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: white;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+        .form-input {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #9333ea;
+            box-shadow: 0 0 0 3px rgba(147, 51, 234, 0.1);
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #9333ea, #7c3aed);
+            color: white;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        /* Mobile Responsive Styles */
+        @media (max-width: 768px) {
+            .admin-wrapper {
+                flex-direction: column;
+            }
+            
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                max-height: 60vh;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 100;
+            }
+            
+            .admin-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .admin-main {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .admin-topbar {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .admin-topbar > div:first-child input {
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .admin-content {
+                padding: 16px;
+            }
+            
+            .content-card {
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+            
+            /* Mobile menu toggle button */
+            .mobile-menu-toggle {
+                display: block;
+                position: fixed;
+                top: 16px;
+                left: 16px;
+                z-index: 101;
+                background: linear-gradient(135deg, #800020, #6B0000);
+                color: white;
+                border: none;
+                padding: 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            }
+            
+            /* Overlay when sidebar is open */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                inset: 0;
+                background: rgba(0,0,0,0.5);
+                z-index: 99;
+            }
+            
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            .nav-tab {
+                padding: 14px 16px;
+                font-size: 15px;
+            }
+            
+            /* Media library specific mobile styles */
+            #mediaGrid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+                gap: 12px;
+            }
+            
+            /* Modal responsive */
+            #newSectionModal > div,
+            #mediaLibraryModal > div {
+                width: 95%;
+                max-width: 95%;
+                padding: 20px;
+            }
+            
+            /* Form inputs mobile */
+            .form-input {
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .admin-content {
+                padding: 12px;
+            }
+            
+            .content-card {
+                padding: 16px;
+            }
+            
+            #mediaGrid {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 10px;
+            }
+            
+            .admin-topbar > div:last-child {
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 8px;
+            }
+            
+            .admin-topbar > div:last-child > div:first-child {
+                display: none; /* Hide avatar on very small screens */
+            }
+        }
+        
+        /* Desktop: hide mobile menu toggle */
+        @media (min-width: 769px) {
+            .mobile-menu-toggle {
+                display: none;
+            }
+            
+            .sidebar-overlay {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <!-- Mobile Menu Toggle -->
+        <button class="mobile-menu-toggle" onclick="toggleSidebar()" aria-label="Toggle menu">
+            <span style="font-size: 20px;">☰</span>
+        </button>
+        
+        <!-- Sidebar Overlay (mobile only) -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+        
+        <div class="admin-sidebar" id="sidebar">
+            <div class="sidebar-header" style="padding: 20px 24px; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 32px; height: 32px; background: #800020; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px;">🎓</div>
+                    <div>
+                        <div style="font-size: 20px; font-weight: bold; color: #800020;">EduSystem</div>
+                        <div style="font-size: 14px; color: #6b7280;">Admin Portal</div>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="nav-tabs" style="flex: 1; padding: 32px 16px 0; overflow-y: auto;" id="nav-tabs">
+                <!-- Navigation will be loaded dynamically -->
+            </nav>
+            
+            <div class="sidebar-footer" style="padding: 16px; border-top: 1px solid #e5e7eb;">
+                <a href="#" onclick="localStorage.clear(); window.location.href='index.html'; return false;" style="display: flex; align-items: center; gap: 8px; padding: 12px; color: #dc2626; text-decoration: none; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='#fee'" onmouseout="this.style.background='transparent'">
+                    <span>🚪</span>
+                    <span>Sign Out</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="admin-main">
+            <div class="admin-topbar">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <input type="text" placeholder="Search..." style="padding: 10px 15px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; width: 300px;">
+                </div>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">A</div>
+                    <div>
+                        <div style="font-weight: 600; font-size: 14px;">Administrator</div>
+                        <div style="font-size: 12px; opacity: 0.8;">Admin</div>
+                    </div>
+                    <button style="background: #ec4899; color: white; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; border: none; cursor: pointer;">ADMIN</button>
+                </div>
+            </div>
+            
+            <div class="admin-content">
+                <div class="content-container">
+                    <div id="tab-content">
+                        <div class="content-card">
+                            <p>Loading admin panel...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/error-handler.js"></script>
+    <script src="js/error-handler.js"></script>
+    <script src="js/admin-tab-loader.js"></script>
+    <script src="js/client-storage.js"></script>
+    
+    <!-- Media Library Modal -->
+    <div id="mediaLibraryModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: white; border-radius: 12px; width: 90%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+            <div style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 20px; font-weight: 600;">Media Library</h3>
+                <button onclick="closeMediaLibrary()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+            </div>
+            <div id="mediaLibraryContent" style="flex: 1; overflow-y: auto; padding: 20px;">
+                <div style="text-align: center; padding: 20px; color: #999;">Loading media...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast" style="display: none; position: fixed; top: 20px; right: 20px; background: #333; color: white; padding: 16px 24px; border-radius: 8px; z-index: 10001; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 400px;">
+        <span id="toastMessage"></span>
+    </div>
+    
+    <script>
+        // Toast notification - Suppress technical errors from users
+        window.showToast = function(message, type = 'success') {
+            // Suppress technical error messages from being shown to users
+            if (type === 'error') {
+                const suppressedPatterns = [
+                    'fatal error',
+                    'parse error',
+                    'unexpected token',
+                    '<?php',
+                    'server error: fatal',
+                    'syntax error',
+                    'uncaught',
+                    'undefined',
+                    'null reference'
+                ];
+                
+                const messageLower = message.toLowerCase();
+                for (const pattern of suppressedPatterns) {
+                    if (messageLower.includes(pattern)) {
+                        console.error('Technical error suppressed from user view:', message);
+                        // Show generic message instead
+                        message = 'An error occurred. Please try again or contact support if the problem persists.';
+                        break;
+                    }
+                }
+            }
+            
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            toastMessage.textContent = message;
+            toast.style.background = type === 'error' ? '#dc2626' : '#10b981';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        };
+        
+        // Also keep local reference for backward compatibility
+        function showToast(message, type = 'success') {
+            window.showToast(message, type);
+        }
+        
+        // Media Library Functions
+        let currentImageField = '';
+        window.currentImageField = '';
+        // Use window object to avoid conflicts with media.html tab
+        if (typeof window.adminMediaItems === 'undefined') {
+            window.adminMediaItems = [];
+        }
+        
+        function openMediaLibrary(fieldName) {
+            currentImageField = fieldName;
+            window.currentImageField = fieldName;
+            
+            // Ensure MediaStorage is initialized before opening
+            if (typeof window.MediaStorage === 'undefined') {
+                window.MediaStorage = {
+                    loadMedia() {
+                        try {
+                            const stored = localStorage.getItem('media_items');
+                            if (!stored) return [];
+                            const parsed = JSON.parse(stored);
+                            return Array.isArray(parsed) ? parsed : [];
+                        } catch (e) {
+                            console.error('Error loading media from storage:', e);
+                            return [];
+                        }
+                    },
+                    saveMedia(media) {
+                        try {
+                            localStorage.setItem('media_items', JSON.stringify(media));
+                            return true;
+                        } catch (e) {
+                            console.error('Failed to save media:', e);
+                            return false;
+                        }
+                    },
+                    loadSections() {
+                        try {
+                            const stored = localStorage.getItem('media_sections');
+                            return stored ? JSON.parse(stored) : [];
+                        } catch (e) {
+                            return [];
+                        }
+                    },
+                    loadSettings(key) {
+                        try {
+                            const stored = localStorage.getItem('admin_settings_' + key);
+                            return stored ? JSON.parse(stored) : {};
+                        } catch (e) {
+                            return {};
+                        }
+                    },
+                    saveSettings(key, settings) {
+                        try {
+                            localStorage.setItem('admin_settings_' + key, JSON.stringify(settings));
+                            return true;
+                        } catch (e) {
+                            console.error('Failed to save settings:', e);
+                            return false;
+                        }
+                    }
+                };
+            }
+            
+            // Show modal
+            document.getElementById('mediaLibraryModal').style.display = 'flex';
+            
+            // Load immediately - synchronous, no delay
+            loadMediaLibrary();
+        }
+        
+        function closeMediaLibrary() {
+            document.getElementById('mediaLibraryModal').style.display = 'none';
+            currentImageField = '';
+            window.currentImageField = '';
+        }
+        
+        // Initialize MediaStorage if not already available (do this immediately)
+        if (typeof window.MediaStorage === 'undefined') {
+            window.MediaStorage = {
+                loadMedia() {
+                    try {
+                        const stored = localStorage.getItem('media_items');
+                        if (!stored) return [];
+                        const parsed = JSON.parse(stored);
+                        return Array.isArray(parsed) ? parsed : [];
+                    } catch (e) {
+                        console.error('Error loading media from storage:', e);
+                        return [];
+                    }
+                },
+                saveMedia(media) {
+                    try {
+                        localStorage.setItem('media_items', JSON.stringify(media));
+                        return true;
+                    } catch (e) {
+                        console.error('Failed to save media:', e);
+                        return false;
+                    }
+                },
+                loadSections() {
+                    try {
+                        const stored = localStorage.getItem('media_sections');
+                        return stored ? JSON.parse(stored) : [];
+                    } catch (e) {
+                        return [];
+                    }
+                },
+                loadSettings(key) {
+                    try {
+                        const stored = localStorage.getItem('admin_settings_' + key);
+                        return stored ? JSON.parse(stored) : {};
+                    } catch (e) {
+                        return {};
+                    }
+                },
+                saveSettings(key, settings) {
+                    try {
+                        localStorage.setItem('admin_settings_' + key, JSON.stringify(settings));
+                        return true;
+                    } catch (e) {
+                        console.error('Failed to save settings:', e);
+                        return false;
+                    }
+                }
+            };
+        }
+        
+        function loadMediaLibrary() {
+            // Load immediately - synchronous operation, no delays
+            const container = document.getElementById('mediaLibraryContent');
+            if (!container) {
+                console.error('Media library container not found');
+                return;
+            }
+            
+            try {
+                // Ensure MediaStorage exists
+                if (typeof window.MediaStorage === 'undefined') {
+                    throw new Error('MediaStorage not initialized');
+                }
+                
+                // Use ONLY client-side storage - no PHP, no async, immediate load
+                const localMedia = window.MediaStorage.loadMedia();
+                window.adminMediaItems = Array.isArray(localMedia) ? localMedia : [];
+                
+                // Update UI immediately
+                if (window.adminMediaItems.length === 0) {
+                    container.innerHTML = 
+                        '<div style="text-align: center; padding: 40px; color: #999;">' +
+                        '<div style="font-size: 48px; margin-bottom: 15px;">🖼️</div>' +
+                        '<div style="font-size: 18px; margin-bottom: 10px; font-weight: 600;">No media files found</div>' +
+                        '<div style="font-size: 14px; margin-bottom: 20px;">Upload images in the Media Library tab to see them here.</div>' +
+                        '<button onclick="closeMediaLibrary(); if(window.loadTab) window.loadTab(\'media\');" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Go to Media Library</button>' +
+                        '</div>';
+                } else {
+                    // Display immediately - no delay
+                    displayMedia();
+                }
+            } catch (error) {
+                console.error('Error loading media library:', error);
+                container.innerHTML = 
+                    '<div style="text-align: center; padding: 40px; color: #999;">' +
+                    '<div style="font-size: 48px; margin-bottom: 15px;">⚠️</div>' +
+                    '<div style="font-size: 18px; margin-bottom: 10px; font-weight: 600;">Error loading media</div>' +
+                    '<div style="font-size: 14px; margin-bottom: 20px;">' + (error.message || 'Unknown error') + '</div>' +
+                    '<button onclick="loadMediaLibrary()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">Retry</button>' +
+                    '</div>';
+            }
+        }
+        
+        // Make sure MediaStorage is available globally
+        window.loadMediaLibrary = loadMediaLibrary;
+        
+        function displayMedia() {
+            const container = document.getElementById('mediaLibraryContent');
+            const mediaItems = window.adminMediaItems || [];
+            if (mediaItems.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No media files found. Upload files in the Media Library tab.</div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+                    ${mediaItems.map(item => {
+                        // Get URL - prioritize data URLs (from client-side storage)
+                        let url = item.file_path || item.file_url || item.url || '';
+                        const filename = item.original_name || item.filename || 'Image';
+                        
+                        // If it's a data URL, use it directly (from localStorage)
+                        if (url.startsWith('data:')) {
+                            // Data URL is ready to use - no modification needed
+                        } else {
+                            // For regular URLs, ensure proper format
+                            if (url && !url.startsWith('http') && !url.startsWith('data:') && !url.startsWith('/')) {
+                                url = '/' + url;
+                            }
+                            
+                            // Handle folder paths (like "h/" or "uploads/h/")
+                            if (url.includes('folder h') || url.includes('h/')) {
+                                url = url.replace(/folder\s*h/gi, 'h').replace(/\\/g, '/');
+                                if (!url.startsWith('/') && !url.startsWith('http')) {
+                                    url = '/uploads/' + url;
+                                }
+                            }
+                        }
+                        
+                        // Escape URL for use in HTML (but preserve data URLs)
+                        const safeUrl = url.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                        const safeFilename = filename.replace(/'/g, "\\'").replace(/"/g, '&quot;').substring(0, 30);
+                        
+                        return `
+                        <div style="border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: pointer; transition: all 0.2s; position: relative;" 
+                             onmouseover="this.style.borderColor='#10b981'; this.style.transform='scale(1.02)'"
+                             onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='scale(1)'"
+                             onclick="selectImage('${safeUrl}')">
+                            <img src="${safeUrl}" 
+                                 style="width: 100%; height: 150px; object-fit: cover; display: block;" 
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+                                 loading="lazy"
+                                 alt="${safeFilename}">
+                            <div style="display: none; width: 100%; height: 150px; background: #f3f4f6; align-items: center; justify-content: center; color: #9ca3af; font-size: 32px; position: absolute; top: 0; left: 0;">🖼️</div>
+                            <div style="padding: 8px; font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: white;">${safeFilename}</div>
+                        </div>
+                    `;
+                    }).join('')}
+                </div>
+            `;
+        }
+        
+        function selectImage(imageUrl) {
+            if (currentImageField) {
+                const input = document.getElementById(currentImageField);
+                if (input) {
+                    input.value = imageUrl;
+                    // Trigger change event
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    
+                    // Try to find and call specific preview function
+                    // Pattern 1: update{FieldName}Preview (e.g., updateFacilitiesHeroPreview)
+                    const fieldParts = currentImageField.split('_');
+                    const camelCaseName = fieldParts.map((part, index) => 
+                        index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
+                    ).join('');
+                    const updateFuncName1 = 'update' + camelCaseName.charAt(0).toUpperCase() + camelCaseName.slice(1) + 'Preview';
+                    
+                    // Pattern 2: update{FieldName}Preview with full field name
+                    const updateFuncName2 = 'update' + currentImageField.split('_').map(part => 
+                        part.charAt(0).toUpperCase() + part.slice(1)
+                    ).join('') + 'Preview';
+                    
+                    // Pattern 3: updateImagePreview(url, previewId)
+                    const previewId = input.id + 'Preview';
+                    if (typeof window.updateImagePreview === 'function') {
+                        window.updateImagePreview(imageUrl, previewId);
+                    }
+                    
+                    // Try specific preview functions
+                    if (typeof window[updateFuncName1] === 'function') {
+                        window[updateFuncName1](imageUrl);
+                    } else if (typeof window[updateFuncName2] === 'function') {
+                        window[updateFuncName2](imageUrl);
+                    } else {
+                        // Generic preview update
+                        const previewElement = document.getElementById(previewId);
+                        let previewImg = input.parentElement?.querySelector('img');
+                        if (!previewImg) {
+                            previewImg = input.closest('.form-group')?.querySelector('img');
+                        }
+                        if (!previewImg && previewElement) {
+                            previewImg = previewElement.querySelector('img');
+                        }
+                        
+                        if (previewImg) {
+                            previewImg.src = imageUrl;
+                            previewImg.style.display = 'block';
+                            previewImg.onerror = function() {
+                                this.style.display = 'none';
+                            };
+                        }
+                        
+                        // Update preview container if it exists
+                        if (previewElement) {
+                            if (imageUrl && imageUrl.trim()) {
+                                previewElement.innerHTML = `<img src="${imageUrl}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e5e7eb;" onerror="this.style.display='none'">`;
+                            } else {
+                                previewElement.innerHTML = '';
+                            }
+                        }
+                    }
+                }
+            }
+            closeMediaLibrary();
+        }
+        
+        // Helper function for updating image previews
+        window.updateImagePreview = function(imageUrl, previewId) {
+            const preview = document.getElementById(previewId);
+            if (preview) {
+                if (imageUrl && imageUrl.trim()) {
+                    preview.innerHTML = `<img src="${imageUrl}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e5e7eb; margin-top: 10px;" onerror="this.style.display='none'">`;
+                } else {
+                    preview.innerHTML = '';
+                }
+            }
+        };
+        
+        window.openMediaLibrary = openMediaLibrary;
+        window.closeMediaLibrary = closeMediaLibrary;
+        window.selectImage = selectImage;
+        
+        // NO PHP - all data uses localStorage only
+        
+        // Enhanced form submission handler - saves to localStorage if PHP fails
+        async function handleAdminFormSubmit(event, form) {
+            event.preventDefault();
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn ? submitBtn.textContent : '';
+            
+            if (submitBtn) {
+                submitBtn.textContent = '💾 Saving...';
+                submitBtn.disabled = true;
+            }
+            
+            const formData = new FormData(form);
+            const data = {};
+            const action = form.action || form.getAttribute('action') || '';
+            
+            // Determine settings key from form ID or action
+            let settingsKey = 'settings';
+            if (form.id) {
+                settingsKey = form.id.replace('Form', '').replace('HeaderForm', '').replace('SliderForm', '');
+            } else if (action) {
+                const parts = action.split('/');
+                settingsKey = parts[parts.length - 1] || 'settings';
+            }
+            
+            // Handle file inputs - convert to data URLs for localStorage
+            const fileInputs = form.querySelectorAll('input[type="file"]');
+            const filePromises = [];
+            for (const fileInput of fileInputs) {
+                if (fileInput.files && fileInput.files.length > 0) {
+                    for (let i = 0; i < fileInput.files.length; i++) {
+                        const file = fileInput.files[i];
+                        const promise = new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                const fieldName = fileInput.name || fileInput.id;
+                                if (fieldName) {
+                                    if (!data[fieldName]) data[fieldName] = [];
+                                    data[fieldName].push({
+                                        name: file.name,
+                                        type: file.type,
+                                        size: file.size,
+                                        data: e.target.result // Data URL
+                                    });
+                                }
+                                resolve();
+                            };
+                            reader.onerror = () => resolve();
+                            reader.readAsDataURL(file);
+                        });
+                        filePromises.push(promise);
+                    }
+                }
+            }
+            
+            // Wait for all files to be read
+            await Promise.all(filePromises);
+            
+            // Collect all form data
+            for (let [key, value] of formData.entries()) {
+                // Skip file inputs (already handled above)
+                if (form.querySelector(`input[type="file"][name="${key}"]`)) continue;
+                
+                if (key.endsWith('[]')) {
+                    const baseKey = key.slice(0, -2);
+                    if (!data[baseKey]) data[baseKey] = [];
+                    data[baseKey].push(value);
+                } else if (key.includes('[') && key.includes(']')) {
+                    // Handle nested arrays like club_name[], club_image[]
+                    const match = key.match(/^(.+?)\[(\d+)\]$/);
+                    if (match) {
+                        const baseKey = match[1];
+                        if (!data[baseKey]) data[baseKey] = [];
+                        data[baseKey][parseInt(match[2])] = value;
+                    } else {
+                        // Handle nested objects like payment_details[bank_name]
+                        const nestedMatch = key.match(/^(.+?)\[(.+?)\]$/);
+                        if (nestedMatch) {
+                            const objKey = nestedMatch[1];
+                            const propKey = nestedMatch[2];
+                            if (!data[objKey]) data[objKey] = {};
+                            data[objKey][propKey] = value;
+                        } else {
+                            data[key] = value;
+                        }
+                    }
+                } else {
+                    data[key] = value;
+                }
+            }
+            
+            // Handle special JSON fields
+            const jsonFields = ['clubs', 'resource_detail_sections', 'sponsorship_levels', 'sponsorship_steps', 'success_stories', 'needs', 'payment_details', 'additional_slides', 'people_json', 'features', 'slides'];
+            jsonFields.forEach(field => {
+                const hiddenInput = form.querySelector(`input[type="hidden"][name="${field}"], input[type="hidden"][id*="${field}"], input[type="hidden"][id="${field}_json"]`);
+                if (hiddenInput && hiddenInput.value) {
+                    try {
+                        const parsed = JSON.parse(hiddenInput.value);
+                        if (Array.isArray(parsed) || typeof parsed === 'object') {
+                            data[field] = parsed;
+                        }
+                    } catch (e) {
+                        console.warn(`Failed to parse ${field}:`, e);
+                    }
+                }
+            });
+            
+            // Handle nested payment_details from form inputs
+            if (form.querySelector('input[name="payment_details[bank_name]"]')) {
+                const paymentDetails = {};
+                const bankName = form.querySelector('input[name="payment_details[bank_name]"]');
+                const accountName = form.querySelector('input[name="payment_details[account_name]"]');
+                const accountNumber = form.querySelector('input[name="payment_details[account_number]"]');
+                const mobileMoneyName = form.querySelector('input[name="payment_details[mobile_money_name]"]');
+                const mobileMoneyPhone = form.querySelector('input[name="payment_details[mobile_money_phone]"]');
+                const instructions = form.querySelector('textarea[name="payment_details[instructions]"]');
+                
+                if (bankName) paymentDetails.bank_name = bankName.value;
+                if (accountName) paymentDetails.account_name = accountName.value;
+                if (accountNumber) paymentDetails.account_number = accountNumber.value;
+                if (mobileMoneyName) paymentDetails.mobile_money_name = mobileMoneyName.value;
+                if (mobileMoneyPhone) paymentDetails.mobile_money_phone = mobileMoneyPhone.value;
+                if (instructions) paymentDetails.instructions = instructions.value;
+                
+                data.payment_details = paymentDetails;
+            }
+            
+            // Save function that handles localStorage
+            const saveToStorage = () => {
+                try {
+                    if (typeof window.MediaStorage !== 'undefined' && window.MediaStorage.saveSettings) {
+                        window.MediaStorage.saveSettings(settingsKey, data);
+                        
+                        // Also save to ClientStorage for compatibility (if ClientStorage exists)
+                        if (typeof window.ClientStorage !== 'undefined') {
+                            // Map settings keys to ClientStorage keys
+                            const clientStorageMap = {
+                                'about': 'ABOUT_CONTENT',
+                                'hero': 'HERO_CONTENT',
+                                'branding': 'BRANDING',
+                                'contact': 'CONTACT_CONTENT',
+                                'footer': 'FOOTER_CONTENT'
+                            };
+                            
+                            const clientKey = clientStorageMap[settingsKey];
+                            if (clientKey && window.ClientStorage.KEYS && window.ClientStorage.KEYS[clientKey]) {
+                                const storageKey = window.ClientStorage.KEYS[clientKey];
+                                window.ClientStorage.set(storageKey, data);
+                            }
+                            
+                            // Also try direct method calls if available
+                            if (window.ClientStorage[settingsKey] && typeof window.ClientStorage[settingsKey].save === 'function') {
+                                window.ClientStorage[settingsKey].save(data).catch(e => console.warn('ClientStorage save warning:', e));
+                            }
+                        }
+                        
+                        // Trigger custom event to update frontend immediately
+                        // Use both same-window and cross-window events
+                        window.dispatchEvent(new CustomEvent('adminDataSaved', { 
+                            detail: { settingsKey, data } 
+                        }));
+                        
+                        // Also trigger storage event for cross-tab updates
+                        window.dispatchEvent(new StorageEvent('storage', {
+                            key: 'admin_settings_' + settingsKey,
+                            newValue: JSON.stringify(data),
+                            storageArea: localStorage
+                        }));
+                        
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('Error saving to localStorage:', e);
+                }
+                return false;
+            };
+            
+            // NO PHP - always use localStorage only
+            if (saveToStorage()) {
+                showToast('Settings saved successfully!', 'success');
+                if (submitBtn) {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            } else {
+                showToast('Failed to save. Please check console for errors.', 'error');
+                if (submitBtn) {
+                    submitBtn.textContent = originalText;
+                    submitBtn.disabled = false;
+                }
+            }
+            
+            return false;
+        }
+        
+        window.handleAdminFormSubmit = handleAdminFormSubmit;
+    </script>
+    
+    <script>
+        // Global error handler - Suppress technical errors from user view
+        window.addEventListener('error', function(event) {
+            const errorMsg = event.message || '';
+            const suppressedPatterns = ['fatal error', 'parse error', 'unexpected token', '<?php', 'syntax error', 'uncaught'];
+            
+            for (const pattern of suppressedPatterns) {
+                if (errorMsg.toLowerCase().includes(pattern)) {
+                    console.error('Technical error suppressed from user view:', errorMsg);
+                    event.preventDefault(); // Prevent default error display
+                    return false;
+                }
+            }
+        });
+        
+        // Suppress console errors from displaying in UI
+        const originalConsoleError = console.error;
+        console.error = function(...args) {
+            // Still log to console for debugging
+            originalConsoleError.apply(console, args);
+            // But don't let it bubble up to user interface
+        };
+        
+        // NO PHP - all functionality uses HTML/JS/CSS with localStorage
+        
+        // Navigation tabs
+        const navTabs = [
+            {id: 'dashboard', label: 'Dashboard', icon: '📊'},
+            {id: 'branding', label: 'Branding', icon: '🎨'},
+            {id: 'hero', label: 'Hero Section', icon: '🌐'},
+            {id: 'about', label: 'About Section', icon: '📖'},
+            {id: 'curriculum', label: 'Curriculum', icon: '📚'},
+            {id: 'activities', label: 'Events', icon: '📅'},
+            {id: 'gallery', label: 'School Gallery', icon: '🖼️'},
+            {id: 'teachers', label: 'Teachers', icon: '👨‍🏫'},
+            {id: 'facilities', label: 'Facilities', icon: '🏢'},
+            {id: 'testimonials', label: 'Testimonials', icon: '⭐'},
+            {id: 'contact', label: 'Contact Info', icon: '📧'},
+            {id: 'news', label: 'News', icon: '📰'},
+            {id: 'announcements', label: 'Announcements', icon: '📢'},
+            {id: 'all-updates-settings', label: 'All Updates Settings', icon: '📰'},
+            {id: 'media', label: 'Media Library', icon: '🖼️'},
+            {id: 'users', label: 'User Management', icon: '👥'},
+            {id: 'settings', label: 'Settings', icon: '⚙️'},
+            {id: 'sponsorship', label: 'Sponsorship', icon: '❤️'},
+            {id: 'giveback', label: 'Give Back', icon: '💰'},
+            {id: 'clubs', label: 'Clubs', icon: '👥'},
+            {id: 'background', label: 'School Background', icon: '🏛️'},
+            {id: 'people-behind-school', label: 'People Behind School', icon: '👥'},
+            {id: 'homepage-sections', label: 'Homepage Sections', icon: '🏠'},
+            {id: 'parents', label: 'Parents Portal', icon: '👥'},
+            {id: 'resources', label: 'Resources', icon: '📚'},
+            {id: 'button-customization', label: 'Button Customization', icon: '🎯'},
+            {id: 'colors', label: 'Website Colors', icon: '🎨'},
+            {id: 'hero-text-styles', label: 'Hero Text Styles', icon: '📝'},
+            {id: 'footer', label: 'Footer Content', icon: '⬇️'},
+            {id: 'social-media', label: 'Social Media', icon: '🔗'},
+            {id: 'programs', label: 'Programs', icon: '📚'},
+            {id: 'map', label: 'Map Settings', icon: '📍'},
+            {id: 'festive-animations', label: 'Festive Animations', icon: '❄️'},
+            {id: 'admission', label: 'Admission', icon: '📝'},
+            {id: 'navigation', label: 'Navigation Menu', icon: '🧭'},
+        ];
+
+        // Get active tab from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        let activeTab = urlParams.get('tab') || 'dashboard';
+
+        // Render navigation
+        function renderNavigation() {
+            const navContainer = document.getElementById('nav-tabs');
+            navContainer.innerHTML = navTabs.map(tab => {
+                const isActive = activeTab === tab.id;
+                return `
+                    <a href="?tab=${tab.id}" 
+                       class="nav-tab ${isActive ? 'active' : ''}"
+                       onclick="loadTab('${tab.id}'); return false;">
+                        <span>${tab.icon}</span>
+                        <span>${tab.label}</span>
+                    </a>
+                `;
+            }).join('');
+        }
+
+        // Load tab content
+        async function loadTab(tabName) {
+            activeTab = tabName;
+            renderNavigation();
+            
+            // Update URL without reload
+            const newUrl = window.location.pathname + '?tab=' + tabName;
+            window.history.pushState({ tab: tabName }, '', newUrl);
+            
+            const contentContainer = document.getElementById('tab-content');
+            contentContainer.innerHTML = '<div class="content-card"><p>Loading...</p></div>';
+            
+            try {
+                // Try to load HTML version only (NO PHP)
+                // Use GET method explicitly and handle CORS
+                let response;
+                try {
+                    response = await fetch(`admin-tabs/${tabName}.html`, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'text/html',
+                        },
+                        cache: 'no-cache'
+                    });
+                } catch (fetchError) {
+                    // If fetch fails, try alternative approach
+                    console.warn('Fetch failed, trying alternative:', fetchError);
+                    // Try loading via script tag injection as fallback
+                    const script = document.createElement('script');
+                    script.src = `admin-tabs/${tabName}.html?callback=loadTabContent`;
+                    document.head.appendChild(script);
+                    return;
+                }
+                
+                // Handle 405 Method Not Allowed errors - retry with different approach
+                if (response.status === 405 || response.status === 0) {
+                    // Try loading the file directly via XMLHttpRequest as fallback
+                    return new Promise((resolve) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', `admin-tabs/${tabName}.html`, true);
+                        xhr.onload = function() {
+                            if (xhr.status === 200 || xhr.status === 0) {
+                                let html = xhr.responseText;
+                                processTabContent(html, tabName, contentContainer);
+                                resolve();
+                            } else {
+                                showTabError(contentContainer, tabName, `Server returned status ${xhr.status}`);
+                                resolve();
+                            }
+                        };
+                        xhr.onerror = function() {
+                            showTabError(contentContainer, tabName, 'Network error loading tab');
+                            resolve();
+                        };
+                        xhr.send();
+                    });
+                }
+                
+                if (response.ok || response.status === 0) {
+                    let html = await response.text();
+                    processTabContent(html, tabName, contentContainer);
+                    return;
+                }
+                
+                // If HTML not found, show message (NO PHP fallback - HTML/JS/CSS only)
+                showTabError(contentContainer, tabName, `File not found (status: ${response.status})`);
+            } catch (error) {
+                console.error('Error loading tab:', error);
+                // Suppress technical error messages from user view
+                let errorMsg = error.message || 'Unable to load tab content';
+                const suppressedPatterns = ['fatal error', 'parse error', 'unexpected token', '<?php', 'syntax error'];
+                for (const pattern of suppressedPatterns) {
+                    if (errorMsg.toLowerCase().includes(pattern)) {
+                        errorMsg = 'Unable to load this tab. Please try again or contact support.';
+                        break;
+                    }
+                }
+                showTabError(contentContainer, tabName, errorMsg);
+            }
+        }
+        
+        // Helper function to process tab content
+        function processTabContent(html, tabName, contentContainer) {
+            // Filter out any PHP code that might have leaked through
+            html = html.replace(/<\?php[\s\S]*?\?>/gi, '');
+            html = html.replace(/Fatal error:.*/gi, '');
+            html = html.replace(/Parse error:.*/gi, '');
+            
+            // Extract body content
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const bodyContent = doc.body.innerHTML;
+            contentContainer.innerHTML = bodyContent;
+            
+            // Re-initialize any scripts in the loaded content
+            // Remove old scripts from this tab first to avoid conflicts
+            const oldScripts = contentContainer.querySelectorAll('script[data-tab-script]');
+            oldScripts.forEach(s => s.remove());
+            
+            const scripts = doc.querySelectorAll('script');
+            scripts.forEach((script) => {
+                try {
+                    const newScript = document.createElement('script');
+                    newScript.setAttribute('data-tab-script', tabName);
+                    if (script.src) {
+                        newScript.src = script.src;
+                        // For external scripts, wait for load
+                        newScript.onerror = function() {
+                            console.warn('Failed to load script:', script.src);
+                        };
+                    } else {
+                        // For inline scripts, wrap in try-catch to prevent syntax errors from breaking the page
+                        const scriptContent = script.textContent || script.innerHTML || '';
+                        if (scriptContent.trim()) {
+                            // Wrap script content in try-catch to handle errors gracefully
+                            newScript.textContent = `
+                                try {
+                                    ${scriptContent}
+                                } catch (scriptError) {
+                                    console.error('Error in tab script:', scriptError);
+                                }
+                            `;
+                        }
+                    }
+                    if (contentContainer) {
+                        contentContainer.appendChild(newScript);
+                    }
+                } catch (e) {
+                    console.error('Error adding script:', e);
+                }
+            });
+            
+            // Trigger any initialization functions that might be waiting for DOMContentLoaded
+            setTimeout(() => {
+                if (typeof initClubsTab === 'function') initClubsTab();
+                if (typeof initSponsorshipTab === 'function') initSponsorshipTab();
+                if (typeof initGivebackTab === 'function') initGivebackTab();
+                if (typeof initParentsTab === 'function') initParentsTab();
+            }, 100);
+        }
+        
+        // Helper function to show tab error
+        function showTabError(contentContainer, tabName, errorMsg) {
+            contentContainer.innerHTML = `
+                <div class="content-card">
+                    <h2>${navTabs.find(t => t.id === tabName)?.label || tabName}</h2>
+                    <p style="color: #666;">${errorMsg}</p>
+                    <p style="color: #999; margin-top: 10px; font-size: 12px;">Please check if admin-tabs/${tabName}.html exists and is accessible.</p>
+                    <button onclick="loadTab('${tabName}')" style="margin-top: 15px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer;">Retry</button>
+                </div>
+            `;
+        }
+
+        // Make loadTab globally accessible
+        window.loadTab = loadTab;
+        
+        // Shared helper for all admin tabs - loads data from localStorage (no PHP)
+        window.AdminDataHelper = {
+            // Load settings for any admin section
+            async loadSettings(key) {
+                // Ensure dependencies are loaded
+                if (typeof window.ErrorHandler !== 'undefined') {
+                    await window.ErrorHandler.ensureDependencies(
+                        ['MediaStorage'],
+                        async () => {
+                            if (typeof window.MediaStorage === 'undefined') {
+                                this.initMediaStorage();
+                            }
+                        },
+                        'loadSettings'
+                    );
+                } else {
+                    if (typeof window.MediaStorage === 'undefined') {
+                        this.initMediaStorage();
+                    }
+                }
+                return window.MediaStorage.loadSettings(key);
+            },
+            
+            // Save settings for any admin section
+            saveSettings(key, settings) {
+                if (typeof window.MediaStorage === 'undefined') {
+                    this.initMediaStorage();
+                }
+                return window.MediaStorage.saveSettings(key, settings);
+            },
+            
+            // Load media items (all or filtered by section)
+            loadMedia(sectionName = null) {
+                if (typeof window.MediaStorage === 'undefined') {
+                    this.initMediaStorage();
+                }
+                const allMedia = window.MediaStorage.loadMedia();
+                if (!sectionName) return allMedia;
+                
+                const sections = window.MediaStorage.loadSections();
+                const section = sections.find(s => 
+                    s.name && s.name.toLowerCase() === sectionName.toLowerCase()
+                );
+                
+                if (section) {
+                    return allMedia.filter(item => 
+                        item.section_id == section.id || 
+                        (item.section_name && item.section_name.toLowerCase() === sectionName.toLowerCase())
+                    );
+                }
+                return allMedia;
+            },
+            
+            // Initialize MediaStorage if not available
+            initMediaStorage() {
+                if (typeof window.MediaStorage === 'undefined') {
+                    window.MediaStorage = {
+                        loadMedia() {
+                            try {
+                                const stored = localStorage.getItem('media_items');
+                                if (!stored) return [];
+                                const parsed = JSON.parse(stored);
+                                return Array.isArray(parsed) ? parsed : [];
+                            } catch (e) {
+                                return [];
+                            }
+                        },
+                        loadSections() {
+                            try {
+                                const stored = localStorage.getItem('media_sections');
+                                return stored ? JSON.parse(stored) : [];
+                            } catch (e) {
+                                return [];
+                            }
+                        },
+                        loadSettings(key) {
+                            try {
+                                const stored = localStorage.getItem('admin_settings_' + key);
+                                return stored ? JSON.parse(stored) : {};
+                            } catch (e) {
+                                return {};
+                            }
+                        },
+                        saveSettings(key, settings) {
+                            try {
+                                localStorage.setItem('admin_settings_' + key, JSON.stringify(settings));
+                                return true;
+                            } catch (e) {
+                                return false;
+                            }
+                        }
+                    };
+                }
+            }
+        };
+        
+        // Initialize on page load
+        window.AdminDataHelper.initMediaStorage();
+        
+        // Universal helper for loading settings from localStorage only (NO PHP)
+        window.loadAdminSettings = async function(settingsKey, apiUrl, defaultData = {}) {
+            // NO PHP - use localStorage only
+            if (typeof window.MediaStorage !== 'undefined') {
+                const stored = window.MediaStorage.loadSettings(settingsKey);
+                if (stored && Object.keys(stored).length > 0) {
+                    return stored;
+                }
+            }
+            return defaultData;
+        };
+        
+        // Mobile sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            if (overlay) {
+                overlay.classList.toggle('active');
+            }
+        }
+        
+        window.toggleSidebar = toggleSidebar;
+        
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const toggle = document.querySelector('.mobile-menu-toggle');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            if (window.innerWidth <= 768 && sidebar && sidebar.classList.contains('active')) {
+                if (!sidebar.contains(e.target) && !toggle.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                    if (overlay) {
+                        overlay.classList.remove('active');
+                    }
+                }
+            }
+        });
+        
+        // Ensure showNewSectionModal is available globally (for media tab)
+        if (typeof window.showNewSectionModal === 'undefined') {
+            window.showNewSectionModal = function() {
+                const modal = document.getElementById('newSectionModal');
+                if (modal) {
+                    modal.style.display = 'flex';
+                } else {
+                    console.warn('newSectionModal not found');
+                }
+            };
+        }
+        
+        if (typeof window.closeNewSectionModal === 'undefined') {
+            window.closeNewSectionModal = function() {
+                const modal = document.getElementById('newSectionModal');
+                if (modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        }
+
+        // Initialize
+        renderNavigation();
+        loadTab(activeTab);
+        
+        // Update URL without reload
+        window.addEventListener('popstate', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            activeTab = urlParams.get('tab') || 'dashboard';
+            renderNavigation();
+            loadTab(activeTab);
+        });
+    </script>
+</body>
+</html>

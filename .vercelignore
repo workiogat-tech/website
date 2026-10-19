@@ -1,0 +1,88 @@
+# Vercel ignore file
+# Files and directories to exclude from deployment
+
+# Development files
+*.md
+!README.md
+!QUICK_START.md
+
+# Test files
+test-*.php
+*-test.php
+
+# Setup scripts (not needed in production)
+setup-*.php
+fix-*.php
+create-*.php
+auto-setup-*.php
+ensure-*.php
+update-*.php
+import-*.php
+generate-*.php
+
+# Documentation files
+*_GUIDE.md
+*_INSTRUCTIONS.md
+*_STATUS.md
+*_SUMMARY.md
+*_REPORT.md
+*_PROGRESS.md
+*_PLAN.md
+*_CREDENTIALS.md
+*_LINKAGE.md
+*_COMPLETE.md
+*_VERIFICATION.md
+ADMIN_*.md
+CLEANUP_*.md
+CONVERSION_*.md
+FIX_*.md
+FIXES_*.md
+HOW_TO_*.md
+IMAGE_*.md
+README_*.md
+SETUP_*.md
+WEBSITE_*.md
+
+# Environment files (use Vercel environment variables instead)
+.env
+.env.local
+.env.*.local
+
+# Old duplicate snapshot
+now/
+
+# Local server files
+start-server.bat
+phpinfo.php
+
+# Git files
+.git
+.gitignore
+
+# IDE files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Uploads directory (files should be in external storage for Vercel)
+# Note: Keep the directory structure but actual files should be in external storage
+# uploads/
+
+# Data URI files
+_DataURI/

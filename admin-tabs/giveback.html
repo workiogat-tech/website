@@ -1,0 +1,456 @@
+<div class="content-card">
+    <h2>💰 Give Back</h2>
+    <p style="margin-bottom: 30px; color: #666;">Manage give back program content, needs, contact information, and payment details.</p>
+    
+    <form method="POST" action="api/content/giveback.php" id="givebackForm" onsubmit="return handleGivebackFormSubmit(event, this);">
+        
+        <!-- Basic Content Section -->
+        <div style="background: white; padding: 25px; border-radius: 12px; border: 1px solid #e5e7eb; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">Basic Content</h3>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label">Page Title</label>
+                <input type="text" name="title" id="giveback_title" class="form-input" placeholder="Enter page title">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label class="form-label">Page Subtitle</label>
+                <textarea name="subtitle" id="giveback_subtitle" class="form-input" rows="3" placeholder="Enter page subtitle"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Hero Background Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="giveback_hero_preview" style="flex-shrink: 0;"></div>
+                    <div style="flex: 1;">
+                        <input type="text" name="hero_image" id="giveback_hero_image" class="form-input" 
+                               placeholder="Select image from media library" readonly
+                               onchange="updateGivebackHeroPreview(this.value)">
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('giveback_hero_image')" 
+                            class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        🖼️ Select Image
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Our Needs Section -->
+        <div style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 25px; border-radius: 12px; border: 2px solid #10b981; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 20px; font-weight: 600; color: #333; margin: 0;">Our Needs</h3>
+                <button type="button" onclick="addNeed()" class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+                    ➕ Add Need
+                </button>
+            </div>
+            
+            <div id="needsContainer"></div>
+            
+            <div id="emptyNeedsMessage" style="text-align: center; padding: 40px; color: #999; background: white; border-radius: 8px; border: 2px dashed #d1fae5;">
+                <p style="margin: 0;">No needs added yet. Click "+ Add Need" to get started.</p>
+            </div>
+        </div>
+        
+        <!-- Contact Information Section -->
+        <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); padding: 25px; border-radius: 12px; border: 2px solid #3b82f6; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">📞 Contact Information</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label">Phone</label>
+                    <input type="text" name="contact_phone" id="contact_phone" class="form-input" placeholder="+256 705666621">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" name="contact_email" id="contact_email" class="form-input" placeholder="info@sjs.edu">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Details Section -->
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 25px; border-radius: 12px; border: 2px solid #f59e0b; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 15px;">💳 Payment Details</h3>
+            <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                Configure payment methods for donations. These details will be shown when users click "Donate" buttons.
+            </p>
+            
+            <!-- Bank Transfer -->
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f59e0b;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: bold;">🏦</div>
+                    <h4 style="font-size: 16px; font-weight: 600; color: #333; margin: 0;">Bank Transfer</h4>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" name="payment_details[bank_name]" id="bank_name" class="form-input" placeholder="e.g., Bank of Uganda">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Account Name</label>
+                        <input type="text" name="payment_details[account_name]" id="account_name" class="form-input" placeholder="e.g., Sanyu Primary School">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Account Number</label>
+                        <input type="text" name="payment_details[account_number]" id="account_number" class="form-input" placeholder="e.g., 1234567890">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mobile Money -->
+            <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #f59e0b;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: bold;">📱</div>
+                    <h4 style="font-size: 16px; font-weight: 600; color: #333; margin: 0;">Mobile Money</h4>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                    <div class="form-group">
+                        <label class="form-label">Account Name</label>
+                        <input type="text" name="payment_details[mobile_money_name]" id="mobile_money_name" class="form-input" placeholder="e.g., sjs">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" name="payment_details[mobile_money_phone]" id="mobile_money_phone" class="form-input" placeholder="e.g., 0703574112">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Payment Instructions -->
+            <div style="background: white; padding: 20px; border-radius: 8px; border: 1px solid #f59e0b;">
+                <h4 style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px;">Payment Instructions</h4>
+                <p style="color: #666; font-size: 13px; margin-bottom: 10px;">Optional: Add any special instructions for donors</p>
+                <textarea name="payment_details[instructions]" id="payment_instructions" class="form-input" rows="3" 
+                          placeholder="e.g., Please include your name and donation purpose in the payment reference. After payment, contact us to confirm your donation."></textarea>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669);">
+                💾 Save Give Back Content
+            </button>
+            <button type="button" onclick="window.open('give-back.html', '_blank')" class="btn" style="background: linear-gradient(135deg, #9333ea, #7c3aed); color: white;">
+                👁️ Preview
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+let needIndex = 0;
+let givebackData = {};
+
+(async function() {
+    await loadGivebackData();
+})();
+
+async function loadGivebackData() {
+    try {
+        const response = await fetch('api/content/giveback.php');
+        if (response.ok) {
+            const data = await response.json();
+            givebackData = data || {};
+            
+            document.getElementById('giveback_title').value = givebackData.title || '';
+            document.getElementById('giveback_subtitle').value = givebackData.subtitle || '';
+            document.getElementById('giveback_hero_image').value = givebackData.hero_image || '';
+            updateGivebackHeroPreview(givebackData.hero_image || '');
+            document.getElementById('contact_phone').value = givebackData.contact_phone || '';
+            document.getElementById('contact_email').value = givebackData.contact_email || '';
+            
+            // Load payment details
+            let paymentDetails = {};
+            if (givebackData.payment_details) {
+                paymentDetails = typeof givebackData.payment_details === 'string' ? JSON.parse(givebackData.payment_details) : givebackData.payment_details;
+            }
+            
+            document.getElementById('bank_name').value = paymentDetails.bank_name || paymentDetails.bankName || '';
+            document.getElementById('account_name').value = paymentDetails.account_name || paymentDetails.accountName || '';
+            document.getElementById('account_number').value = paymentDetails.account_number || paymentDetails.accountNumber || '';
+            document.getElementById('mobile_money_name').value = paymentDetails.mobile_money_name || paymentDetails.mobileMoneyName || '';
+            document.getElementById('mobile_money_phone').value = paymentDetails.mobile_money_phone || paymentDetails.mobileMoneyPhone || '';
+            document.getElementById('payment_instructions').value = paymentDetails.instructions || '';
+            
+            // Load needs
+            let needs = [];
+            if (givebackData.needs) {
+                needs = typeof givebackData.needs === 'string' ? JSON.parse(givebackData.needs) : givebackData.needs;
+                if (!Array.isArray(needs)) needs = [];
+            }
+            
+            needIndex = needs.length;
+            displayNeeds(needs);
+        }
+    } catch (error) {
+        console.error('Error loading giveback data:', error);
+    }
+}
+
+function displayNeeds(needs) {
+    const container = document.getElementById('needsContainer');
+    const emptyMessage = document.getElementById('emptyNeedsMessage');
+    
+    if (needs.length === 0) {
+        container.innerHTML = '';
+        if (emptyMessage) emptyMessage.style.display = 'block';
+        return;
+    }
+    
+    if (emptyMessage) emptyMessage.style.display = 'none';
+    
+    container.innerHTML = needs.map((need, index) => {
+        need = { title: '', image: '', description: '', ...need };
+        return `
+            <div class="need-item" data-index="${index}" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #d1fae5;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                    <h4 style="font-size: 16px; font-weight: 600; color: #333; margin: 0;">Need ${index + 1}</h4>
+                    <button type="button" onclick="removeNeed(${index})" class="btn btn-danger" style="padding: 5px 15px; font-size: 12px;">
+                        🗑️ Remove
+                    </button>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="needs[${index}][title]" class="form-input" 
+                           value="${(need.title || '').replace(/"/g, '&quot;')}" 
+                           placeholder="e.g., Sports Equipment">
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label class="form-label">Image</label>
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        ${need.image ? `<img src="${need.image}" alt="Need image preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981;" onerror="this.style.display='none'">` : ''}
+                        <div style="flex: 1;">
+                            <input type="text" name="needs[${index}][image]" 
+                                   id="need_image_${index}" 
+                                   class="form-input" 
+                                   value="${(need.image || '').replace(/"/g, '&quot;')}" 
+                                   placeholder="Select image from media library" readonly>
+                        </div>
+                        <button type="button" onclick="openMediaLibrary('need_image_${index}')" 
+                                class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            🖼️ Select Image
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <textarea name="needs[${index}][description]" class="form-input" rows="4" 
+                              placeholder="Describe the need...">${(need.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateGivebackHeroPreview(url) {
+    const preview = document.getElementById('giveback_hero_preview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero background preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981;" onerror="this.style.display='none'">`;
+        preview.style.display = 'block';
+    } else {
+        preview.innerHTML = '';
+        preview.style.display = 'none';
+    }
+}
+
+function addNeed() {
+    const container = document.getElementById('needsContainer');
+    const emptyMessage = document.getElementById('emptyNeedsMessage');
+    
+    const needHtml = `
+        <div class="need-item" data-index="${needIndex}" style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #d1fae5;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <h4 style="font-size: 16px; font-weight: 600; color: #333; margin: 0;">Need ${needIndex + 1}</h4>
+                <button type="button" onclick="removeNeed(${needIndex})" class="btn btn-danger" style="padding: 5px 15px; font-size: 12px;">
+                    🗑️ Remove
+                </button>
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label class="form-label">Title</label>
+                <input type="text" name="needs[${needIndex}][title]" class="form-input" 
+                       placeholder="e.g., Sports Equipment">
+            </div>
+            
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label class="form-label">Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="flex: 1;">
+                        <input type="text" name="needs[${needIndex}][image]" 
+                               id="need_image_${needIndex}" 
+                               class="form-input" 
+                               placeholder="Select image from media library" readonly>
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('need_image_${needIndex}')" 
+                            class="btn btn-primary" style="background: linear-gradient(135deg, #10b981, #059669);">
+                        🖼️ Select Image
+                    </button>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="needs[${needIndex}][description]" class="form-input" rows="4" 
+                          placeholder="Describe the need..."></textarea>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', needHtml);
+    needIndex++;
+    
+    if (emptyMessage) {
+        emptyMessage.style.display = 'none';
+    }
+    
+    // Scroll to the new need
+    const newNeed = container.lastElementChild;
+    if (newNeed) {
+        newNeed.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function removeNeed(index) {
+    const needItem = document.querySelector(`.need-item[data-index="${index}"]`);
+    if (needItem) {
+        needItem.remove();
+        
+        // Check if any needs remain
+        const container = document.getElementById('needsContainer');
+        const emptyMessage = document.getElementById('emptyNeedsMessage');
+        const remainingNeeds = container.querySelectorAll('.need-item');
+        
+        if (remainingNeeds.length === 0 && emptyMessage) {
+            emptyMessage.style.display = 'block';
+        }
+        
+        // Reindex remaining needs
+        reindexNeeds();
+    }
+}
+
+function reindexNeeds() {
+    const container = document.getElementById('needsContainer');
+    const needs = container.querySelectorAll('.need-item');
+    needs.forEach((need, newIndex) => {
+        need.setAttribute('data-index', newIndex);
+        const title = need.querySelector('h4');
+        if (title) {
+            title.textContent = `Need ${newIndex + 1}`;
+        }
+        
+        // Update all input names
+        const inputs = need.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            if (input.name) {
+                input.name = input.name.replace(/needs\[\d+\]/, `needs[${newIndex}]`);
+            }
+            if (input.id) {
+                input.id = input.id.replace(/need_image_\d+/, `need_image_${newIndex}`);
+            }
+        });
+        
+        // Update remove button and image button
+        const removeBtn = need.querySelector('button[onclick*="removeNeed"]');
+        if (removeBtn) {
+            removeBtn.setAttribute('onclick', `removeNeed(${newIndex})`);
+        }
+        const imageBtn = need.querySelector('button[onclick*="openMediaLibrary"]');
+        if (imageBtn) {
+            imageBtn.setAttribute('onclick', `openMediaLibrary('need_image_${newIndex}')`);
+        }
+    });
+    
+    needIndex = needs.length;
+}
+
+function handleGivebackFormSubmit(event, form) {
+    event.preventDefault();
+    
+    // Collect needs data
+    const needs = [];
+    const needItems = form.querySelectorAll('.need-item');
+    
+    needItems.forEach((item) => {
+        const title = item.querySelector('input[name*="[title]"]')?.value?.trim();
+        const image = item.querySelector('input[name*="[image]"]')?.value?.trim();
+        const description = item.querySelector('textarea[name*="[description]"]')?.value?.trim();
+        
+        if (title || image || description) {
+            needs.push({
+                title: title || '',
+                image: image || '',
+                description: description || ''
+            });
+        }
+    });
+    
+    // Collect payment details
+    const paymentDetails = {
+        bank_name: form.querySelector('input[name="payment_details[bank_name]"]')?.value || '',
+        account_name: form.querySelector('input[name="payment_details[account_name]"]')?.value || '',
+        account_number: form.querySelector('input[name="payment_details[account_number]"]')?.value || '',
+        mobile_money_name: form.querySelector('input[name="payment_details[mobile_money_name]"]')?.value || '',
+        mobile_money_phone: form.querySelector('input[name="payment_details[mobile_money_phone]"]')?.value || '',
+        instructions: form.querySelector('textarea[name="payment_details[instructions]"]')?.value || ''
+    };
+    
+    // Prepare data
+    const data = {
+        title: form.querySelector('input[name="title"]')?.value || '',
+        subtitle: (form.querySelector('textarea[name="subtitle"]') || form.querySelector('input[name="subtitle"]'))?.value || '',
+        description: form.querySelector('textarea[name="description"]')?.value || '',
+        hero_image: form.querySelector('input[name="hero_image"]')?.value || '',
+        contact_phone: form.querySelector('input[name="contact_phone"]')?.value || '',
+        contact_email: form.querySelector('input[name="contact_email"]')?.value || '',
+        payment_details: paymentDetails,
+        needs: needs
+    };
+    
+    // Send AJAX request
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '💾 Saving...';
+    submitBtn.disabled = true;
+    
+    fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(async response => {
+        const text = await response.text();
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error('Failed to parse response:', text);
+            throw new Error('Server returned invalid response');
+        }
+        return result;
+    })
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast(result.message || 'Giveback content saved successfully!', 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Failed to save content. Please try again.', 'error');
+    })
+    .finally(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+    
+    return false;
+}
+</script>

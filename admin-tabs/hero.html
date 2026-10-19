@@ -1,0 +1,699 @@
+<div class="content-card" style="padding: 0;">
+    <div style="padding: 30px;">
+        <h2 style="font-size: 28px; font-weight: bold; color: #111827; margin: 0 0 30px 0;">Hero Section Management</h2>
+        
+        <form method="POST" action="#" id="heroForm" onsubmit="event.preventDefault(); handleHeroFormSubmit(event, this); return false;">
+            <!-- Main Headline -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Main Headline</label>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <input type="text" 
+                           name="headline" 
+                           id="hero_headline"
+                           class="form-input" 
+                           style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
+                           value=""
+                           placeholder="Enter main headline"
+                           onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                           oninput="updateHeadlinePreview()">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 12px; font-weight: 500; color: #6b7280; margin-bottom: 4px;">Headline Color</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="color" 
+                                       id="headline_color_picker"
+                                       name="headline_color" 
+                                       style="width: 48px; height: 40px; padding: 0; border: 2px solid #d1d5db; border-radius: 8px; cursor: pointer; flex-shrink: 0;"
+                                       value="#ffffff"
+                                       onchange="document.getElementById('headline_color_text').value=this.value; updateHeadlinePreview();">
+                                <input type="text" 
+                                       id="headline_color_text"
+                                       name="headline_color_text" 
+                                       class="form-input" 
+                                       style="flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 12px; font-family: monospace;"
+                                       value="#ffffff"
+                                       onchange="document.getElementById('headline_color_picker').value=this.value; updateHeadlinePreview();"
+                                       pattern="^#[0-9A-Fa-f]{6}$"
+                                       placeholder="#ffffff">
+                            </div>
+                        </div>
+                        <div style="margin-top: 24px;">
+                            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Preview</div>
+                            <div id="headlinePreview" 
+                                 style="padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #1a1a1a; color: #ffffff; font-size: 18px; font-weight: 600; min-width: 200px;">
+                                Welcome to SJS
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sub Headline -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Sub Headline</label>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <input type="text" 
+                           name="subheadline" 
+                           id="hero_subheadline"
+                           class="form-input" 
+                           style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
+                           value=""
+                           placeholder="Enter sub headline"
+                           onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                           onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
+                           oninput="updateSubHeadlinePreview()">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="flex: 1;">
+                            <label style="display: block; font-size: 12px; font-weight: 500; color: #6b7280; margin-bottom: 4px;">Sub Headline Color</label>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <input type="color" 
+                                       id="subheadline_color_picker"
+                                       name="subheadline_color" 
+                                       style="width: 48px; height: 40px; padding: 0; border: 2px solid #d1d5db; border-radius: 8px; cursor: pointer; flex-shrink: 0;"
+                                       value="#ffffff"
+                                       onchange="document.getElementById('subheadline_color_text').value=this.value; updateSubHeadlinePreview();">
+                                <input type="text" 
+                                       id="subheadline_color_text"
+                                       name="subheadline_color_text" 
+                                       class="form-input" 
+                                       style="flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 12px; font-family: monospace;"
+                                       value="#ffffff"
+                                       onchange="document.getElementById('subheadline_color_picker').value=this.value; updateSubHeadlinePreview();"
+                                       pattern="^#[0-9A-Fa-f]{6}$"
+                                       placeholder="#ffffff">
+                            </div>
+                        </div>
+                        <div style="margin-top: 24px;">
+                            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Preview</div>
+                            <div id="subheadlinePreview" 
+                                 style="padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #1a1a1a; color: #ffffff; font-size: 16px; font-weight: 500; min-width: 200px;">
+                                Empowering minds, shaping futures
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Description</label>
+                <textarea name="description" 
+                          id="hero_description"
+                          class="form-input" 
+                          rows="3"
+                          style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; resize: vertical; transition: all 0.2s;"
+                          placeholder="We focus on academic excellence, moral values, and holistic development for every child."
+                          onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                          onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"></textarea>
+            </div>
+            
+            <!-- Background Image -->
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Background Image</label>
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="flex: 1;">
+                        <input type="text" 
+                               name="background_image" 
+                               id="hero_background" 
+                               class="form-input" 
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; color: #6b7280;"
+                               value="" 
+                               placeholder="Select image from media library"
+                               readonly>
+                    </div>
+                    <button type="button" 
+                            onclick="openMediaLibrary('hero_background')" 
+                            style="width: 48px; height: 48px; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0;"
+                            onmouseover="this.style.background='#1d4ed8'"
+                            onmouseout="this.style.background='#2563eb'">
+                        <span style="font-size: 20px; color: white;">🖼️</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Slide Images -->
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151;">Slide Images</label>
+                    <span id="slidesCountInfo" style="font-size: 12px; color: #6b7280; font-style: italic;"></span>
+                </div>
+                <button type="button" 
+                        onclick="if(typeof openMediaLibrary === 'function') { window.currentImageField = 'hero_slides'; openMediaLibrary('hero_slides'); } else { alert('Media library not available. Please refresh the page.'); }" 
+                        style="padding: 12px 24px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 16px; transition: background 0.2s;"
+                        onmouseover="this.style.background='#1d4ed8'"
+                        onmouseout="this.style.background='#2563eb'">
+                    ➕ Add From Media Library
+                </button>
+                <div id="heroSlidesContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 12px;"></div>
+                <div id="heroSlidesMessage" style="display: block;">
+                    <p style="color: #9ca3af; font-size: 14px; margin-top: 12px; font-style: italic;">No slide images added yet. Click "Add From Media Library" to add images.</p>
+                </div>
+            </div>
+            
+            <!-- Slide Settings -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px;">
+                <div class="form-group">
+                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Slide Interval (milliseconds)</label>
+                    <input type="number" 
+                           name="slide_interval_ms" 
+                           id="slide_interval_ms"
+                           class="form-input" 
+                           style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;"
+                           value="5000"
+                           min="1000" 
+                           step="500"
+                           onchange="updateSliderPreview()"
+                           oninput="updateSliderPreview()">
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Slide Direction</label>
+                    <select name="slide_direction" 
+                            id="slide_direction"
+                            class="form-input" 
+                            style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;"
+                            onchange="updateSliderPreview()">
+                        <option value="left" selected>Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Slide Mode</label>
+                    <select name="slide_mode" 
+                            id="slide_mode"
+                            class="form-input" 
+                            style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;"
+                            onchange="updateSliderPreview()">
+                        <option value="marquee" selected>Continuous (Marquee)</option>
+                        <option value="fade">Fade</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Image Display Settings -->
+            <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">Image Display Settings</h3>
+                
+                <!-- Background Size -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Background Size</label>
+                    <select name="background_size" 
+                            id="background_size"
+                            class="form-input" 
+                            style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;"
+                            onchange="updateSliderPreview()">
+                        <option value="contain" selected>Contain (Show Full Image)</option>
+                        <option value="cover">Cover (Fill Container)</option>
+                        <option value="auto">Auto</option>
+                    </select>
+                    <p style="font-size: 12px; color: #6b7280; margin-top: 6px; margin: 0;">
+                        "Contain" shows the full image without cropping. "Cover" fills the container but may crop edges.
+                    </p>
+                </div>
+                
+                <!-- Background Position -->
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Background Position</label>
+                    <select name="background_position" 
+                            id="background_position"
+                            class="form-input" 
+                            style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white; cursor: pointer;"
+                            onchange="updateSliderPreview()">
+                        <option value="center" selected>Center</option>
+                        <option value="top">Top</option>
+                        <option value="bottom">Bottom</option>
+                        <option value="left">Left</option>
+                        <option value="right">Right</option>
+                    </select>
+                    <p style="font-size: 12px; color: #6b7280; margin-top: 6px; margin: 0;">
+                        Controls where the image is positioned within the container.
+                    </p>
+                </div>
+                
+                <!-- Image Scale -->
+                <div>
+                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">
+                        Image Scale: <span id="imageScaleValue">1x</span>
+                    </label>
+                    <div style="position: relative;">
+                        <input type="range" 
+                               name="image_scale" 
+                               id="image_scale"
+                               min="0.5" 
+                               max="2" 
+                               step="0.1"
+                               value="1"
+                               style="width: 100%; height: 8px; background: #e5e7eb; border-radius: 4px; outline: none; cursor: pointer;"
+                               oninput="document.getElementById('imageScaleValue').textContent=this.value+'x'; updateSliderPreview();"
+                               onchange="document.getElementById('imageScaleValue').textContent=this.value+'x'; updateSliderPreview();">
+                        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #6b7280;">
+                            <span>0.5x (Smaller)</span>
+                            <span>1x (Normal)</span>
+                            <span>2x (Larger)</span>
+                        </div>
+                    </div>
+                    <p style="font-size: 12px; color: #6b7280; margin-top: 6px; margin: 0;">
+                        Adjust the zoom level of the image. Use this to make images larger or smaller.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Live Preview Section -->
+            <div style="background: #f9fafb; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">🎬 Live Slider Preview</h3>
+                <div style="position: relative; width: 100%; height: 300px; border-radius: 8px; overflow: hidden; background: #1a1a1a; border: 2px solid #e5e7eb;">
+                    <div id="heroSliderPreview" style="position: absolute; inset: 0; overflow: hidden;">
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af; font-size: 14px;">
+                            Add slide images to see preview
+                        </div>
+                    </div>
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent); padding: 20px; color: white; pointer-events: none;">
+                        <div style="font-size: 16px; font-weight: 600;" id="previewHeadline">Welcome to SJS</div>
+                        <div style="font-size: 14px; margin-top: 4px; opacity: 0.9;" id="previewSubheadline">Empowering minds, shaping futures</div>
+                    </div>
+                </div>
+                <p style="font-size: 12px; color: #6b7280; margin-top: 12px; margin: 0;">
+                    This preview shows how the slider will appear on the homepage. The slider uses 3 copies for seamless infinite scrolling.
+                </p>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                <button type="submit" 
+                        style="padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #7e22ce); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(147, 51, 234, 0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <span>💾</span> Save Changes
+                </button>
+                <button type="button" 
+                        onclick="window.open('index.html', '_blank')"
+                        style="padding: 12px 24px; background: #4b5563; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                        onmouseover="this.style.background='#374151'; this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.background='#4b5563'; this.style.transform='translateY(0)'">
+                    <span>👁️</span> Preview
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../js/client-storage.js"></script>
+<script>
+// Use window scope to avoid redeclaration errors when tab is reloaded
+if (typeof window.heroSlides === 'undefined') {
+    window.heroSlides = [];
+}
+if (typeof window.heroData === 'undefined') {
+    window.heroData = {};
+}
+
+// Use local references for convenience
+const heroSlides = window.heroSlides;
+const heroData = window.heroData;
+
+(async function() {
+    await loadHeroData();
+})();
+
+async function loadHeroData() {
+    try {
+        // Load from client-side storage instead of PHP
+        heroData = await ClientStorage.hero.get();
+        
+        document.getElementById('hero_headline').value = heroData.headline || heroData.title || 'Welcome to SJS';
+            document.getElementById('hero_subheadline').value = heroData.subheadline || heroData.subtitle || 'Empowering minds, shaping futures';
+            document.getElementById('hero_description').value = heroData.description || '';
+            document.getElementById('hero_background').value = heroData.background_image || '';
+            
+            const headlineColor = heroData.headline_color || heroData.headlineColor || '#ffffff';
+            const subHeadlineColor = heroData.subheadline_color || heroData.subHeadlineColor || '#ffffff';
+            
+            document.getElementById('headline_color_picker').value = headlineColor;
+            document.getElementById('headline_color_text').value = headlineColor;
+            document.getElementById('subheadline_color_picker').value = subHeadlineColor;
+            document.getElementById('subheadline_color_text').value = subHeadlineColor;
+            
+            document.getElementById('slide_interval_ms').value = heroData.slide_interval_ms || 5000;
+            document.getElementById('slide_direction').value = heroData.slide_direction || 'left';
+            document.getElementById('slide_mode').value = heroData.slide_mode || 'marquee';
+            document.getElementById('background_size').value = heroData.background_size || 'contain';
+            document.getElementById('background_position').value = heroData.background_position || 'center';
+            document.getElementById('image_scale').value = heroData.image_scale || heroData.imageScale || 1;
+            document.getElementById('imageScaleValue').textContent = (heroData.image_scale || heroData.imageScale || 1) + 'x';
+            
+            // Load slides
+            if (heroData.slides) {
+                const allSlides = typeof heroData.slides === 'string' ? JSON.parse(heroData.slides) : heroData.slides;
+                if (Array.isArray(allSlides)) {
+                    // Get unique slides only
+                    const uniqueSlides = [];
+                    const seen = [];
+                    allSlides.forEach(slide => {
+                        const trimmed = slide ? slide.trim() : '';
+                        if (trimmed && !seen.includes(trimmed)) {
+                            uniqueSlides.push(trimmed);
+                            seen.push(trimmed);
+                        }
+                    });
+                    window.heroSlides = uniqueSlides;
+                    // Update local reference
+                    heroSlides.length = 0;
+                    heroSlides.push(...uniqueSlides);
+                }
+            }
+            
+            updateHeadlinePreview();
+            updateSubHeadlinePreview();
+            updateSlidesDisplay();
+            updateSliderPreview();
+        }
+    } catch (error) {
+        console.error('Error loading hero:', error);
+    }
+}
+
+function updateHeadlinePreview() {
+    const headline = document.getElementById('hero_headline').value || 'Welcome to SJS';
+    const color = document.getElementById('headline_color_text').value || '#ffffff';
+    const preview = document.getElementById('headlinePreview');
+    const previewHeadline = document.getElementById('previewHeadline');
+    if (preview) {
+        preview.textContent = headline;
+        preview.style.color = color;
+    }
+    if (previewHeadline) {
+        previewHeadline.textContent = headline;
+        previewHeadline.style.color = color;
+    }
+}
+
+function updateSubHeadlinePreview() {
+    const subheadline = document.getElementById('hero_subheadline').value || 'Empowering minds, shaping futures';
+    const color = document.getElementById('subheadline_color_text').value || '#ffffff';
+    const preview = document.getElementById('subheadlinePreview');
+    const previewSubheadline = document.getElementById('previewSubheadline');
+    if (preview) {
+        preview.textContent = subheadline;
+        preview.style.color = color;
+    }
+    if (previewSubheadline) {
+        previewSubheadline.textContent = subheadline;
+        previewSubheadline.style.color = color;
+    }
+}
+
+function removeSlide(button) {
+    const container = button.closest('div');
+    if (!container) return;
+    
+    const slideUrl = container.getAttribute('data-slide-url');
+    if (!slideUrl) return;
+    
+    window.heroSlides = window.heroSlides.filter(url => url !== slideUrl);
+    heroSlides.length = 0;
+    heroSlides.push(...window.heroSlides);
+    updateSlidesDisplay();
+}
+
+// Handle media library selection for slides
+// Store original selectImage function
+if (typeof window.originalSelectImage === 'undefined') {
+    window.originalSelectImage = window.selectImage;
+}
+
+// Override selectImage to handle hero slides
+window.selectImage = function(imageUrl) {
+    // Check if we're selecting for hero slides
+    const currentField = window.currentImageField || currentImageField || '';
+    if (currentField === 'hero_slides') {
+        if (!window.heroSlides) {
+            window.heroSlides = [];
+        }
+        if (!window.heroSlides.includes(imageUrl)) {
+            window.heroSlides.push(imageUrl);
+            if (heroSlides) {
+                heroSlides.push(imageUrl);
+            }
+        }
+        updateSlidesDisplay();
+        updateSliderPreview();
+        if (typeof closeMediaLibrary === 'function') {
+            closeMediaLibrary();
+        }
+        return;
+    }
+    
+    // For other fields, use original function
+    if (window.originalSelectImage && typeof window.originalSelectImage === 'function') {
+        window.originalSelectImage(imageUrl);
+    } else {
+        // Fallback: direct field update
+        const field = document.getElementById(currentField);
+        if (field) {
+            field.value = imageUrl;
+            field.dispatchEvent(new Event('change'));
+        }
+        if (typeof closeMediaLibrary === 'function') {
+            closeMediaLibrary();
+        }
+    }
+};
+
+function updateSlidesDisplay() {
+    const container = document.getElementById('heroSlidesContainer');
+    const messageDiv = document.getElementById('heroSlidesMessage');
+    const countInfo = document.getElementById('slidesCountInfo');
+    if (!container) {
+        console.warn('heroSlidesContainer not found');
+        return;
+    }
+    
+    // Ensure heroSlides array exists
+    if (!window.heroSlides) {
+        window.heroSlides = [];
+    }
+    
+    const validSlides = window.heroSlides.filter(s => s && s.trim && s.trim());
+    const uniqueSlides = [...new Set(validSlides)];
+    
+    if (countInfo) {
+        if (uniqueSlides.length > 0) {
+            const totalOnFrontend = uniqueSlides.length * 3;
+            countInfo.textContent = `${uniqueSlides.length} unique image(s) → ${totalOnFrontend} total on frontend`;
+            countInfo.style.color = '#10b981';
+        } else {
+            countInfo.textContent = '';
+        }
+    }
+    
+    // Update preview
+    if (typeof updateSliderPreview === 'function') {
+        updateSliderPreview();
+    }
+    
+    container.innerHTML = '';
+    
+    if (uniqueSlides.length === 0) {
+        if (messageDiv) messageDiv.style.display = 'block';
+        return;
+    }
+    
+    if (messageDiv) messageDiv.style.display = 'none';
+    
+    uniqueSlides.forEach((slide, index) => {
+        try {
+            const div = document.createElement('div');
+            div.style.cssText = 'position: relative; border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; background: #f9fafb; min-height: 150px;';
+            div.setAttribute('data-slide-url', slide);
+            
+            // Escape slide URL for safe HTML insertion
+            const safeSlide = slide.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+            
+            div.innerHTML = `
+                <img src="${safeSlide}" alt="Slide ${index + 1}" style="width: 100%; height: 150px; object-fit: cover; display: block;" onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
+                <div style="display: none; width: 100%; height: 150px; background: #f3f4f6; align-items: center; justify-content: center; color: #9ca3af;">
+                    <span style="font-size: 32px;">🖼️</span>
+                </div>
+                <button type="button" onclick="if(typeof removeSlide === 'function') removeSlide(this)" style="position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(220, 38, 38, 0.9); color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; z-index: 10; transition: all 0.2s;" onmouseover="this.style.background='rgba(220, 38, 38, 1)'; this.style.transform='scale(1.1)'" onmouseout="this.style.background='rgba(220, 38, 38, 0.9)'; this.style.transform='scale(1)'">✕</button>
+            `;
+            container.appendChild(div);
+        } catch (e) {
+            console.error('Error adding slide display:', e, slide);
+        }
+    });
+}
+
+function updateSliderPreview() {
+    const previewContainer = document.getElementById('heroSliderPreview');
+    if (!previewContainer) {
+        console.warn('heroSliderPreview container not found');
+        return;
+    }
+    
+    // Ensure heroSlides array exists
+    if (!window.heroSlides) {
+        window.heroSlides = [];
+    }
+    
+    const validSlides = window.heroSlides.filter(s => s && s.trim && s.trim());
+    const uniqueSlides = [...new Set(validSlides)];
+    
+    if (uniqueSlides.length === 0) {
+        previewContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af; font-size: 14px;">Add slide images to see preview</div>';
+        return;
+    }
+    
+    const copies = 3;
+    const duplicatedSlides = [];
+    for (let cycle = 0; cycle < copies; cycle++) {
+        uniqueSlides.forEach(slide => duplicatedSlides.push(slide));
+    }
+    
+    const slideMode = document.getElementById('slide_mode')?.value || 'marquee';
+    const slideDirection = document.getElementById('slide_direction')?.value || 'left';
+    const slideInterval = parseInt(document.getElementById('slide_interval_ms')?.value || 5000);
+    const backgroundSize = document.getElementById('background_size')?.value || 'contain';
+    const backgroundPosition = document.getElementById('background_position')?.value || 'center';
+    const imageScale = parseFloat(document.getElementById('image_scale')?.value || 1);
+    
+    if (slideMode === 'marquee') {
+        const marqueeDuration = Math.max(20, (slideInterval / 1000) * uniqueSlides.length * copies);
+        
+        const marquee = document.createElement('div');
+        marquee.style.cssText = `
+            display: flex;
+            height: 100%;
+            width: ${duplicatedSlides.length * 100}%;
+            animation: ${slideDirection === 'right' ? 'previewMarqueeRight' : 'previewMarquee'} ${marqueeDuration}s linear infinite;
+            will-change: transform;
+        `;
+        
+        duplicatedSlides.forEach((slide) => {
+            const slideDiv = document.createElement('div');
+            const slideWidthPercent = (100 / duplicatedSlides.length);
+            slideDiv.style.cssText = `
+                flex-shrink: 0;
+                width: ${slideWidthPercent}%;
+                height: 100%;
+                background-image: url('${slide}');
+                background-size: ${imageScale !== 1 ? `${imageScale * 100}%` : backgroundSize};
+                background-position: ${backgroundPosition};
+                background-repeat: no-repeat;
+            `;
+            marquee.appendChild(slideDiv);
+        });
+        
+        previewContainer.innerHTML = '';
+        previewContainer.appendChild(marquee);
+        
+        if (!document.getElementById('previewSliderStyles')) {
+            const style = document.createElement('style');
+            style.id = 'previewSliderStyles';
+            style.textContent = `
+                @keyframes previewMarquee {
+                    0% { transform: translateX(0); }
+                    100% { transform: translateX(-33.333%); }
+                }
+                @keyframes previewMarqueeRight {
+                    0% { transform: translateX(-33.333%); }
+                    100% { transform: translateX(0); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+    } else {
+        previewContainer.innerHTML = '';
+        uniqueSlides.forEach((slide, index) => {
+            const slideDiv = document.createElement('div');
+            slideDiv.style.cssText = `
+                position: absolute;
+                inset: 0;
+                background-image: url('${slide}');
+                background-size: ${imageScale !== 1 ? `${imageScale * 100}%` : backgroundSize};
+                background-position: ${backgroundPosition};
+                background-repeat: no-repeat;
+                opacity: ${index === 0 ? '1' : '0'};
+                transition: opacity 0.7s ease-in-out;
+            `;
+            previewContainer.appendChild(slideDiv);
+        });
+        
+        let currentFadeIndex = 0;
+        setInterval(() => {
+            const fadeSlides = previewContainer.querySelectorAll('div');
+            if (fadeSlides.length > 1) {
+                fadeSlides[currentFadeIndex].style.opacity = '0';
+                currentFadeIndex = (currentFadeIndex + 1) % fadeSlides.length;
+                fadeSlides[currentFadeIndex].style.opacity = '1';
+            }
+        }, slideInterval);
+    }
+}
+
+async function handleHeroFormSubmit(event, form) {
+    event.preventDefault();
+    
+    // Ensure heroSlides array exists
+    if (!window.heroSlides || !Array.isArray(window.heroSlides)) {
+        window.heroSlides = [];
+    }
+    
+    const validSlides = window.heroSlides.filter(s => s && typeof s === 'string' && s.trim && s.trim());
+    const uniqueSlides = [...new Set(validSlides)];
+    
+    const data = {
+        headline: form.querySelector('input[name="headline"]').value || '',
+        subheadline: form.querySelector('input[name="subheadline"]').value || '',
+        description: form.querySelector('textarea[name="description"]').value || '',
+        background_image: form.querySelector('input[name="background_image"]').value || '',
+        headline_color: form.querySelector('input[name="headline_color"]').value || '#ffffff',
+        subheadline_color: form.querySelector('input[name="subheadline_color"]').value || '#ffffff',
+        slide_interval_ms: parseInt(form.querySelector('input[name="slide_interval_ms"]').value || 5000),
+        slide_direction: form.querySelector('select[name="slide_direction"]').value || 'left',
+        slide_mode: form.querySelector('select[name="slide_mode"]').value || 'marquee',
+        background_size: form.querySelector('select[name="background_size"]').value || 'contain',
+        background_position: form.querySelector('select[name="background_position"]').value || 'center',
+        image_scale: parseFloat(form.querySelector('input[name="image_scale"]').value || 1),
+        slides: uniqueSlides
+    };
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span>💾</span> Saving...';
+    submitBtn.disabled = true;
+    
+    try {
+        const result = await ClientStorage.hero.save(data);
+        
+        if (result.success) {
+            // Trigger update event for immediate frontend refresh
+            window.dispatchEvent(new CustomEvent('adminDataSaved', { 
+                detail: { settingsKey: 'hero', data: data } 
+            }));
+            
+            if (typeof showToast === 'function') {
+                showToast(result.message || 'Hero content saved successfully!', 'success');
+            } else {
+                alert('Hero content saved successfully!');
+            }
+            setTimeout(() => loadHeroData(), 500);
+        } else {
+            throw new Error('Save failed');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        if (typeof showToast === 'function') {
+            showToast('Failed to save hero content. Please try again.', 'error');
+        } else {
+            alert('Failed to save hero content. Please try again.');
+        }
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+    
+    return false;
+}
+</script>

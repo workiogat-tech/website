@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>School Background - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <p class="page-hero-caption">Know Us Better</p>
+                    <h1 class="page-hero-title">School Background</h1>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <!-- Our History Section (Text Left, Image Right) -->
+                <div class="school-bg-history-section">
+                    <div class="school-bg-history-text">
+                        <h3 class="school-bg-section-title">Our History</h3>
+                        <p>SJS was founded in 1985 and is proudly celebrating 40 years of excellence in 2025. The school sits on land donated by the Mukono Diocese Church of Uganda, under the leadership of the Late Archbishop Livingstone Mpalanyi Nkoyooyo, the first Bishop of Mukono.<br><br>It began with just seven students at SJS Boarding Primary School, guided by Headteacher Mr. Mugwano Noah. The first Headteacher, Late Mr. Batte Abraham, worked alongside the first Board Chairperson, Rev. Canon Yusufu Tubwomwe, to lay the school's strong foundation.</p>
+                    </div>
+                    <div class="school-bg-history-image">
+                        <div class="image-placeholder">🖼️ No image set</div>
+                    </div>
+                </div>
+
+                <!-- Main Content Section (Image Left, Text Right) -->
+                <div class="school-bg-journey-section" id="main-content-section" style="display: none;">
+                    <div class="school-bg-journey-image">
+                        <div class="image-placeholder">🖼️ No image set</div>
+                    </div>
+                    <div class="school-bg-journey-text">
+                        <h3 class="school-bg-section-title" id="main-content-title">our history and foundation</h3>
+                        <p id="main-content-text"></p>
+                    </div>
+                </div>
+                
+                <!-- Key Milestones Section -->
+                <div id="milestones-section" style="display: none;"></div>
+
+                <!-- Video Section -->
+                <div id="video-section" style="display: none;"></div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            const data = await PageDataLoader.loadSchoolBackgroundData();
+                
+                // Update hero
+                if (data.backgroundContent) {
+                    const hero = document.querySelector('.page-hero-section');
+                    if (data.backgroundContent.subtitle) {
+                        const caption = hero.querySelector('.page-hero-caption');
+                        if (caption) caption.textContent = data.backgroundContent.subtitle;
+                    }
+                    if (data.backgroundContent.title) {
+                        const title = hero.querySelector('.page-hero-title');
+                        if (title) title.textContent = data.backgroundContent.title;
+                    }
+                    if (data.backgroundContent.hero_image) {
+                        const bg = hero.querySelector('.page-hero-background');
+                        if (bg) {
+                            const heroImageUrl = data.backgroundContent.hero_image.replace(/'/g, "\\'");
+                            bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                        }
+                    }
+                }
+                
+                // Update history section - check both data.historySection and data.backgroundContent.history_section
+                let historySection = data.historySection || (data.backgroundContent && data.backgroundContent.history_section) || null;
+                
+                if (historySection && historySection.content) {
+                    const historyText = document.querySelector('.school-bg-history-text');
+                    if (historyText) {
+                        if (historySection.title) {
+                            const title = historyText.querySelector('.school-bg-section-title');
+                            if (title) title.textContent = historySection.title;
+                        }
+                        if (historySection.content) {
+                            const p = historyText.querySelector('p');
+                            if (p) p.innerHTML = escapeHtml(historySection.content).replace(/\n/g, '<br>');
+                        }
+                    }
+                    if (historySection.image) {
+                        const historyImage = document.querySelector('.school-bg-history-image');
+                        if (historyImage) {
+                            historyImage.innerHTML = `<img src="${escapeHtml(historySection.image)}" alt="Our History">`;
+                        }
+                    }
+                }
+                
+                // Update main content section
+                if (data.backgroundContent && data.backgroundContent.content) {
+                    const mainSection = document.getElementById('main-content-section');
+                    if (mainSection) {
+                        mainSection.style.display = 'block';
+                        const title = mainSection.querySelector('.school-bg-section-title');
+                        if (title) title.textContent = data.backgroundContent.content_title || data.backgroundContent.subtitle || 'our history and foundation';
+                        const text = document.getElementById('main-content-text');
+                        if (text) text.innerHTML = escapeHtml(data.backgroundContent.content).replace(/\n/g, '<br>');
+                        if (data.backgroundContent.content_image) {
+                            const imageDiv = mainSection.querySelector('.school-bg-journey-image');
+                            if (imageDiv) {
+                                imageDiv.innerHTML = `<img src="${escapeHtml(data.backgroundContent.content_image)}" alt="School Background">`;
+                            }
+                        }
+                    }
+                }
+                
+                // Render milestones
+                if (data.milestones && data.milestones.length > 0) {
+                    const milestonesSection = document.getElementById('milestones-section');
+                    if (milestonesSection) {
+                        milestonesSection.style.display = 'block';
+                        let milestonesHtml = `
+                            <div class="section-padding bg-light" style="margin-top: 40px;">
+                                <div class="container">
+                                    <h2 class="section-title text-center" style="margin-bottom: 40px;">Key Milestones</h2>
+                                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
+                        `;
+                        data.milestones.forEach(milestone => {
+                            milestonesHtml += `
+                                <div style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
+                                    <div style="width: 60px; height: 60px; background: ${escapeHtml(milestone.icon_color || '#ef4444')}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 24px;">
+                                        🏆
+                                    </div>
+                                    <h4 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 10px 0;">
+                                        ${escapeHtml(milestone.title || '')}
+                                    </h4>
+                                    <p style="color: #6b7280; margin: 0; font-size: 14px;">
+                                        ${escapeHtml(milestone.description || '')}
+                                    </p>
+                                </div>
+                            `;
+                        });
+                        milestonesHtml += `
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        milestonesSection.innerHTML = milestonesHtml;
+                    }
+                }
+                
+                // Render video
+                if (data.backgroundContent && (data.backgroundContent.video_url || data.backgroundContent.video_embed_code)) {
+                    const videoSection = document.getElementById('video-section');
+                    if (videoSection) {
+                        videoSection.style.display = 'block';
+                        let videoHtml = `
+                            <div class="section-padding bg-light" style="margin-top: 40px;">
+                                <div class="container">
+                                    <h2 class="section-title text-center" style="margin-bottom: 30px;">Watch Our Story</h2>
+                                    <div style="max-width: 800px; margin: 0 auto;">
+                        `;
+                        
+                        if (data.backgroundContent.video_embed_code) {
+                            const embedCode = data.backgroundContent.video_embed_code.trim();
+                            if (embedCode.includes('<iframe') || embedCode.includes('<embed') || embedCode.includes('<video')) {
+                                videoHtml += `
+                                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                                        ${embedCode}
+                                    </div>
+                                `;
+                            } else {
+                                // Treat as URL
+                                videoHtml += renderVideoFromUrl(embedCode);
+                            }
+                        } else if (data.backgroundContent.video_url) {
+                            videoHtml += renderVideoFromUrl(data.backgroundContent.video_url);
+                        }
+                        
+                        videoHtml += `
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        videoSection.innerHTML = videoHtml;
+                    }
+                }
+            } catch (error) {
+                console.warn('Using default school background data');
+            }
+        })();
+        
+        function renderVideoFromUrl(videoUrl) {
+            if (!videoUrl) return '';
+            
+            // YouTube
+            if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+                const match = videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                const videoId = match ? match[1] : '';
+                if (videoId) {
+                    return `
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                            <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                                    src="https://www.youtube.com/embed/${escapeHtml(videoId)}" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen></iframe>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Vimeo
+            if (videoUrl.includes('vimeo.com')) {
+                const match = videoUrl.match(/vimeo\.com\/(\d+)/);
+                const videoId = match ? match[1] : '';
+                if (videoId) {
+                    return `
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                            <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                                    src="https://player.vimeo.com/video/${escapeHtml(videoId)}" 
+                                    frameborder="0" 
+                                    allow="autoplay; fullscreen; picture-in-picture" 
+                                    allowfullscreen></iframe>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Direct video file
+            return `
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                    <video controls style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px;">
+                        <source src="${escapeHtml(videoUrl)}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            `;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

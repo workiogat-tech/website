@@ -1,0 +1,243 @@
+<div class="content-card" style="padding: 0;">
+    <div style="padding: 30px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 30px;">
+            <span style="font-size: 28px;">🎨</span>
+            <h2 style="font-size: 28px; font-weight: bold; color: #111827; margin: 0;">Branding & Identity</h2>
+        </div>
+        
+        <form method="POST" id="brandingForm" onsubmit="return handleBrandingFormSubmit(event, this);">
+            <!-- School Name -->
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">School Name</label>
+                <input type="text" 
+                       name="school_name" 
+                       class="form-input" 
+                       style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
+                       id="school_name"
+                       value="" 
+                       placeholder="SJS ACADEMY"
+                       onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                       onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+            </div>
+            
+            <!-- Tagline -->
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Tagline</label>
+                <input type="text" 
+                       name="tagline" 
+                       class="form-input" 
+                       style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
+                       id="tagline"
+                       value="" 
+                       placeholder="Shaping Tomorrows Leaders Today"
+                       onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                       onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+            </div>
+            
+            <!-- School Logo -->
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">School Logo</label>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div id="logoPreview" style="width: 80px; height: 80px; border-radius: 50%; border: 2px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <span style="font-size: 32px; color: #9ca3af;">🖼️</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="text" 
+                               name="logo" 
+                               id="branding_logo" 
+                               class="form-input" 
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; color: #6b7280;"
+                               value="" 
+                               placeholder="Select logo from media library"
+                               readonly
+                               onchange="updateLogoPreview(this.value)">
+                    </div>
+                    <button type="button" 
+                            onclick="openMediaLibrary('branding_logo')" 
+                            style="width: 48px; height: 48px; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0;"
+                            onmouseover="this.style.background='#1d4ed8'"
+                            onmouseout="this.style.background='#2563eb'">
+                        <span style="font-size: 20px; color: white;">🖼️</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Colors Section -->
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 30px;">
+                <!-- Primary Color -->
+                <div class="form-group">
+                    <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Primary Color</label>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input type="color" 
+                               id="primary_color_picker"
+                               name="primary_color" 
+                               style="width: 60px; height: 50px; padding: 0; border: 2px solid #d1d5db; border-radius: 8px; cursor: pointer; flex-shrink: 0;"
+                               value="#800020"
+                               onchange="document.getElementById('primary_color_text').value=this.value">
+                        <input type="text" 
+                               id="primary_color_text"
+                               name="primary_color_text" 
+                               class="form-input" 
+                               style="flex: 1; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: monospace;"
+                               value="#800020"
+                               onchange="document.getElementById('primary_color_picker').value=this.value"
+                               pattern="^#[0-9A-Fa-f]{6}$"
+                               placeholder="#800020">
+                    </div>
+                </div>
+                
+                <!-- Secondary Color -->
+                <div class="form-group">
+                    <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Secondary Color</label>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <input type="color" 
+                               id="secondary_color_picker"
+                               name="secondary_color" 
+                               style="width: 60px; height: 50px; padding: 0; border: 2px solid #d1d5db; border-radius: 8px; cursor: pointer; flex-shrink: 0;"
+                               value="#6B0000"
+                               onchange="document.getElementById('secondary_color_text').value=this.value">
+                        <input type="text" 
+                               id="secondary_color_text"
+                               name="secondary_color_text" 
+                               class="form-input" 
+                               style="flex: 1; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: monospace;"
+                               value="#6B0000"
+                               onchange="document.getElementById('secondary_color_picker').value=this.value"
+                               pattern="^#[0-9A-Fa-f]{6}$"
+                               placeholder="#6B0000">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                <button type="submit" 
+                        style="padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #7e22ce); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(147, 51, 234, 0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <span>💾</span> Save Changes
+                </button>
+                <button type="button" 
+                        onclick="window.open('index.html', '_blank')"
+                        style="padding: 12px 24px; background: #4b5563; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                        onmouseover="this.style.background='#374151'; this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.background='#4b5563'; this.style.transform='translateY(0)'">
+                    <span>👁️</span> Preview
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../js/client-storage.js"></script>
+<script>
+// Load branding data on page load using client-side storage
+(async function() {
+    try {
+        // Ensure ClientStorage is loaded before use
+        let branding;
+        if (typeof window.ErrorHandler !== 'undefined') {
+            const result = await window.ErrorHandler.ensureDependencies(['ClientStorage'], async () => {
+                return await ClientStorage.branding.get();
+            }, 'branding-load');
+            if (result && !result.error) {
+                branding = result;
+            } else {
+                // Fallback: try direct access
+                if (typeof ClientStorage !== 'undefined') {
+                    branding = await ClientStorage.branding.get();
+                } else {
+                    throw new Error('ClientStorage not available');
+                }
+            }
+        } else {
+            // Fallback: wait for ClientStorage to be available
+            let attempts = 0;
+            while (typeof ClientStorage === 'undefined' && attempts < 50) {
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            if (typeof ClientStorage === 'undefined') {
+                throw new Error('ClientStorage not available');
+            }
+            branding = await ClientStorage.branding.get();
+        }
+        
+        document.getElementById('school_name').value = branding.school_name || 'SJS ACADEMY';
+        document.getElementById('tagline').value = branding.tagline || 'Shaping Tomorrows Leaders Today';
+        document.getElementById('branding_logo').value = branding.logo || '';
+        document.getElementById('primary_color_picker').value = branding.primary_color || '#800020';
+        document.getElementById('primary_color_text').value = branding.primary_color || '#800020';
+        document.getElementById('secondary_color_picker').value = branding.secondary_color || '#6B0000';
+        document.getElementById('secondary_color_text').value = branding.secondary_color || '#6B0000';
+        updateLogoPreview(branding.logo || '');
+    } catch (error) {
+        if (window.ErrorHandler) {
+            window.ErrorHandler.handle(error, 'branding-load', true);
+        } else {
+            console.error('Error loading branding:', error);
+        }
+    }
+})();
+
+async function handleBrandingFormSubmit(event, form) {
+    event.preventDefault();
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span>💾</span> Saving...';
+    submitBtn.disabled = true;
+    
+    try {
+        const data = {
+            school_name: form.querySelector('[name="school_name"]').value || '',
+            tagline: form.querySelector('[name="tagline"]').value || '',
+            logo: form.querySelector('[name="logo"]').value || '',
+            primary_color: form.querySelector('[name="primary_color"]').value || '#800020',
+            secondary_color: form.querySelector('[name="secondary_color"]').value || '#6B0000'
+        };
+        
+        const result = await ClientStorage.branding.save(data);
+        
+        if (result.success) {
+            // Trigger update event for immediate frontend refresh
+            window.dispatchEvent(new CustomEvent('adminDataSaved', { 
+                detail: { settingsKey: 'branding', data: data } 
+            }));
+            
+            if (typeof showToast === 'function') {
+                showToast(result.message || 'Branding saved successfully!', 'success');
+            } else {
+                alert('Branding saved successfully!');
+            }
+        } else {
+            throw new Error('Save failed');
+        }
+    } catch (error) {
+        if (window.ErrorHandler) {
+            window.ErrorHandler.handle(error, 'branding-save', true);
+        } else {
+            console.error('Save error:', error);
+            if (typeof showToast === 'function') {
+                showToast('Failed to save branding. Please try again.', 'error');
+            } else {
+                alert('Failed to save branding. Please try again.');
+            }
+        }
+    } finally {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+    
+    return false;
+}
+
+function updateLogoPreview(url) {
+    const preview = document.getElementById('logoPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="School Logo" style="width: 80px; height: 80px; object-fit: contain; border-radius: 50%; border: 2px solid #e5e7eb; padding: 4px; background: white;" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\\'font-size: 32px; color: #9ca3af;\\'>🖼️</span>'">`;
+    } else {
+        preview.innerHTML = '<span style="font-size: 32px; color: #9ca3af;">🖼️</span>';
+    }
+}
+</script>

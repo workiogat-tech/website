@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>People Behind School - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <p class="page-hero-caption">Meet the Team</p>
+                    <h1 class="page-hero-title">People Behind the School</h1>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div id="intro-content" style="max-width: 900px; margin: 0 auto 50px; text-align: center;"></div>
+                
+                <div class="section-header text-center" style="margin-bottom: 40px;">
+                    <h2 class="section-title" style="font-size: 2.5rem; font-weight: bold; color: var(--text-color); margin-bottom: 10px;">Our Leadership Team</h2>
+                    <p class="section-subtitle" style="font-size: 1.125rem; color: var(--text-light);">Meet the dedicated individuals who guide and shape our school's vision and excellence</p>
+                </div>
+
+                <div id="people-container">
+                    <div class="text-center" style="padding: 60px 20px;">
+                        <p style="font-size: 18px; color: var(--text-light);">No people information available at this time. Please check back later.</p>
+                    </div>
+                </div>
+
+                <div id="video-section" style="display: none; margin-top: 60px; max-width: 900px; margin-left: auto; margin-right: auto;"></div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            try {
+                const data = await PageDataLoader.loadPeopleBehindSchoolData();
+                
+                // Update hero
+                if (data.peopleContent) {
+                    const hero = document.querySelector('.page-hero-section');
+                    if (data.peopleContent.subtitle) {
+                        const caption = hero.querySelector('.page-hero-caption');
+                        if (caption) caption.textContent = data.peopleContent.subtitle;
+                    }
+                    if (data.peopleContent.title) {
+                        const title = hero.querySelector('.page-hero-title');
+                        if (title) title.textContent = data.peopleContent.title;
+                    }
+                    if (data.peopleContent.hero_image) {
+                        const bg = hero.querySelector('.page-hero-background');
+                        if (bg) {
+                            const heroImageUrl = data.peopleContent.hero_image.replace(/'/g, "\\'");
+                            bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                        }
+                    }
+                }
+                
+                // Render intro content
+                if (data.peopleContent && data.peopleContent.content) {
+                    const introDiv = document.getElementById('intro-content');
+                    if (introDiv) {
+                        introDiv.innerHTML = `
+                            <p style="font-size: 18px; line-height: 1.8; color: var(--text-color);">
+                                ${escapeHtml(data.peopleContent.content).replace(/\n/g, '<br>')}
+                            </p>
+                        `;
+                    }
+                }
+                
+                // Render people
+                if (data.people && data.people.length > 0) {
+                    const container = document.getElementById('people-container');
+                    let peopleHtml = '<div class="people-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 320px)); gap: 30px; max-width: 1400px; margin: 0 auto; justify-content: center;">';
+                    data.people.forEach(person => {
+                        const personPhoto = person.photo || person.image || '';
+                        const personName = person.full_name || person.name || '';
+                        const personTitle = person.title || person.position || '';
+                        const personBio = person.biography || person.description || '';
+                        peopleHtml += `
+                            <div class="person-card card-gradient-purple" style="overflow: hidden; width: 100%; max-width: 320px; margin: 0 auto;">
+                                ${personPhoto ? `
+                                    <div class="person-image" style="width: 100%; height: 240px; position: relative; overflow: hidden; border-radius: 24px 24px 0 0;">
+                                        <img src="${escapeHtml(personPhoto)}" alt="${escapeHtml(personName)}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        <div style="position: absolute; top: 15px; left: 15px; width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                            <div style="width: 40px; height: 40px; background: var(--primary-color); border-radius: 50%;"></div>
+                                        </div>
+                                    </div>
+                                ` : `
+                                    <div class="person-image-placeholder" style="width: 100%; height: 240px; background: linear-gradient(135deg, var(--primary-color) 0%, #a00028 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 64px; position: relative; border-radius: 24px 24px 0 0;">
+                                        ${escapeHtml((personName || '?').charAt(0))}
+                                        <div style="position: absolute; top: 15px; left: 15px; width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+                                            <div style="width: 40px; height: 40px; background: var(--primary-color); border-radius: 50%;"></div>
+                                        </div>
+                                    </div>
+                                `}
+                                <div style="padding: 20px;">
+                                    <h3 style="font-size: 20px; font-weight: 700; color: #111827; margin-bottom: 6px;">${escapeHtml(personName)}</h3>
+                                    ${personTitle ? `<p style="font-size: 16px; color: var(--primary-color); font-weight: 600; margin-bottom: 8px;">${escapeHtml(personTitle)}</p>` : ''}
+                                    ${personBio ? `<p style="font-size: 14px; color: #4b5563; line-height: 1.6; margin-bottom: 10px;">${escapeHtml(personBio).replace(/\n/g, '<br>')}</p>` : ''}
+                                    ${person.email ? `<p style="font-size: 13px; color: #6b7280; margin-top: 8px;">📧 <a href="mailto:${escapeHtml(person.email)}" style="color: var(--primary-color); text-decoration: none;">${escapeHtml(person.email)}</a></p>` : ''}
+                                    ${person.phone ? `<p style="font-size: 13px; color: #6b7280; margin-top: 5px;">📞 <a href="tel:${escapeHtml(person.phone)}" style="color: var(--primary-color); text-decoration: none;">${escapeHtml(person.phone)}</a></p>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    peopleHtml += '</div>';
+                    container.innerHTML = peopleHtml;
+                }
+                
+                // Render video
+                if (data.peopleContent && (data.peopleContent.video_url || data.peopleContent.video_embed_code)) {
+                    const videoSection = document.getElementById('video-section');
+                    if (videoSection) {
+                        videoSection.style.display = 'block';
+                        let videoHtml = '<h2 class="section-title" style="text-align: center; margin-bottom: 30px;">Video</h2>';
+                        
+                        if (data.peopleContent.video_embed_code) {
+                            const embedCode = data.peopleContent.video_embed_code.trim();
+                            if (embedCode.includes('<iframe') || embedCode.includes('<embed') || embedCode.includes('<video')) {
+                                videoHtml += `
+                                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                                        ${embedCode}
+                                    </div>
+                                `;
+                            } else {
+                                videoHtml += renderVideoFromUrl(embedCode);
+                            }
+                        } else if (data.peopleContent.video_url) {
+                            videoHtml += renderVideoFromUrl(data.peopleContent.video_url);
+                        }
+                        
+                        videoSection.innerHTML = videoHtml;
+                    }
+                }
+            } catch (error) {
+                console.warn('Using default people data');
+            }
+        })();
+        
+        function renderVideoFromUrl(videoUrl) {
+            if (!videoUrl) return '';
+            
+            // YouTube
+            if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+                const match = videoUrl.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+                const videoId = match ? match[1] : '';
+                if (videoId) {
+                    return `
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                            <iframe src="https://www.youtube.com/embed/${escapeHtml(videoId)}" 
+                                    frameborder="0" 
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                    allowfullscreen
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Vimeo
+            if (videoUrl.includes('vimeo.com')) {
+                const match = videoUrl.match(/vimeo\.com\/(\d+)/);
+                const videoId = match ? match[1] : '';
+                if (videoId) {
+                    return `
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                            <iframe src="https://player.vimeo.com/video/${escapeHtml(videoId)}" 
+                                    frameborder="0" 
+                                    allow="autoplay; fullscreen; picture-in-picture" 
+                                    allowfullscreen
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></iframe>
+                        </div>
+                    `;
+                }
+            }
+            
+            // Direct video file
+            return `
+                <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
+                    <video controls style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px;">
+                        <source src="${escapeHtml(videoUrl)}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            `;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

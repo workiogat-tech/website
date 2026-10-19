@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testimonials - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <h1 class="page-hero-title">Testimonials</h1>
+                    <p class="page-hero-subtitle">What Our Community Says</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="testimonials-section section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">What Our Community Says</h2>
+                    <p class="section-subtitle">Hear from our students, parents, and alumni about their experiences at Excellence Academy and how we've made a difference in their lives.</p>
+                </div>
+                <div id="testimonials-container">
+                    <div class="text-center" style="padding: 60px 20px;">
+                        <p style="font-size: 18px; color: var(--text-light);">Testimonials will be displayed here once added to the system.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            const data = await PageDataLoader.loadTestimonialsData();
+            const container = document.getElementById('testimonials-container');
+            
+            // Update hero
+            if (data.testimonialsSettings) {
+                const hero = document.querySelector('.page-hero-section');
+                if (data.testimonialsSettings.title) {
+                    const title = hero.querySelector('.page-hero-title');
+                    if (title) title.textContent = data.testimonialsSettings.title;
+                }
+                if (data.testimonialsSettings.subtitle) {
+                    const subtitle = hero.querySelector('.page-hero-subtitle');
+                    if (subtitle) subtitle.textContent = data.testimonialsSettings.subtitle;
+                }
+                if (data.testimonialsSettings.hero_image) {
+                    const bg = hero.querySelector('.page-hero-background');
+                    if (bg) {
+                        const heroImageUrl = data.testimonialsSettings.hero_image.replace(/'/g, "\\'");
+                        bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                    }
+                }
+            }
+            
+            // Render testimonials
+            if (data.testimonials && data.testimonials.length > 0) {
+                // Duplicate for seamless loop
+                const duplicatedTestimonials = [...data.testimonials, ...data.testimonials, ...data.testimonials];
+                let testimonialsHtml = `
+                    <div class="testimonials-slider-wrapper">
+                        <div class="testimonials-slider" id="testimonialsSlider">
+                `;
+                duplicatedTestimonials.forEach(testimonial => {
+                    const rating = testimonial.rating || 5;
+                    let starsHtml = '';
+                    for (let i = 0; i < rating; i++) {
+                        starsHtml += '<span class="star filled">★</span>';
+                    }
+                    testimonialsHtml += `
+                        <div class="testimonial-card-slide">
+                            <div class="testimonial-quote-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="#2563eb">
+                                    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path>
+                                    <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"></path>
+                                </svg>
+                            </div>
+                            <div class="testimonial-rating">${starsHtml}</div>
+                            <p class="testimonial-content">"${escapeHtml(testimonial.content || '')}"</p>
+                            <div class="testimonial-author">
+                                ${testimonial.image ? `
+                                    <img src="${escapeHtml(testimonial.image)}" alt="${escapeHtml(testimonial.name)}" class="testimonial-avatar">
+                                ` : `
+                                    <div class="testimonial-avatar-placeholder"></div>
+                                `}
+                                <div class="testimonial-author-info">
+                                    <h4 class="testimonial-author-name">${escapeHtml(testimonial.name || '')}</h4>
+                                    <p class="testimonial-author-role">${escapeHtml(testimonial.position || 'parent')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                testimonialsHtml += `
+                        </div>
+                    </div>
+                `;
+                container.innerHTML = testimonialsHtml;
+                
+                // Initialize slider animation
+                const slider = document.getElementById('testimonialsSlider');
+                if (slider) {
+                    const slideWidth = 100 / data.testimonials.length;
+                    slider.style.width = `${duplicatedTestimonials.length * 100}%`;
+                    slider.style.animation = `testimonialsSlide ${data.testimonials.length * 5}s linear infinite`;
+                }
+            }
+        })();
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

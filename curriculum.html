@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curriculum - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <h1 class="page-hero-title">Curriculum</h1>
+                    <p class="page-hero-subtitle">Our Educational Programs</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Our Educational Programs</h2>
+                    <p class="section-subtitle">We offer a comprehensive curriculum designed to develop well-rounded individuals prepared for success in all areas of life.</p>
+                </div>
+
+                <div class="curriculum-programs-grid" id="curriculum-programs">
+                    <!-- Default program -->
+                    <div class="curriculum-program-card card-blue">
+                        <div class="program-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="program-title">Nursery Education Program</h3>
+                        <p class="program-description">Our nursery program focuses on early childhood development, fostering communication skills, creativity, social interaction, and independence in a nurturing environment.</p>
+                        <div class="program-subjects">
+                            <h4 class="subjects-heading">Key Subjects:</h4>
+                            <ul class="subjects-list">
+                                <li>Language Development</li>
+                                <li>Early Mathematics</li>
+                                <li>Creative Arts</li>
+                                <li>Physical Activities</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Why Choose Our Curriculum Section -->
+                <div class="curriculum-why-section" id="curriculum-why" style="margin-top: 60px;">
+                    <h3 class="curriculum-why-title">Why Choose Our Curriculum?</h3>
+                    <div class="curriculum-benefits-grid">
+                        <div class="curriculum-benefit-card">
+                            <svg class="benefit-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2">
+                                <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                <path d="M6 12v5c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-5"></path>
+                            </svg>
+                            <h4 class="benefit-title">Academic Excellence</h4>
+                            <p class="benefit-description">Rigorous academic programs that challenge and inspire students</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            const data = await PageDataLoader.loadCurriculumData();
+            const programsContainer = document.getElementById('curriculum-programs');
+            const whyContainer = document.getElementById('curriculum-why');
+            
+            // Update hero
+            if (data.curriculumContent) {
+                const hero = document.querySelector('.page-hero-section');
+                if (data.curriculumContent.page_title) {
+                    const title = hero.querySelector('.page-hero-title');
+                    if (title) title.textContent = data.curriculumContent.page_title;
+                }
+                if (data.curriculumContent.page_subtitle) {
+                    const subtitle = hero.querySelector('.page-hero-subtitle');
+                    if (subtitle) subtitle.textContent = data.curriculumContent.page_subtitle;
+                }
+                if (data.curriculumContent.hero_image) {
+                    const bg = hero.querySelector('.page-hero-background');
+                    if (bg) {
+                        const heroImageUrl = data.curriculumContent.hero_image.replace(/'/g, "\\'");
+                        bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                    }
+                }
+            }
+            
+            // Render programs
+            if (data.curriculumPrograms && data.curriculumPrograms.length > 0) {
+                const cardColors = ['card-blue', 'card-purple', 'card-green', 'card-orange', 'card-pink', 'card-cyan'];
+                let programsHtml = '';
+                data.curriculumPrograms.forEach((program, index) => {
+                    const colorClass = cardColors[index % cardColors.length];
+                    const subjects = program.subjects ? program.subjects.split('\n').filter(s => s.trim()) : [];
+                    programsHtml += `
+                        <div class="curriculum-program-card ${colorClass}">
+                            <div class="program-icon">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="program-title">${escapeHtml(program.program_title || '')}</h3>
+                            ${program.description ? `<p class="program-description">${escapeHtml(program.description)}</p>` : ''}
+                            ${subjects.length > 0 ? `
+                                <div class="program-subjects">
+                                    <h4 class="subjects-heading">Key Subjects:</h4>
+                                    <ul class="subjects-list">
+                                        ${subjects.map(s => `<li>${escapeHtml(s.trim())}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+                programsContainer.innerHTML = programsHtml;
+            }
+            
+            // Render why choose items
+            if (data.curriculumWhyChooseItems && data.curriculumWhyChooseItems.length > 0) {
+                const iconColors = ['#fbbf24', '#60a5fa', '#fbbf24', '#60a5fa', '#10b981', '#ef4444'];
+                let benefitsHtml = '';
+                data.curriculumWhyChooseItems.forEach((item, index) => {
+                    const iconColor = iconColors[index % iconColors.length];
+                    const iconName = (item.icon_name || '').toLowerCase();
+                    let iconSvg = '';
+                    if (iconName.includes('graduation') || iconName.includes('academic')) {
+                        iconSvg = '<path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-5"></path>';
+                    } else if (iconName.includes('user') || iconName.includes('people')) {
+                        iconSvg = '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path>';
+                    } else {
+                        iconSvg = '<path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-5"></path>';
+                    }
+                    benefitsHtml += `
+                        <div class="curriculum-benefit-card">
+                            <svg class="benefit-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${iconColor}" stroke-width="2">
+                                ${iconSvg}
+                            </svg>
+                            <h4 class="benefit-title">${escapeHtml(item.title || '')}</h4>
+                            ${item.description ? `<p class="benefit-description">${escapeHtml(item.description)}</p>` : ''}
+                        </div>
+                    `;
+                });
+                if (whyContainer && benefitsHtml) {
+                    const title = data.curriculumWhyChoose?.section_title || 'Why Choose Our Curriculum?';
+                    whyContainer.innerHTML = `
+                        <h3 class="curriculum-why-title">${escapeHtml(title)}</h3>
+                        <div class="curriculum-benefits-grid">${benefitsHtml}</div>
+                    `;
+                }
+            }
+        })();
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<div class="content-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+            <h2 style="font-size: 24px; font-weight: bold; color: #111827; margin: 0 0 8px 0;">📝 Admission Management</h2>
+            <p style="color: #6b7280; margin: 0;">Manage admission page content including hero image, admission levels, and fee structure.</p>
+        </div>
+        <button onclick="window.open('admission.html', '_blank')" style="padding: 8px 16px; background: #4b5563; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <span>🔗</span> Preview Page
+        </button>
+    </div>
+    
+    <form method="POST" action="api/content/admission.php" id="admissionForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <!-- Hero Image Section -->
+        <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 25px; border-radius: 12px; border: 2px solid #0ea5e9; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">🎯 Page Header (Hero Section)</h3>
+            <div class="form-group">
+                <label class="form-label">Hero Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="admissionHeroPreview" style="flex-shrink: 0;"></div>
+                    <div style="flex: 1;">
+                        <input type="text" name="hero_image" id="admission_hero_image" class="form-input" 
+                               placeholder="Select image from media library" readonly
+                               onchange="updateAdmissionHeroPreview(this.value)">
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('admission_hero_image')" 
+                            class="btn btn-primary">🖼️ Select Image</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Admission Levels Section -->
+        <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Admission Levels</h3>
+                <button type="button" onclick="addAdmissionLevel()" class="btn btn-primary">➕ Add Level</button>
+            </div>
+            <div id="admissionLevelsList">
+                <div style="text-align: center; padding: 40px; color: #999;">Loading admission levels...</div>
+            </div>
+        </div>
+        
+        <!-- Fee Structure Section -->
+        <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+            <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">Fee Structure</h3>
+            <div class="form-group">
+                <label class="form-label">Fee Structure Content</label>
+                <textarea name="fee_structure" class="form-input" rows="6" id="fee_structure" placeholder="Enter fee structure information..."></textarea>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 30px;">
+            <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+            <button type="button" onclick="window.open('admission.html', '_blank')" class="btn" style="background: #4b5563; color: white;">👁️ Preview</button>
+        </div>
+    </form>
+</div>
+
+<script>
+let admissionData = {};
+let admissionLevels = [];
+let levelCounter = 0;
+
+(async function() {
+    await loadAdmission();
+})();
+
+async function loadAdmission() {
+    try {
+        const response = await fetch('api/content/admission.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.admission) {
+                admissionData = data.admission;
+                admissionLevels = data.admissionLevels || [];
+                
+                document.getElementById('admission_hero_image').value = admissionData.hero_image || '';
+                updateAdmissionHeroPreview(admissionData.hero_image || '');
+                
+                const feeStructure = admissionData.fee_structure ? (typeof admissionData.fee_structure === 'string' ? JSON.parse(admissionData.fee_structure) : admissionData.fee_structure) : {};
+                document.getElementById('fee_structure').value = feeStructure.content || feeStructure || '';
+                
+                displayAdmissionLevels();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading admission:', error);
+    }
+}
+
+function displayAdmissionLevels() {
+    const list = document.getElementById('admissionLevelsList');
+    if (admissionLevels.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No admission levels found. Click "Add Level" to create one.</div>';
+        return;
+    }
+    
+    list.innerHTML = admissionLevels.map((level, index) => `
+        <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <h4 style="margin: 0; font-size: 16px; font-weight: 600;">${level.heading || level.title || 'Level ' + (index + 1)}</h4>
+                <button type="button" onclick="removeAdmissionLevel(${index})" class="btn btn-danger" style="padding: 5px 15px; font-size: 12px;">🗑️ Remove</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Icon</label>
+                <input type="text" name="admission_levels[${index}][icon]" class="form-input" value="${level.icon || '📚'}" maxlength="10">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Heading</label>
+                <input type="text" name="admission_levels[${index}][heading]" class="form-input" value="${level.heading || ''}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" name="admission_levels[${index}][title]" class="form-input" value="${level.title || ''}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="admission_levels[${index}][description]" class="form-input" rows="3">${level.description || ''}</textarea>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateAdmissionHeroPreview(url) {
+    const preview = document.getElementById('admissionHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero image preview" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.style.display='none'">`;
+    } else {
+        preview.innerHTML = '';
+    }
+}
+
+function addAdmissionLevel() {
+    const levelId = 'new_' + (++levelCounter);
+    admissionLevels.push({
+        icon: '📚',
+        heading: '',
+        title: '',
+        description: ''
+    });
+    displayAdmissionLevels();
+}
+
+function removeAdmissionLevel(index) {
+    if (confirm('Remove this admission level?')) {
+        admissionLevels.splice(index, 1);
+        displayAdmissionLevels();
+    }
+}
+</script>

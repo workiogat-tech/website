@@ -1,0 +1,345 @@
+<div class="content-card">
+    <h2>🏢 Facilities</h2>
+    <p style="margin-bottom: 30px; color: #666;">Manage school facilities and page settings.</p>
+    
+    <!-- Page Header Image Section -->
+    <div style="background: linear-gradient(135deg, #f3e8ff, #fce7f3); padding: 25px; border-radius: 12px; border: 2px solid #a855f7; margin-bottom: 30px;">
+        <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <span>🖼️</span> Facilities Page Header Image
+        </h3>
+        <form method="POST" action="#" id="facilitiesHeaderForm" onsubmit="event.preventDefault(); handleAdminFormSubmit(event, this); return false;">
+            <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 20px;">
+                <div id="facilitiesHeroPreview" style="flex-shrink: 0; width: 160px; height: 96px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px; color: #999;">🖼️</span>
+                        <p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <input type="text" 
+                           name="hero_image" 
+                           id="facilities_hero_image" 
+                           class="form-input" 
+                           placeholder="Image URL will appear here after selection"
+                           readonly
+                           onchange="updateFacilitiesHeroPreview(this.value)">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button type="button" 
+                                onclick="openMediaLibrary('facilities_hero_image')" 
+                                class="btn btn-primary"
+                                style="flex: 1; background: linear-gradient(135deg, #9333ea, #ec4899);">
+                            🖼️ Select Image from Media Library
+                        </button>
+                        <button type="button" 
+                                onclick="document.getElementById('facilities_hero_image').value=''; updateFacilitiesHeroPreview('');" 
+                                class="btn btn-danger"
+                                style="padding: 12px 20px;">
+                            Remove Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Page Title</label>
+                    <input type="text" name="title" class="form-input" id="facilities_page_title" placeholder="Our Facilities">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Page Subtitle</label>
+                    <input type="text" name="subtitle" class="form-input" id="facilities_page_subtitle" placeholder="World-Class Facilities for Learning and Growth">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px; background: linear-gradient(135deg, #9333ea, #ec4899);">
+                💾 Save Page Header Settings
+            </button>
+        </form>
+    </div>
+    
+    <!-- Facilities List -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <p style="color: #666;">Manage school facilities.</p>
+        <button class="btn btn-primary" onclick="showAddFacilityModal()">➕ Add Facility</button>
+    </div>
+    
+    <div id="facilitiesList">
+        <div style="text-align: center; padding: 40px; color: #999;">Loading facilities...</div>
+    </div>
+</div>
+
+<!-- Add Facility Modal -->
+<div id="addFacilityModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">➕ Add New Facility</h3>
+        <form id="addFacilityForm" onsubmit="handleAddFacility(event); return false;">
+            <div class="form-group">
+                <label class="form-label">Name *</label>
+                <input type="text" name="name" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-input" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="flex: 1;">
+                        <input type="text" name="image" id="facility_image" class="form-input" 
+                               placeholder="Select image from media library" readonly>
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('facility_image')" 
+                            class="btn btn-primary">🖼️ Select</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Facility</button>
+                <button type="button" onclick="closeAddFacilityModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let facilities = [];
+let facilitiesSettings = {};
+
+(async function() {
+    await loadFacilities();
+    await loadFacilitiesSettings();
+})();
+
+async function loadFacilities() {
+    try {
+        const response = await fetch('api/content/facilities.php');
+        if (response.ok) {
+            const text = await response.text();
+            // Check if response is PHP code or HTML error page
+            if (text.trim().startsWith('<?php') || text.trim().startsWith('<!DOCTYPE') || text.includes('Fatal error') || text.includes('Parse error')) {
+                // Fallback to localStorage
+                if (typeof window.ClientStorage !== 'undefined') {
+                    facilities = window.ClientStorage.get(window.ClientStorage.KEYS.FACILITIES, []);
+                    displayFacilities();
+                    return;
+                }
+                facilities = [];
+                displayFacilities();
+                return;
+            }
+            const data = JSON.parse(text);
+            if (data.success && data.facilities) {
+                facilities = data.facilities;
+                displayFacilities();
+            } else {
+                // Fallback to localStorage
+                if (typeof window.ClientStorage !== 'undefined') {
+                    facilities = window.ClientStorage.get(window.ClientStorage.KEYS.FACILITIES, []);
+                    displayFacilities();
+                }
+            }
+        } else {
+            // Fallback to localStorage
+            if (typeof window.ClientStorage !== 'undefined') {
+                facilities = window.ClientStorage.get(window.ClientStorage.KEYS.FACILITIES, []);
+                displayFacilities();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading facilities:', error);
+        // Fallback to localStorage
+        if (typeof window.ClientStorage !== 'undefined') {
+            facilities = window.ClientStorage.get(window.ClientStorage.KEYS.FACILITIES, []);
+            displayFacilities();
+        }
+    }
+}
+
+async function loadFacilitiesSettings() {
+    try {
+        const response = await fetch('api/content/facilities-settings.php', {
+            method: 'GET',
+            headers: { 'Accept': 'application/json' }
+        });
+        if (response.ok) {
+            const text = await response.text();
+            // Check if response is PHP code or HTML error page
+            if (text.trim().startsWith('<?php') || text.trim().startsWith('<!DOCTYPE') || text.includes('Fatal error') || text.includes('Parse error')) {
+                // Fallback to localStorage
+                if (typeof window.MediaStorage !== 'undefined') {
+                    facilitiesSettings = window.MediaStorage.loadSettings('facilities-settings') || {};
+                    document.getElementById('facilities_page_title').value = facilitiesSettings.title || 'Our Facilities';
+                    document.getElementById('facilities_page_subtitle').value = facilitiesSettings.subtitle || '';
+                    document.getElementById('facilities_hero_image').value = facilitiesSettings.hero_image || '';
+                    updateFacilitiesHeroPreview(facilitiesSettings.hero_image || '');
+                    return;
+                }
+                return;
+            }
+            const data = JSON.parse(text);
+            if (data.success && data.settings) {
+                facilitiesSettings = data.settings;
+            } else if (data && !data.success) {
+                facilitiesSettings = data;
+            } else {
+                // Fallback to localStorage
+                if (typeof window.MediaStorage !== 'undefined') {
+                    facilitiesSettings = window.MediaStorage.loadSettings('facilities-settings') || {};
+                }
+            }
+            document.getElementById('facilities_page_title').value = facilitiesSettings.title || 'Our Facilities';
+            document.getElementById('facilities_page_subtitle').value = facilitiesSettings.subtitle || '';
+            document.getElementById('facilities_hero_image').value = facilitiesSettings.hero_image || '';
+            updateFacilitiesHeroPreview(facilitiesSettings.hero_image || '');
+        } else {
+            // Fallback to localStorage
+            if (typeof window.MediaStorage !== 'undefined') {
+                facilitiesSettings = window.MediaStorage.loadSettings('facilities-settings') || {};
+                document.getElementById('facilities_page_title').value = facilitiesSettings.title || 'Our Facilities';
+                document.getElementById('facilities_page_subtitle').value = facilitiesSettings.subtitle || '';
+                document.getElementById('facilities_hero_image').value = facilitiesSettings.hero_image || '';
+                updateFacilitiesHeroPreview(facilitiesSettings.hero_image || '');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading facilities settings:', error);
+        // Fallback to localStorage
+        if (typeof window.MediaStorage !== 'undefined') {
+            facilitiesSettings = window.MediaStorage.loadSettings('facilities-settings') || {};
+            document.getElementById('facilities_page_title').value = facilitiesSettings.title || 'Our Facilities';
+            document.getElementById('facilities_page_subtitle').value = facilitiesSettings.subtitle || '';
+            document.getElementById('facilities_hero_image').value = facilitiesSettings.hero_image || '';
+            updateFacilitiesHeroPreview(facilitiesSettings.hero_image || '');
+        }
+    }
+}
+
+function displayFacilities() {
+    const list = document.getElementById('facilitiesList');
+    if (facilities.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No facilities found. Click "Add Facility" to create one.</div>';
+        return;
+    }
+    
+    list.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
+            ${facilities.map(facility => `
+                <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px;">
+                    ${facility.image ? `<img src="${facility.image}" alt="${facility.name || ''}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 15px;" onerror="this.style.display='none'">` : ''}
+                    <h4 style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600;">${facility.name || ''}</h4>
+                    <p style="margin: 0 0 15px 0; color: #6b7280; font-size: 14px; line-height: 1.5;">${(facility.description || '').substring(0, 100)}...</p>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn" onclick="editFacility(${facility.id})" style="padding: 6px 12px; font-size: 12px; flex: 1;">✏️ Edit</button>
+                        <button class="btn btn-danger" onclick="deleteFacility(${facility.id})" style="padding: 6px 12px; font-size: 12px; background: #ef4444; color: white; flex: 1;">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function updateFacilitiesHeroPreview(url) {
+    const preview = document.getElementById('facilitiesHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Page header preview" style="width: 160px; height: 96px; object-fit: cover; border-radius: 8px; border: 2px solid #a855f7; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'text-align: center;\\'><span style=\\'font-size: 24px; color: #999;\\'>🖼️</span><p style=\\'font-size: 11px; color: #999; margin-top: 5px;\\'>No image</p></div>'"><p style="text-align: center; font-size: 11px; color: #666; margin-top: 5px;">Preview</p>`;
+    } else {
+        preview.innerHTML = '<div style="text-align: center;"><span style="font-size: 24px; color: #999;">🖼️</span><p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p></div>';
+    }
+}
+
+function showAddFacilityModal() {
+    document.getElementById('addFacilityModal').style.display = 'flex';
+    document.getElementById('addFacilityForm').reset();
+}
+
+function closeAddFacilityModal() {
+    document.getElementById('addFacilityModal').style.display = 'none';
+}
+
+async function handleAddFacility(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+        if (value) data[key] = value;
+    });
+    
+    try {
+        const response = await fetch('api/content/facilities.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const text = await response.text();
+        // Check if response is PHP code or HTML error page
+        if (text.trim().startsWith('<?php') || text.trim().startsWith('<!DOCTYPE') || text.includes('Fatal error') || text.includes('Parse error')) {
+            // Fallback to localStorage
+            if (typeof window.ClientStorage !== 'undefined') {
+                const existing = window.ClientStorage.get(window.ClientStorage.KEYS.FACILITIES, []);
+                data.id = Date.now();
+                existing.push(data);
+                window.ClientStorage.set(window.ClientStorage.KEYS.FACILITIES, existing);
+                showToast('Facility added successfully! (Saved locally)', 'success');
+                closeAddFacilityModal();
+                await loadFacilities();
+                return;
+            }
+            throw new Error('PHP server not available and localStorage not available');
+        }
+        const result = JSON.parse(text);
+        if (result.error) {
+            showToast('Error: ' + result.error, 'error');
+        } else {
+            showToast(result.message || 'Facility added successfully!', 'success');
+            closeAddFacilityModal();
+            await loadFacilities();
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        // Fallback to localStorage
+        if (typeof window.ClientStorage !== 'undefined') {
+            try {
+                const existing = window.ClientStorage.get(window.ClientStorage.KEYS.FACILITIES, []);
+                data.id = Date.now();
+                existing.push(data);
+                window.ClientStorage.set(window.ClientStorage.KEYS.FACILITIES, existing);
+                showToast('Facility added successfully! (Saved locally)', 'success');
+                closeAddFacilityModal();
+                await loadFacilities();
+                return;
+            } catch (e) {
+                console.error('LocalStorage save failed:', e);
+            }
+        }
+        showToast('Save error: ' + error.message, 'error');
+    }
+}
+
+async function deleteFacility(id) {
+    if (!confirm('Are you sure you want to delete this facility?')) return;
+    
+    try {
+        const response = await fetch('api/content/facilities.php?id=' + id, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+        if (result.error) {
+            showToast('Error: ' + result.error, 'error');
+        } else {
+            showToast(result.message || 'Facility deleted successfully!', 'success');
+            await loadFacilities();
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        showToast('Delete error: ' + error.message, 'error');
+    }
+}
+
+function editFacility(id) {
+    showToast('Edit functionality - use the API to update', 'info');
+}
+
+document.getElementById('addFacilityModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddFacilityModal();
+});
+</script>

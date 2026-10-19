@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resources - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background" style="background-image: url(uploads/hey.jpg);"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <p class="page-hero-caption">Resources & Information</p>
+                    <h1 class="page-hero-title">Resources</h1>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center" style="margin-bottom: 50px;">
+                    <h2 class="section-title">Resources & Information</h2>
+                    <p class="section-subtitle">Access important documents, policies, and resources to support your child's education.</p>
+                </div>
+
+                <div id="resources-container">
+                    <!-- Default resources -->
+                    <section id="parent-handbook" class="resource-detail-section resource-section-left" style="margin-bottom: 80px;">
+                        <div class="container">
+                            <div class="resource-detail-content">
+                                <div class="resource-detail-text">
+                                    <h2 class="resource-detail-title">Parent Handbook</h2>
+                                    <p class="resource-detail-description">The Parent Handbook provides clear guidelines on school policies, academic expectations, student behaviour, and communication between the school and parents. It helps parents understand school routines, responsibilities and support available for their children's education.</p>
+                                </div>
+                                <div class="resource-detail-image">
+                                    <div class="image-placeholder" style="background-image: url(uploads/hey.jpg);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section id="academic-support" class="resource-detail-section resource-section-right" style="margin-bottom: 80px;">
+                        <div class="container">
+                            <div class="resource-detail-content">
+                                <div class="resource-detail-image">
+                                    <div class="image-placeholder" style="background-image: url(uploads/hey.jpg);"></div>
+                                </div>
+                                <div class="resource-detail-text">
+                                    <h2 class="resource-detail-title">Academic Support</h2>
+                                    <p class="resource-detail-description">Parents are expected to support their children's learning by ensuring regular attendance, completing homework, and providing learning materials. They should communicate with teachers, attend meetings, and monitor academic progress. Parental support helps improve discipline, motivation, and overall student achievement.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section id="health-safety" class="resource-detail-section resource-section-left" style="margin-bottom: 80px;">
+                        <div class="container">
+                            <div class="resource-detail-content">
+                                <div class="resource-detail-text">
+                                    <h2 class="resource-detail-title">Health & Safety</h2>
+                                    <p class="resource-detail-description">The school is committed to providing a safe and healthy learning environment for all learners and staff. Basic health services, hygiene practices, and safety rules are in place to prevent accidents and illness. Parents are encouraged to cooperate with the school to ensure children follow health and safety guidelines.</p>
+                                </div>
+                                <div class="resource-detail-image">
+                                    <div class="image-placeholder" style="background-image: url(uploads/hey.jpg);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    <section id="transportation" class="resource-detail-section resource-section-right" style="margin-bottom: 80px;">
+                        <div class="container">
+                            <div class="resource-detail-content">
+                                <div class="resource-detail-image">
+                                    <div class="image-placeholder" style="background-image: url(uploads/hey.jpg);"></div>
+                                </div>
+                                <div class="resource-detail-text">
+                                    <h2 class="resource-detail-title">Transportation</h2>
+                                    <p class="resource-detail-description">Bus schedules and transportation policies. The school provides safe and reliable transportation services for learners using the school bus. All buses operate on designated routes and follow strict safety rules to protect learners. Parents are advised to ensure timely drop-off and pickup at assigned bus points.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            try {
+                const response = await fetch('/api/content/resources.php');
+                const text = await response.text();
+                if (text.trim().startsWith('<?php') || text.trim().startsWith('<!')) {
+                    return;
+                }
+                const result = JSON.parse(text);
+                const data = result.success ? result.data : {};
+                
+                // Update hero
+                if (data.parentsContent) {
+                    const hero = document.querySelector('.page-hero-section');
+                    if (data.parentsContent.hero_caption) {
+                        const caption = hero.querySelector('.page-hero-caption');
+                        if (caption) caption.textContent = data.parentsContent.hero_caption;
+                    }
+                    if (data.parentsContent.hero_title) {
+                        const title = hero.querySelector('.page-hero-title');
+                        if (title) title.textContent = data.parentsContent.hero_title;
+                    }
+                    if (data.parentsContent.hero_image) {
+                        const bg = hero.querySelector('.page-hero-background');
+                        if (bg) {
+                            const heroImageUrl = data.parentsContent.hero_image.replace(/'/g, "\\'");
+                            bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                        }
+                    }
+                }
+                
+                // Render resource sections
+                if (data.resourceDetailSections && data.resourceDetailSections.length > 0) {
+                    const container = document.getElementById('resources-container');
+                    let sectionsHtml = '';
+                    data.resourceDetailSections.forEach((section, index) => {
+                        const isEven = index % 2 === 0;
+                        const sectionId = section.id || `resource-${index}`;
+                        sectionsHtml += `
+                            <section id="${escapeHtml(sectionId)}" class="resource-detail-section ${isEven ? 'resource-section-left' : 'resource-section-right'}" style="margin-bottom: 80px;">
+                                <div class="container">
+                                    <div class="resource-detail-content">
+                                        ${isEven ? `
+                                            <div class="resource-detail-text">
+                                                <h2 class="resource-detail-title">${escapeHtml(section.title || '')}</h2>
+                                                <p class="resource-detail-description">${escapeHtml((section.description || '').replace(/\n/g, '<br>'))}</p>
+                                            </div>
+                                            <div class="resource-detail-image">
+                                                ${section.image ? `
+                                                    <img src="${escapeHtml(section.image)}" alt="${escapeHtml(section.title || '')}">
+                                                ` : `
+                                                    <div class="image-placeholder">🖼️ No image set</div>
+                                                `}
+                                            </div>
+                                        ` : `
+                                            <div class="resource-detail-image">
+                                                ${section.image ? `
+                                                    <img src="${escapeHtml(section.image)}" alt="${escapeHtml(section.title || '')}">
+                                                ` : `
+                                                    <div class="image-placeholder">🖼️ No image set</div>
+                                                `}
+                                            </div>
+                                            <div class="resource-detail-text">
+                                                <h2 class="resource-detail-title">${escapeHtml(section.title || '')}</h2>
+                                                <p class="resource-detail-description">${escapeHtml((section.description || '').replace(/\n/g, '<br>'))}</p>
+                                            </div>
+                                        `}
+                                    </div>
+                                </div>
+                            </section>
+                        `;
+                    });
+                    container.innerHTML = sectionsHtml;
+                }
+            } catch (error) {
+                console.warn('Using default resources data');
+            }
+        })();
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

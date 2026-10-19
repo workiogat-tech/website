@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meet Our Staff - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <h1 class="page-hero-title">Meet Our Staff</h1>
+                    <p class="page-hero-subtitle">Our Expert Teachers</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="teachers-section section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Our Expert Teachers</h2>
+                    <p class="section-subtitle">Meet our dedicated faculty members who bring passion, expertise, and innovation to every classroom</p>
+                </div>
+                <div id="teachers-container">
+                    <div class="text-center" style="padding: 60px 20px;">
+                        <p style="font-size: 18px; color: var(--text-light);">Teacher information will be displayed here once added to the system.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            const data = await PageDataLoader.loadTeachersData();
+            const container = document.getElementById('teachers-container');
+            
+            // Update hero
+            if (data.teachersSettings) {
+                const hero = document.querySelector('.page-hero-section');
+                if (data.teachersSettings.title) {
+                    const title = hero.querySelector('.page-hero-title');
+                    if (title) title.textContent = data.teachersSettings.title;
+                }
+                if (data.teachersSettings.subtitle) {
+                    const subtitle = hero.querySelector('.page-hero-subtitle');
+                    if (subtitle) subtitle.textContent = data.teachersSettings.subtitle;
+                }
+                if (data.teachersSettings.hero_image) {
+                    const bg = hero.querySelector('.page-hero-background');
+                    if (bg) {
+                        const heroImageUrl = data.teachersSettings.hero_image.replace(/'/g, "\\'");
+                        bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                    }
+                }
+            }
+            
+            // Render teachers
+            if (data.teachers && data.teachers.length > 0) {
+                let teachersHtml = '<div class="teachers-grid">';
+                data.teachers.forEach(teacher => {
+                    teachersHtml += `
+                        <div class="teacher-card">
+                            <div class="teacher-image-wrapper">
+                                ${teacher.image ? `
+                                    <img src="${escapeHtml(teacher.image)}" alt="${escapeHtml(teacher.name)}" class="teacher-image" 
+                                         onload="this.parentElement.querySelector('.teacher-loading').style.display='none';" 
+                                         onerror="this.parentElement.querySelector('.teacher-loading').style.display='flex';">
+                                ` : ''}
+                                <div class="teacher-loading" style="${teacher.image ? 'display: none;' : 'display: flex;'}">
+                                    <div class="loading-spinner"></div>
+                                </div>
+                            </div>
+                            <div class="teacher-name-bar">
+                                <h3 class="teacher-name">${escapeHtml((teacher.name || '').toUpperCase())}</h3>
+                                ${teacher.position ? `<p class="teacher-position">${escapeHtml((teacher.position || '').toUpperCase())}</p>` : ''}
+                            </div>
+                            <div class="teacher-details">
+                                <div class="teacher-detail-item">
+                                    <svg class="detail-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    <span>Years of Experience: ${escapeHtml(teacher.years_experience || '5')}</span>
+                                </div>
+                                <div class="teacher-detail-item">
+                                    <svg class="detail-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+                                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                                        <path d="M6 12v5c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-5"></path>
+                                    </svg>
+                                    <span>Subject: ${escapeHtml(teacher.department || 'SST')}</span>
+                                </div>
+                                ${teacher.email ? `
+                                    <div class="teacher-detail-item">
+                                        <svg class="detail-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2">
+                                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                            <polyline points="22,6 12,13 2,6"></polyline>
+                                        </svg>
+                                        <span>Email: ${escapeHtml(teacher.email)}</span>
+                                    </div>
+                                ` : ''}
+                                ${teacher.phone ? `
+                                    <div class="teacher-detail-item">
+                                        <svg class="detail-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9333ea" stroke-width="2">
+                                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                        </svg>
+                                        <span>Contact: ${escapeHtml(teacher.phone)}</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                });
+                teachersHtml += '</div>';
+                container.innerHTML = teachersHtml;
+            }
+        })();
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

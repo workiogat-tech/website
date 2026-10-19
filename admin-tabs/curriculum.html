@@ -1,0 +1,287 @@
+<div class="content-card">
+    <h2>📚 Curriculum Management</h2>
+    <p style="margin-bottom: 30px; color: #666;">Manage curriculum page content, educational programs, and why choose section.</p>
+    
+    <form method="POST" action="api/content/curriculum.php" id="curriculumForm" onsubmit="return handleCurriculumFormSubmit(event, this);">
+        <!-- Basic Content -->
+        <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+            <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">Basic Content</h3>
+            <div class="form-group">
+                <label class="form-label">Page Title</label>
+                <input type="text" name="page_title" class="form-input" id="curriculum_page_title" placeholder="Curriculum">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Page Subtitle</label>
+                <input type="text" name="page_subtitle" class="form-input" id="curriculum_page_subtitle">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Intro Text</label>
+                <textarea name="intro_text" class="form-input" rows="4" id="curriculum_intro_text"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hero Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="curriculumHeroPreview" style="flex-shrink: 0;"></div>
+                    <div style="flex: 1;">
+                        <input type="text" name="hero_image" id="curriculum_hero_image" class="form-input" 
+                               placeholder="Select image from media library" readonly
+                               onchange="updateCurriculumHeroPreview(this.value)">
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('curriculum_hero_image')" 
+                            class="btn btn-primary">🖼️ Select</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Programs Section -->
+        <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0;">Educational Programs</h3>
+                <button type="button" onclick="addProgram()" class="btn btn-primary">➕ Add Program</button>
+            </div>
+            <div id="curriculumProgramsList">
+                <div style="text-align: center; padding: 40px; color: #999;">Loading programs...</div>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">💾 Save Curriculum</button>
+    </form>
+</div>
+
+<script>
+let curriculumData = {};
+let curriculumPrograms = [];
+let programIndex = 0;
+
+(async function() {
+    await loadCurriculum();
+})();
+
+async function loadCurriculum() {
+    try {
+        const response = await fetch('api/content/curriculum.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+                curriculumData = data.data.basicContent || {};
+                curriculumPrograms = data.data.programs || [];
+                programIndex = curriculumPrograms.length;
+                
+                document.getElementById('curriculum_page_title').value = curriculumData.page_title || 'Curriculum';
+                document.getElementById('curriculum_page_subtitle').value = curriculumData.page_subtitle || '';
+                document.getElementById('curriculum_intro_text').value = curriculumData.intro_text || '';
+                document.getElementById('curriculum_hero_image').value = curriculumData.hero_image || '';
+                updateCurriculumHeroPreview(curriculumData.hero_image || '');
+                displayCurriculumPrograms();
+            } else if (data.success) {
+                // Alternative format
+                curriculumData = data.curriculum || data.basicContent || {};
+                curriculumPrograms = data.programs || [];
+                programIndex = curriculumPrograms.length;
+                
+                document.getElementById('curriculum_page_title').value = curriculumData.page_title || curriculumData.title || 'Curriculum';
+                document.getElementById('curriculum_page_subtitle').value = curriculumData.page_subtitle || curriculumData.subtitle || '';
+                document.getElementById('curriculum_intro_text').value = curriculumData.intro_text || curriculumData.content || '';
+                document.getElementById('curriculum_hero_image').value = curriculumData.hero_image || '';
+                updateCurriculumHeroPreview(curriculumData.hero_image || '');
+                displayCurriculumPrograms();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading curriculum:', error);
+    }
+}
+
+function displayCurriculumPrograms() {
+    const list = document.getElementById('curriculumProgramsList');
+    if (curriculumPrograms.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No programs found. Click "Add Program" to create one.</div>';
+        return;
+    }
+    
+    list.innerHTML = curriculumPrograms.map((program, index) => `
+        <div class="program-item" data-index="${index}" data-id="${program.id || ''}" style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <h4 style="margin: 0; font-size: 16px; font-weight: 600;">Program ${index + 1}</h4>
+                <button type="button" onclick="removeProgram(${index})" class="btn btn-danger" style="padding: 5px 15px; font-size: 12px;">🗑️ Remove</button>
+            </div>
+            <input type="hidden" name="programs[${index}][id]" value="${program.id || ''}">
+            <div class="form-group">
+                <label class="form-label">Program Title</label>
+                <input type="text" name="programs[${index}][program_title]" class="form-input" value="${program.program_title || ''}" placeholder="e.g., Primary Education">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="programs[${index}][description]" class="form-input" rows="4" placeholder="Describe the program...">${program.description || ''}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Subjects</label>
+                <textarea name="programs[${index}][subjects]" class="form-input" rows="3" placeholder="Enter subjects, one per line">${program.subjects || ''}</textarea>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateCurriculumHeroPreview(url) {
+    const preview = document.getElementById('curriculumHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero image preview" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.style.display='none'">`;
+    } else {
+        preview.innerHTML = '';
+    }
+}
+
+function addProgram() {
+    const container = document.getElementById('curriculumProgramsList');
+    const emptyMsg = container.querySelector('div[style*="No programs found"]');
+    if (emptyMsg) emptyMsg.remove();
+    
+    const programHtml = `
+        <div class="program-item" data-index="${programIndex}" data-id="" style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+                <h4 style="margin: 0; font-size: 16px; font-weight: 600;">Program ${programIndex + 1}</h4>
+                <button type="button" onclick="removeProgram(${programIndex})" class="btn btn-danger" style="padding: 5px 15px; font-size: 12px;">🗑️ Remove</button>
+            </div>
+            <input type="hidden" name="programs[${programIndex}][id]" value="">
+            <div class="form-group">
+                <label class="form-label">Program Title</label>
+                <input type="text" name="programs[${programIndex}][program_title]" class="form-input" placeholder="e.g., Primary Education">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="programs[${programIndex}][description]" class="form-input" rows="4" placeholder="Describe the program..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Subjects</label>
+                <textarea name="programs[${programIndex}][subjects]" class="form-input" rows="3" placeholder="Enter subjects, one per line"></textarea>
+            </div>
+        </div>
+    `;
+    
+    container.insertAdjacentHTML('beforeend', programHtml);
+    programIndex++;
+    
+    // Scroll to new program
+    const newProgram = container.lastElementChild;
+    if (newProgram) {
+        newProgram.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+function removeProgram(index) {
+    const programItem = document.querySelector(`.program-item[data-index="${index}"]`);
+    if (programItem) {
+        programItem.remove();
+        reindexPrograms();
+    }
+}
+
+function reindexPrograms() {
+    const container = document.getElementById('curriculumProgramsList');
+    const programs = container.querySelectorAll('.program-item');
+    
+    if (programs.length === 0) {
+        container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No programs found. Click "Add Program" to create one.</div>';
+        programIndex = 0;
+        return;
+    }
+    
+    programs.forEach((program, newIndex) => {
+        program.setAttribute('data-index', newIndex);
+        const title = program.querySelector('h4');
+        if (title) {
+            title.textContent = `Program ${newIndex + 1}`;
+        }
+        
+        // Update all input names
+        const inputs = program.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+            if (input.name) {
+                input.name = input.name.replace(/programs\[\d+\]/, `programs[${newIndex}]`);
+            }
+        });
+        
+        // Update remove button
+        const removeBtn = program.querySelector('button[onclick*="removeProgram"]');
+        if (removeBtn) {
+            removeBtn.setAttribute('onclick', `removeProgram(${newIndex})`);
+        }
+    });
+    
+    programIndex = programs.length;
+}
+
+function handleCurriculumFormSubmit(event, form) {
+    event.preventDefault();
+    
+    // Collect programs data
+    const programs = [];
+    const programItems = form.querySelectorAll('.program-item');
+    
+    programItems.forEach((item) => {
+        const programTitle = item.querySelector('input[name*="[program_title]"]')?.value?.trim();
+        const description = item.querySelector('textarea[name*="[description]"]')?.value?.trim();
+        const subjects = item.querySelector('textarea[name*="[subjects]"]')?.value?.trim();
+        const programId = item.querySelector('input[name*="[id]"]')?.value;
+        
+        if (programTitle || description || subjects) {
+            programs.push({
+                id: programId || null,
+                program_title: programTitle || '',
+                description: description || '',
+                subjects: subjects || ''
+            });
+        }
+    });
+    
+    // Prepare data
+    const data = {
+        page_title: form.querySelector('input[name="page_title"]')?.value || '',
+        page_subtitle: form.querySelector('input[name="page_subtitle"]')?.value || '',
+        intro_text: form.querySelector('textarea[name="intro_text"]')?.value || '',
+        hero_image: form.querySelector('input[name="hero_image"]')?.value || '',
+        programs: programs
+    };
+    
+    // Send AJAX request
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '💾 Saving...';
+    submitBtn.disabled = true;
+    
+    fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(async response => {
+        const text = await response.text();
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error('Failed to parse response:', text);
+            throw new Error('Server returned invalid response');
+        }
+        return result;
+    })
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast(result.message || 'Curriculum saved successfully!', 'success');
+            setTimeout(() => loadCurriculum(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Failed to save curriculum. Please try again.', 'error');
+    })
+    .finally(() => {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+    });
+    
+    return false;
+}
+</script>

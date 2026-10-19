@@ -1,0 +1,576 @@
+<div class="content-card">
+    <h2>🏠 Homepage Sections Management</h2>
+    <p style="margin-bottom: 30px; color: #666;">Manage all content sections on the homepage.</p>
+    
+    <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 6px; margin-bottom: 20px;">
+        <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
+            <strong>📍 Looking to edit the School Life, Health, and Sports columns?</strong><br>
+            Click on the <strong>"Three Columns"</strong> tab below to edit those sections that appear on your homepage with red headers.
+        </p>
+    </div>
+    
+    <!-- Tabs for different sections -->
+    <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; flex-wrap: wrap;">
+        <button class="section-tab-btn active" onclick="showHomepageSection('academics', this)">Academics</button>
+        <button class="section-tab-btn" onclick="showHomepageSection('vision-mission', this)">Vision/Mission</button>
+        <button class="section-tab-btn" onclick="showHomepageSection('why-choose', this)">Why Choose</button>
+        <button class="section-tab-btn" onclick="showHomepageSection('custom-section', this)">Custom Section</button>
+        <button class="section-tab-btn" onclick="showHomepageSection('three-columns', this)">Three Columns</button>
+    </div>
+    
+    <!-- Academics Section -->
+    <div id="academics-section" class="homepage-section-content">
+        <h3>Academics Section</h3>
+        <form method="POST" action="api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
+            <input type="hidden" name="section_type" value="academics">
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" class="form-input" id="academics_title">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-input" rows="5" id="academics_description"></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label">Student Count</label>
+                    <input type="text" name="student_count" class="form-input" id="academics_student_count">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Success Rate</label>
+                    <input type="text" name="success_rate" class="form-input" id="academics_success_rate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Motto</label>
+                    <input type="text" name="motto" class="form-input" id="academics_motto">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" name="image" id="academics_image" class="form-input" readonly>
+                    <button type="button" onclick="openMediaLibrary('academics_image')" class="btn btn-primary">🖼️ Select</button>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label">Curriculum Link</label>
+                    <input type="text" name="curriculum_link" class="form-input" id="academics_curriculum_link">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Button Text</label>
+                    <input type="text" name="button_text" class="form-input" id="academics_button_text" placeholder="Learn More About Our Curriculum">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Save Academics Content</button>
+        </form>
+    </div>
+    
+    <!-- Vision/Mission Section -->
+    <div id="vision-mission-section" class="homepage-section-content" style="display: none;">
+        <h3>Vision, Mission & Core Values</h3>
+        <form method="POST" action="api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
+            <input type="hidden" name="section_type" value="vision-mission">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                <div>
+                    <h4 style="margin-bottom: 15px;">Vision</h4>
+                    <div class="form-group">
+                        <label class="form-label">Vision Title</label>
+                        <input type="text" name="vision_title" class="form-input" id="vision_title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vision Text</label>
+                        <textarea name="vision_text" class="form-input" rows="3" id="vision_text"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vision Icon (Emoji)</label>
+                        <input type="text" name="vision_icon_emoji" class="form-input" id="vision_icon" maxlength="10">
+                    </div>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 15px;">Mission</h4>
+                    <div class="form-group">
+                        <label class="form-label">Mission Title</label>
+                        <input type="text" name="mission_title" class="form-input" id="mission_title">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mission Text</label>
+                        <textarea name="mission_text" class="form-input" rows="3" id="mission_text"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mission Icon (Emoji)</label>
+                        <input type="text" name="mission_icon_emoji" class="form-input" id="mission_icon" maxlength="10">
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Core Values Title</label>
+                <input type="text" name="core_values_title" class="form-input" id="core_values_title">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Core Values Icon (Emoji)</label>
+                <input type="text" name="core_values_icon_emoji" class="form-input" id="core_values_icon" maxlength="10">
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Save Vision/Mission</button>
+        </form>
+        
+        <div style="margin-top: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h4>Core Values</h4>
+                <button class="btn btn-primary" onclick="showAddCoreValueModal()">➕ Add Value</button>
+            </div>
+            <div id="coreValuesList">
+                <div style="text-align: center; padding: 40px; color: #999;">Loading core values...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Why Choose Section -->
+    <div id="why-choose-section" class="homepage-section-content" style="display: none;">
+        <h3>Why Choose SJS Section</h3>
+        <form method="POST" action="api/content/homepage-sections.php" id="whyChooseForm" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
+            <input type="hidden" name="section_type" value="why-choose">
+            
+            <div class="form-group">
+                <label class="form-label">Section Title</label>
+                <input type="text" name="title" class="form-input" id="why_choose_title" placeholder="Why Choose SJS">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Section Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="whyChooseImagePreview" style="flex-shrink: 0;"></div>
+                    <div style="flex: 1;">
+                        <input type="text" name="image" id="why_choose_image" class="form-input" 
+                               placeholder="Select image from media library" readonly
+                               onchange="updateWhyChooseImagePreview(this.value)">
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('why_choose_image')" 
+                            class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        🖼️ Select Image
+                    </button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h4 style="font-size: 18px; font-weight: 600; color: #333; margin: 0;">Points List</h4>
+                    <button type="button" onclick="addWhyChoosePoint()" class="btn btn-primary" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        ➕ Add Point
+                    </button>
+                </div>
+                
+                <div id="whyChoosePointsContainer"></div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px; background: linear-gradient(135deg, #f59e0b, #d97706);">
+                💾 Save Why Choose Section
+            </button>
+        </form>
+    </div>
+    
+    <!-- Custom Section -->
+    <div id="custom-section" class="homepage-section-content" style="display: none;">
+        <h3>Custom Section (Additional Section)</h3>
+        <form method="POST" action="api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
+            <input type="hidden" name="section_type" value="custom-section">
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" class="form-input" id="custom_section_title" placeholder="Enter section title">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-input" rows="5" id="custom_section_description" placeholder="Enter section description..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" name="image" id="custom_section_image" class="form-input" readonly>
+                    <button type="button" onclick="openMediaLibrary('custom_section_image')" class="btn btn-primary">🖼️ Select</button>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">💾 Save Custom Section</button>
+        </form>
+    </div>
+    
+    <!-- Three Columns Section -->
+    <div id="three-columns" class="homepage-section-content" style="display: none;">
+        <h3>Three Columns (School Life, Health, Sports)</h3>
+        <p style="color: #666; margin-bottom: 20px;">Edit the three columns that appear on your homepage with red headers.</p>
+        <div style="margin-bottom: 20px;">
+            <button class="btn btn-primary" onclick="showAddThreeColumnModal()">➕ Add Column</button>
+        </div>
+        <div id="threeColumnsList">
+            <div style="text-align: center; padding: 40px; color: #999;">Loading columns...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Core Value Modal -->
+<div id="addCoreValueModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">➕ Add Core Value</h3>
+        <form id="addCoreValueForm" onsubmit="handleAddCoreValue(event); return false;">
+            <div class="form-group">
+                <label class="form-label">Value Name *</label>
+                <input type="text" name="value_name" class="form-input" required>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Value</button>
+                <button type="button" onclick="closeAddCoreValueModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let academicsData = {};
+let visionMissionData = {};
+let whyChooseData = {};
+let customSectionData = {};
+let coreValues = [];
+let whyChoosePoints = [];
+let threeColumns = [];
+let whyChoosePointCounter = 0;
+
+(async function() {
+    await loadHomepageSections();
+})();
+
+async function loadHomepageSections() {
+    try {
+        const response = await fetch('api/content/homepage-sections.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                academicsData = data.academics || {};
+                visionMissionData = data.visionMission || {};
+                whyChooseData = data.whyChoose || {};
+                customSectionData = data.customSection || {};
+                coreValues = data.coreValues || [];
+                whyChoosePoints = data.whyChoosePoints || [];
+                threeColumns = data.threeColumns || [];
+                
+                populateForms();
+                displayCoreValues();
+                displayWhyChoosePoints();
+                displayThreeColumns();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading homepage sections:', error);
+    }
+}
+
+function populateForms() {
+    // Academics
+    document.getElementById('academics_title').value = academicsData.title || '';
+    document.getElementById('academics_description').value = academicsData.description || '';
+    document.getElementById('academics_student_count').value = academicsData.student_count || '';
+    document.getElementById('academics_success_rate').value = academicsData.success_rate || '';
+    document.getElementById('academics_motto').value = academicsData.motto || '';
+    document.getElementById('academics_image').value = academicsData.image || '';
+    document.getElementById('academics_curriculum_link').value = academicsData.curriculum_link || '';
+    document.getElementById('academics_button_text').value = academicsData.button_text || 'Learn More About Our Curriculum';
+    
+    // Vision/Mission
+    document.getElementById('vision_title').value = visionMissionData.vision_title || 'OUR VISION';
+    document.getElementById('vision_text').value = visionMissionData.vision_text || '';
+    document.getElementById('vision_icon').value = visionMissionData.vision_icon_emoji || '💡';
+    document.getElementById('mission_title').value = visionMissionData.mission_title || 'OUR MISSION';
+    document.getElementById('mission_text').value = visionMissionData.mission_text || '';
+    document.getElementById('mission_icon').value = visionMissionData.mission_icon_emoji || '🎓';
+    document.getElementById('core_values_title').value = visionMissionData.core_values_title || 'OUR CORE VALUES';
+    document.getElementById('core_values_icon').value = visionMissionData.core_values_icon_emoji || '👥';
+    
+    // Why Choose
+    document.getElementById('why_choose_title').value = whyChooseData.title || 'Why Choose SJS';
+    document.getElementById('why_choose_image').value = whyChooseData.image || '';
+    updateWhyChooseImagePreview(whyChooseData.image || '');
+    
+    // Custom Section
+    document.getElementById('custom_section_title').value = customSectionData.title || '';
+    document.getElementById('custom_section_description').value = customSectionData.description || '';
+    document.getElementById('custom_section_image').value = customSectionData.image || '';
+}
+
+function showHomepageSection(section, btn) {
+    document.querySelectorAll('.homepage-section-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.section-tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById(section + '-section').style.display = 'block';
+    btn.classList.add('active');
+}
+
+function displayCoreValues() {
+    const list = document.getElementById('coreValuesList');
+    if (coreValues.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No values found.</div>';
+        return;
+    }
+    
+    list.innerHTML = `
+        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Value Name</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Order</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${coreValues.map(value => `
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;">${value.value_name}</td>
+                        <td style="padding: 12px;">${value.order_index}</td>
+                        <td style="padding: 12px;">
+                            <button class="btn" onclick="editCoreValue(${value.id})" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteCoreValue(${value.id})" style="padding: 5px 10px; font-size: 12px; background: #ef4444; color: white;">Delete</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function displayWhyChoosePoints() {
+    const container = document.getElementById('whyChoosePointsContainer');
+    if (whyChoosePoints.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999; background: #f9fafb; border-radius: 8px; border: 2px dashed #e5e7eb;">
+                <p style="margin: 0;">No points added yet. Click "+ Add Point" to get started.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = whyChoosePoints.map((point, index) => `
+        <div class="why-choose-point-item" data-point-id="${point.id}" style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 15px;">
+            <div style="flex: 1;">
+                <input type="text" 
+                       name="points[${point.id}]" 
+                       class="form-input" 
+                       value="${point.point_text || ''}" 
+                       placeholder="Enter point text...">
+            </div>
+            <button type="button" onclick="removeWhyChoosePoint(${point.id})" 
+                    class="btn btn-danger" style="padding: 8px 15px; font-size: 12px; flex-shrink: 0;">
+                🗑️ Remove
+            </button>
+        </div>
+    `).join('');
+}
+
+function displayThreeColumns() {
+    const list = document.getElementById('threeColumnsList');
+    if (threeColumns.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                No columns found. Click "Add Column" to create one.
+            </div>
+        `;
+        return;
+    }
+    
+    list.innerHTML = threeColumns.map(col => `
+        <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h4 style="margin: 0; font-size: 18px; color: #111827;">${col.title || ''}</h4>
+                    <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">${(col.description || '').substring(0, 100)}...</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-sm" onclick="editThreeColumn(${col.id})" style="padding: 6px 12px; font-size: 12px;">✏️ Edit</button>
+                    <button class="btn btn-sm" onclick="deleteThreeColumn(${col.id})" style="padding: 6px 12px; font-size: 12px; background: #ef4444; color: white;">🗑️ Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function updateWhyChooseImagePreview(url) {
+    const preview = document.getElementById('whyChooseImagePreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Why Choose Image Preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981;" onerror="this.style.display='none'">`;
+    } else {
+        preview.innerHTML = '';
+    }
+}
+
+function showAddCoreValueModal() {
+    document.getElementById('addCoreValueModal').style.display = 'flex';
+    document.getElementById('addCoreValueForm').reset();
+}
+
+function closeAddCoreValueModal() {
+    document.getElementById('addCoreValueModal').style.display = 'none';
+}
+
+async function handleAddCoreValue(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {
+        value_name: formData.get('value_name'),
+        section_type: 'vision-mission'
+    };
+    
+    try {
+        const response = await fetch('api/content/homepage-sections.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast('Core value added successfully!', 'success');
+            closeAddCoreValueModal();
+            await loadHomepageSections();
+        } else {
+            showToast(result.error || 'Failed to add core value', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding core value:', error);
+        showToast('Failed to add core value', 'error');
+    }
+}
+
+function editCoreValue(id) {
+    const value = coreValues.find(v => v.id == id);
+    if (!value) return;
+    const newName = prompt('Enter new value name:', value.value_name);
+    if (!newName) return;
+    
+    fetch('api/content/homepage-sections.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, value_name: newName, section_type: 'vision-mission' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Core value updated successfully!', 'success');
+            loadHomepageSections();
+        } else {
+            showToast(data.error || 'Failed to update core value', 'error');
+        }
+    });
+}
+
+function deleteCoreValue(id) {
+    if (!confirm('Delete this core value?')) return;
+    
+    fetch('api/content/homepage-sections.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, section_type: 'vision-mission' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Core value deleted successfully!', 'success');
+            loadHomepageSections();
+        } else {
+            showToast(data.error || 'Failed to delete core value', 'error');
+        }
+    });
+}
+
+function addWhyChoosePoint() {
+    const container = document.getElementById('whyChoosePointsContainer');
+    const pointId = 'new_' + (++whyChoosePointCounter);
+    const pointHtml = `
+        <div class="why-choose-point-item" data-point-id="${pointId}" style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 15px;">
+            <div style="flex: 1;">
+                <input type="text" 
+                       name="points[${pointId}]" 
+                       class="form-input" 
+                       placeholder="Enter point text...">
+            </div>
+            <button type="button" onclick="removeWhyChoosePoint('${pointId}')" 
+                    class="btn btn-danger" style="padding: 8px 15px; font-size: 12px; flex-shrink: 0;">
+                🗑️ Remove
+            </button>
+        </div>
+    `;
+    
+    if (container.innerHTML.includes('No points added')) {
+        container.innerHTML = pointHtml;
+    } else {
+        container.innerHTML += pointHtml;
+    }
+}
+
+function removeWhyChoosePoint(pointId) {
+    const item = document.querySelector(`[data-point-id="${pointId}"]`);
+    if (item) {
+        item.remove();
+        if (document.getElementById('whyChoosePointsContainer').children.length === 0) {
+            document.getElementById('whyChoosePointsContainer').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #999; background: #f9fafb; border-radius: 8px; border: 2px dashed #e5e7eb;">
+                    <p style="margin: 0;">No points added yet. Click "+ Add Point" to get started.</p>
+                </div>
+            `;
+        }
+    }
+}
+
+function showAddThreeColumnModal() {
+    showToast('Add column functionality - use the API to add', 'info');
+}
+
+function editThreeColumn(id) {
+    showToast('Edit column functionality - use the API to update', 'info');
+}
+
+function deleteThreeColumn(id) {
+    if (!confirm('Delete this column?')) return;
+    fetch('api/content/homepage-sections.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, section_type: 'three-columns' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Column deleted successfully!', 'success');
+            loadHomepageSections();
+        } else {
+            showToast(data.error || 'Failed to delete column', 'error');
+        }
+    });
+}
+
+document.getElementById('addCoreValueModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddCoreValueModal();
+});
+</script>
+
+<style>
+.section-tab-btn {
+    padding: 10px 20px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.section-tab-btn:hover {
+    background: #e5e7eb;
+}
+
+.section-tab-btn.active {
+    background: white;
+    border-bottom: 2px solid #2563eb;
+    color: #2563eb;
+}
+
+.homepage-section-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+}
+</style>

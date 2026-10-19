@@ -1,0 +1,58 @@
+<div class="content-card">
+    <h2>⚙️ Settings</h2>
+    <p style="margin-bottom: 30px; color: #666;">General system settings and configuration.</p>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <h3 style="margin-bottom: 15px;">System Information</h3>
+            <p style="color: #666; margin-bottom: 10px;"><strong>PHP Version:</strong> <span id="phpVersion">Loading...</span></p>
+            <p style="color: #666; margin-bottom: 10px;"><strong>Database:</strong> <span id="dbName">Loading...</span></p>
+            <p style="color: #666;"><strong>Server:</strong> <span id="serverInfo">Loading...</span></p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <h3 style="margin-bottom: 15px;">Security</h3>
+            <form method="POST" action="api/content/settings.php" id="settingsForm" onsubmit="return handleAdminFormSubmit(event, this);">
+                <div class="form-group">
+                    <label class="form-label">Session Timeout (minutes)</label>
+                    <input type="number" name="session_timeout" class="form-input" id="session_timeout" value="30" min="5" max="1440">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max Upload Size (MB)</label>
+                    <input type="number" name="max_upload_size" class="form-input" id="max_upload_size" value="50" min="1" max="500">
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top: 10px;">💾 Save Settings</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+(async function() {
+    try {
+        const response = await fetch('api/content/settings.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.settings) {
+                const settings = data.settings;
+                document.getElementById('session_timeout').value = settings.session_timeout || 30;
+                document.getElementById('max_upload_size').value = settings.max_upload_size || 50;
+            }
+        }
+        
+        // Try to get system info
+        const sysResponse = await fetch('api/health.php');
+        if (sysResponse.ok) {
+            const sysData = await sysResponse.json();
+            if (sysData.php_version) document.getElementById('phpVersion').textContent = sysData.php_version;
+            if (sysData.database) document.getElementById('dbName').textContent = sysData.database;
+            if (sysData.server) document.getElementById('serverInfo').textContent = sysData.server;
+        }
+    } catch (error) {
+        console.error('Error loading settings:', error);
+        document.getElementById('phpVersion').textContent = 'N/A';
+        document.getElementById('dbName').textContent = 'N/A';
+        document.getElementById('serverInfo').textContent = 'N/A';
+    }
+})();
+</script>

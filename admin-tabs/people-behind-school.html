@@ -1,0 +1,556 @@
+<div class="content-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+        <div>
+            <h2 style="font-size: 24px; font-weight: bold; color: #111827; margin: 0 0 8px 0;">👥 People Behind This School Page Management</h2>
+            <p style="color: #6b7280; margin: 0;">Manage the content and team members for the People Behind School page.</p>
+        </div>
+        <button onclick="window.open('people-behind-school.html', '_blank')" style="padding: 8px 16px; background: #4b5563; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px;">
+            <span>🔗</span> Preview Page
+        </button>
+    </div>
+    
+    <form method="POST" action="api/content/people-behind-school.php" id="peopleForm" onsubmit="return handlePeopleFormSubmit(event, this);">
+        
+        <!-- Basic Content Section -->
+        <div style="background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+            <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">Basic Content</h3>
+            
+            <div class="form-group">
+                <label class="form-label">Page Title</label>
+                <input type="text" name="title" id="people_title" class="form-input" 
+                       placeholder="People Behind This School">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Page Subtitle</label>
+                <input type="text" name="subtitle" id="people_subtitle" class="form-input" 
+                       placeholder="Meet the Visionaries and Leaders">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Hero Background Image</label>
+                <div style="display: flex; align-items: flex-start; gap: 15px;">
+                    <div id="peopleHeroPreview" style="flex-shrink: 0; width: 160px; height: 96px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center;">
+                            <span style="font-size: 24px; color: #999;">🖼️</span>
+                            <p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p>
+                        </div>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="text" name="hero_image" id="people_hero_image" class="form-input" 
+                               placeholder="Select image from media library" readonly
+                               onchange="updatePeopleHeroPreview(this.value)">
+                        <button type="button" onclick="openMediaLibrary('people_hero_image')" 
+                                class="btn btn-primary" style="margin-top: 10px;">🖼️ Change Photo</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Main Content Write-up</label>
+                <textarea name="content" id="people_content" class="form-input" rows="6" 
+                          placeholder="Enter the main content that will be displayed on the page..."></textarea>
+                <small style="color: #6b7280; font-style: italic; display: block; margin-top: 5px;">This is the main write-up that will be displayed on the page.</small>
+            </div>
+        </div>
+        
+        <!-- Video Content Section -->
+        <div style="background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+            <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">Video Content</h3>
+            
+            <div class="form-group">
+                <label class="form-label">Video URL</label>
+                <input type="text" name="video_url" id="people_video_url" class="form-input"
+                       placeholder="https://www.youtube.com/watch?v=VIDEO_ID or https://vimeo.com/VIDEO_ID">
+                <small style="color: #6b7280; display: block; margin-top: 5px;">
+                    <strong>⚠️ Important:</strong> Use a specific <strong>video URL</strong>, not a channel URL.
+                </small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Video Embed Code (Alternative)</label>
+                <textarea name="video_embed_code" id="people_video_embed" class="form-input" rows="4" 
+                          placeholder='<iframe src="https://www.youtube.com/embed/VIDEO_ID" frameborder="0" allowfullscreen></iframe>'></textarea>
+            </div>
+        </div>
+        
+        <!-- Team Members & Leadership Section -->
+        <div style="background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; border: 1px solid #e5e7eb;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div>
+                    <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 5px 0;">Team Members & Leadership</h3>
+                    <p style="color: #6b7280; margin: 0; font-size: 14px;">Add people with their photos, names, titles, and bios</p>
+                </div>
+                <button type="button" onclick="showAddPersonModal()" class="btn btn-primary" style="display: flex; align-items: center; gap: 8px;">
+                    <span>👤</span> + Add Person
+                </button>
+            </div>
+            
+            <div id="peopleList">
+                <div style="text-align: center; padding: 40px; background: #f9fafb; border-radius: 12px; color: #6b7280;">
+                    <p style="font-size: 16px; margin-bottom: 10px;">Loading team members...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Hidden field to store people data as JSON -->
+        <input type="hidden" name="people_json" id="people_json" value="">
+        
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px 24px; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <span>💾</span> Save People Behind School Content
+            </button>
+            <button type="button" onclick="window.open('people-behind-school.html', '_blank')" class="btn" style="background: #6b7280; color: white; padding: 12px 24px; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                <span>👁️</span> Preview Page
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Add Person Modal -->
+<div id="addPersonModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: white; border-radius: 12px; width: 100%; max-width: 800px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div style="padding: 20px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="font-size: 24px; font-weight: bold; color: #333;">Add New Person</h3>
+            <button onclick="closeAddPersonModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">✕</button>
+        </div>
+        
+        <div id="addPersonError" style="display: none; margin: 15px 20px; padding: 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #991b1b; font-size: 14px;"></div>
+        
+        <form id="addPersonForm" onsubmit="return addPerson(event);" method="POST" action="#" style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: 300px 1fr; gap: 20px;">
+                <!-- Left: Profile Photo -->
+                <div>
+                    <label class="form-label">Profile Photo</label>
+                    <div id="newPersonPhotoPreview" style="width: 100%; max-width: 300px; height: 300px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                        <div style="text-align: center;">
+                            <span style="font-size: 48px; color: #999;">🖼️</span>
+                            <p style="font-size: 14px; color: #999; margin-top: 10px;">No image</p>
+                        </div>
+                    </div>
+                    <input type="text" id="newPersonPhoto" class="form-input" placeholder="Select image from media library" readonly style="margin-bottom: 10px;">
+                    <button type="button" onclick="openMediaLibrary('newPersonPhoto')" class="btn btn-primary" style="width: 100%;">🖼️ Change Photo</button>
+                    <small style="color: #6b7280; display: block; margin-top: 5px;">Recommended: Square image, minimum 400x400px</small>
+                </div>
+                
+                <!-- Right: Personal Details -->
+                <div>
+                    <div class="form-group">
+                        <label class="form-label">Full Name <span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="newPersonFullName" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Title/Role <span style="color: #ef4444;">*</span></label>
+                        <input type="text" id="newPersonTitle" class="form-input" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Additional Role <span style="color: #6b7280; font-weight: normal;">(Optional)</span></label>
+                        <input type="text" id="newPersonAdditionalRole" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Biography <span style="color: #ef4444;">*</span></label>
+                        <textarea id="newPersonBiography" class="form-input" rows="4" required></textarea>
+                        <small style="color: #6b7280; display: block; margin-top: 5px;">2-3 sentences recommended</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Email <span style="color: #6b7280; font-weight: normal;">(Optional)</span></label>
+                        <input type="email" id="newPersonEmail" class="form-input" placeholder="email@example.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Phone <span style="color: #6b7280; font-weight: normal;">(Optional)</span></label>
+                        <input type="text" id="newPersonPhone" class="form-input" placeholder="+256 123 456 789">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button type="button" onclick="closeAddPersonModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Add Person</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let peopleList = [];
+
+(async function() {
+    await loadPeopleData();
+})();
+
+async function loadPeopleData() {
+    try {
+        const response = await fetch('api/content/people-behind-school.php');
+        if (response.ok) {
+            const data = await response.json();
+            aboutData = data || {};
+            
+            document.getElementById('people_title').value = aboutData.title || 'People Behind This School';
+            document.getElementById('people_subtitle').value = aboutData.subtitle || 'Meet the Visionaries and Leaders';
+            document.getElementById('people_hero_image').value = aboutData.hero_image || '';
+            document.getElementById('people_content').value = aboutData.content || '';
+            document.getElementById('people_video_url').value = aboutData.video_url || '';
+            document.getElementById('people_video_embed').value = aboutData.video_embed_code || '';
+            
+            updatePeopleHeroPreview(aboutData.hero_image || '');
+            
+            // Load people list
+            if (aboutData.people) {
+                peopleList = typeof aboutData.people === 'string' ? JSON.parse(aboutData.people) : aboutData.people;
+                if (!Array.isArray(peopleList)) peopleList = [];
+            } else {
+                peopleList = [];
+            }
+            
+            displayPeople();
+        }
+    } catch (error) {
+        console.error('Error loading people data:', error);
+    }
+}
+
+function displayPeople() {
+    const list = document.getElementById('peopleList');
+    if (peopleList.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 40px; background: #f9fafb; border-radius: 12px; color: #6b7280;">
+                <p style="font-size: 16px; margin-bottom: 10px;">No team members added yet</p>
+                <p>Click "Add Person" to add your first team member.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    list.innerHTML = peopleList.map((person, index) => {
+        person = { full_name: '', title: '', biography: '', photo: '', additional_role: '', email: '', phone: '', ...person };
+        return `
+            <div class="person-card" data-index="${index}" style="background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 2px solid #e5e7eb;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0; display: flex; align-items: center; gap: 10px;">
+                        <span>👥</span> Person ${index + 1} - ${(person.full_name || 'Unnamed').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
+                    </h4>
+                    <button type="button" onclick="deletePerson(${index})" class="btn" style="background: #ef4444; color: white; padding: 8px 16px;">
+                        🗑️ Delete
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 300px 1fr; gap: 20px;">
+                    <!-- Left: Profile Photo -->
+                    <div>
+                        <label class="form-label">Profile Photo</label>
+                        <div style="margin-bottom: 15px;">
+                            ${person.photo ? `
+                                <img src="${person.photo}" alt="Profile photo" style="width: 100%; max-width: 300px; height: 300px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981; margin-bottom: 10px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div style="display: none; width: 100%; max-width: 300px; height: 300px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; align-items: center; justify-content: center;">
+                                    <div style="text-align: center;">
+                                        <span style="font-size: 48px; color: #999;">🖼️</span>
+                                        <p style="font-size: 14px; color: #999; margin-top: 10px;">No image</p>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div style="width: 100%; max-width: 300px; height: 300px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                                    <div style="text-align: center;">
+                                        <span style="font-size: 48px; color: #999;">🖼️</span>
+                                        <p style="font-size: 14px; color: #999; margin-top: 10px;">No image</p>
+                                    </div>
+                                </div>
+                            `}
+                            <input type="text" name="people[${index}][photo]" 
+                                   id="person_photo_${index}" 
+                                   class="form-input" 
+                                   value="${(person.photo || '').replace(/"/g, '&quot;')}" 
+                                   placeholder="Select image from media library" 
+                                   readonly
+                                   style="margin-bottom: 10px;"
+                                   onchange="updatePersonPhotoPreview(${index}, this.value)">
+                            <button type="button" onclick="openMediaLibrary('person_photo_${index}')" 
+                                    class="btn btn-primary" style="width: 100%;">🖼️ Change Photo</button>
+                            <small style="color: #6b7280; display: block; margin-top: 5px;">Recommended: Square image, minimum 400x400px</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Right: Personal Details -->
+                    <div>
+                        <div class="form-group">
+                            <label class="form-label">Full Name <span style="color: #ef4444;">*</span></label>
+                            <input type="text" name="people[${index}][full_name]" class="form-input" 
+                                   value="${(person.full_name || '').replace(/"/g, '&quot;')}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Title/Role <span style="color: #ef4444;">*</span></label>
+                            <input type="text" name="people[${index}][title]" class="form-input" 
+                                   value="${(person.title || '').replace(/"/g, '&quot;')}" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Additional Role <span style="color: #6b7280; font-weight: normal;">(Optional)</span></label>
+                            <input type="text" name="people[${index}][additional_role]" class="form-input" 
+                                   value="${(person.additional_role || '').replace(/"/g, '&quot;')}">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Biography <span style="color: #ef4444;">*</span></label>
+                            <textarea name="people[${index}][biography]" class="form-input" rows="4" required>${(person.biography || '').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
+                            <small style="color: #6b7280; display: block; margin-top: 5px;">2-3 sentences recommended</small>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Email <span style="color: #6b7280; font-weight: normal;">(Optional)</span></label>
+                            <input type="email" name="people[${index}][email]" class="form-input" 
+                                   value="${(person.email || '').replace(/"/g, '&quot;')}"
+                                   placeholder="email@example.com">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Phone <span style="color: #6b7280; font-weight: normal;">(Optional)</span></label>
+                            <input type="text" name="people[${index}][phone]" class="form-input" 
+                                   value="${(person.phone || '').replace(/"/g, '&quot;')}"
+                                   placeholder="+256 123 456 789">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updatePeopleHeroPreview(url) {
+    const preview = document.getElementById('peopleHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero background preview" style="width: 160px; height: 96px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'text-align: center;\\'><span style=\\'font-size: 24px; color: #999;\\'>🖼️</span><p style=\\'font-size: 11px; color: #999; margin-top: 5px;\\'>No image</p></div>'"><p style="text-align: center; font-size: 11px; color: #666; margin-top: 5px;">Preview</p>`;
+    } else {
+        preview.innerHTML = '<div style="text-align: center;"><span style="font-size: 24px; color: #999;">🖼️</span><p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p></div>';
+    }
+}
+
+function updatePersonPhotoPreview(index, url) {
+    const card = document.querySelector(`.person-card[data-index="${index}"]`);
+    if (card && url) {
+        const img = card.querySelector('img');
+        if (img) {
+            img.src = url;
+            img.style.display = 'block';
+        }
+    }
+}
+
+function showAddPersonModal() {
+    const modal = document.getElementById('addPersonModal');
+    const form = document.getElementById('addPersonForm');
+    
+    if (!modal || !form) {
+        showToast('Error: Modal not found. Please refresh the page.', 'error');
+        return;
+    }
+    
+    modal.style.display = 'flex';
+    form.reset();
+    
+    const photoInput = document.getElementById('newPersonPhoto');
+    const photoPreview = document.getElementById('newPersonPhotoPreview');
+    
+    if (photoInput) photoInput.value = '';
+    if (photoPreview) {
+        photoPreview.innerHTML = `
+            <div style="text-align: center;">
+                <span style="font-size: 48px; color: #999;">🖼️</span>
+                <p style="font-size: 14px; color: #999; margin-top: 10px;">No image</p>
+            </div>
+        `;
+    }
+    
+    const errorDiv = document.getElementById('addPersonError');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+    }
+    
+    setTimeout(() => {
+        const fullNameInput = document.getElementById('newPersonFullName');
+        if (fullNameInput) fullNameInput.focus();
+    }, 100);
+}
+
+function closeAddPersonModal() {
+    const modal = document.getElementById('addPersonModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+function addPerson(event) {
+    event.preventDefault();
+    
+    if (!Array.isArray(peopleList)) {
+        peopleList = [];
+    }
+    
+    const fullName = document.getElementById('newPersonFullName').value.trim();
+    const title = document.getElementById('newPersonTitle').value.trim();
+    const biography = document.getElementById('newPersonBiography').value.trim();
+    const photo = document.getElementById('newPersonPhoto').value.trim();
+    const additionalRole = document.getElementById('newPersonAdditionalRole').value.trim();
+    const email = document.getElementById('newPersonEmail').value.trim();
+    const phone = document.getElementById('newPersonPhone').value.trim();
+    
+    const errorDiv = document.getElementById('addPersonError');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+        errorDiv.textContent = '';
+    }
+    
+    if (!fullName || !title || !biography) {
+        const missing = [];
+        if (!fullName) missing.push('Full Name');
+        if (!title) missing.push('Title/Role');
+        if (!biography) missing.push('Biography');
+        
+        const msg = 'Please fill in all required fields: ' + missing.join(', ');
+        
+        if (errorDiv) {
+            errorDiv.textContent = msg;
+            errorDiv.style.display = 'block';
+        }
+        showToast(msg, 'error');
+        return false;
+    }
+    
+    // Add to peopleList
+    peopleList.push({
+        full_name: fullName,
+        title: title,
+        biography: biography,
+        photo: photo,
+        additional_role: additionalRole,
+        email: email,
+        phone: phone
+    });
+    
+    // Update hidden field
+    document.getElementById('people_json').value = JSON.stringify(peopleList);
+    
+    // Refresh display
+    displayPeople();
+    
+    // Close modal
+    closeAddPersonModal();
+    
+    showToast('Person added successfully! Remember to save the form.', 'success');
+    return false;
+}
+
+function deletePerson(index) {
+    if (confirm('Are you sure you want to remove this person?')) {
+        peopleList.splice(index, 1);
+        document.getElementById('people_json').value = JSON.stringify(peopleList);
+        displayPeople();
+        showToast('Person removed. Remember to save the form.', 'success');
+    }
+}
+
+function handlePeopleFormSubmit(event, form) {
+    event.preventDefault();
+    
+    // Collect all people data from form
+    const people = [];
+    const peopleCards = form.querySelectorAll('.person-card');
+    
+    peopleCards.forEach((card, index) => {
+        const fullName = card.querySelector('input[name*="[full_name]"]')?.value?.trim();
+        const title = card.querySelector('input[name*="[title]"]')?.value?.trim();
+        const biography = card.querySelector('textarea[name*="[biography]"]')?.value?.trim();
+        const photo = card.querySelector('input[name*="[photo]"]')?.value?.trim();
+        const additionalRole = card.querySelector('input[name*="[additional_role]"]')?.value?.trim();
+        const email = card.querySelector('input[name*="[email]"]')?.value?.trim();
+        const phone = card.querySelector('input[name*="[phone]"]')?.value?.trim();
+        
+        if (fullName || title || biography) {
+            people.push({
+                full_name: fullName || '',
+                title: title || '',
+                biography: biography || '',
+                photo: photo || '',
+                additional_role: additionalRole || '',
+                email: email || '',
+                phone: phone || ''
+            });
+        }
+    });
+    
+    // Also include people from peopleList that might not be in form yet
+    peopleList.forEach(person => {
+        if (!people.find(p => p.full_name === person.full_name && p.title === person.title)) {
+            people.push(person);
+        }
+    });
+    
+    const data = {
+        title: form.querySelector('input[name="title"]')?.value || '',
+        subtitle: form.querySelector('input[name="subtitle"]')?.value || '',
+        content: form.querySelector('textarea[name="content"]')?.value || '',
+        hero_image: form.querySelector('input[name="hero_image"]')?.value || '',
+        video_url: form.querySelector('input[name="video_url"]')?.value || '',
+        video_embed_code: form.querySelector('textarea[name="video_embed_code"]')?.value || '',
+        people: people
+    };
+    
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span>💾</span> Saving...';
+    submitBtn.disabled = true;
+    
+    fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(async response => {
+        const text = await response.text();
+        let result;
+        try {
+            result = JSON.parse(text);
+        } catch (e) {
+            console.error('Failed to parse response:', text);
+            throw new Error('Server returned invalid response');
+        }
+        return result;
+    })
+    .then(result => {
+        if (result.error) {
+            showToast(result.error, 'error');
+        } else {
+            showToast(result.message || 'People Behind School content saved successfully!', 'success');
+            setTimeout(() => loadPeopleData(), 1000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Failed to save content. Please try again.', 'error');
+    })
+    .finally(() => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    });
+    
+    return false;
+}
+
+// Watch for photo changes
+document.getElementById('newPersonPhoto')?.addEventListener('change', function() {
+    const url = this.value;
+    const preview = document.getElementById('newPersonPhotoPreview');
+    if (url && preview) {
+        preview.innerHTML = `<img src="${url}" alt="Profile photo" style="width: 100%; max-width: 300px; height: 300px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div style="display: none; width: 100%; max-width: 300px; height: 300px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; align-items: center; justify-content: center;"><div style="text-align: center;"><span style="font-size: 48px; color: #999;">🖼️</span><p style="font-size: 14px; color: #999; margin-top: 10px;">No image</p></div></div>`;
+    }
+});
+
+document.getElementById('addPersonModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddPersonModal();
+});
+</script>

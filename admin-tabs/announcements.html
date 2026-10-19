@@ -1,0 +1,239 @@
+<div class="content-card">
+    <h2>📢 Announcements</h2>
+    <p style="margin-bottom: 30px; color: #666;">Manage announcements and page settings.</p>
+    
+    <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 25px; border-radius: 12px; border: 2px solid #10b981; margin-bottom: 30px;">
+        <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 15px;">🖼️ Announcements Page Header Image</h3>
+        <form method="POST" action="api/content/announcements-settings.php" id="announcementsSettingsForm" onsubmit="return handleAdminFormSubmit(event, this);">
+            <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 20px;">
+                <div id="announcementsHeroPreview" style="flex-shrink: 0; width: 160px; height: 96px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px; color: #999;">🖼️</span>
+                        <p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <input type="text" name="hero_image" id="announcements_hero_image" class="form-input" 
+                           placeholder="Image URL will appear here after selection"
+                           readonly
+                           onchange="updateAnnouncementsHeroPreview(this.value)">
+                    <button type="button" onclick="openMediaLibrary('announcements_hero_image')" 
+                            class="btn btn-primary" style="margin-top: 10px; background: linear-gradient(135deg, #16a34a, #059669);">
+                        🖼️ Select Image
+                    </button>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                <div class="form-group">
+                    <label class="form-label">Page Title</label>
+                    <input type="text" name="title" class="form-input" id="announcements_page_title" placeholder="Announcements">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Page Subtitle</label>
+                    <input type="text" name="subtitle" class="form-input" id="announcements_page_subtitle">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px;">💾 Save Settings</button>
+        </form>
+    </div>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <p style="color: #666;">Manage announcements.</p>
+        <button class="btn btn-primary" onclick="showAddAnnouncementModal()">➕ Add Announcement</button>
+    </div>
+    
+    <div id="announcementsList">
+        <div style="text-align: center; padding: 40px; color: #999;">Loading announcements...</div>
+    </div>
+</div>
+
+<!-- Add Announcement Modal -->
+<div id="addAnnouncementModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">➕ Add New Announcement</h3>
+        <form id="addAnnouncementForm" onsubmit="handleAddAnnouncement(event); return false;">
+            <div class="form-group">
+                <label class="form-label">Title *</label>
+                <input type="text" name="title" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Content</label>
+                <textarea name="content" class="form-input" rows="5"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="flex: 1;">
+                        <input type="text" name="image" id="announcement_image" class="form-input" 
+                               placeholder="Select image from media library" readonly>
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('announcement_image')" 
+                            class="btn btn-primary">🖼️ Select</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Announcement</button>
+                <button type="button" onclick="closeAddAnnouncementModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let announcements = [];
+let announcementsSettings = {};
+
+(async function() {
+    await loadAnnouncements();
+    await loadAnnouncementsSettings();
+})();
+
+async function loadAnnouncements() {
+    try {
+        const response = await fetch('api/content/announcements.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.announcements) {
+                announcements = data.announcements;
+                displayAnnouncements();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading announcements:', error);
+    }
+}
+
+async function loadAnnouncementsSettings() {
+    try {
+        const response = await fetch('api/content/announcements-settings.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.settings) {
+                announcementsSettings = data.settings;
+                document.getElementById('announcements_page_title').value = announcementsSettings.title || 'Announcements';
+                document.getElementById('announcements_page_subtitle').value = announcementsSettings.subtitle || '';
+                document.getElementById('announcements_hero_image').value = announcementsSettings.hero_image || '';
+                updateAnnouncementsHeroPreview(announcementsSettings.hero_image || '');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading announcements settings:', error);
+    }
+}
+
+function displayAnnouncements() {
+    const list = document.getElementById('announcementsList');
+    if (announcements.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No announcements found.</div>';
+        return;
+    }
+    
+    list.innerHTML = `
+        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Image</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Title</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Published</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${announcements.map(item => `
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;">
+                            ${item.image ? `
+                                <img src="${item.image}" alt="Announcement image" style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div style="display: none; width: 60px; height: 60px; background: #e0e0e0; border-radius: 8px; align-items: center; justify-content: center;">📢</div>
+                            ` : `
+                                <div style="width: 60px; height: 60px; background: #e0e0e0; border-radius: 8px; display: flex; align-items: center; justify-content: center;">📢</div>
+                            `}
+                        </td>
+                        <td style="padding: 12px;">${item.title || ''}</td>
+                        <td style="padding: 12px;">${item.published_at || item.created_at || ''}</td>
+                        <td style="padding: 12px;">
+                            <button class="btn" onclick="editAnnouncement(${item.id})" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteAnnouncement(${item.id})" style="padding: 5px 10px; font-size: 12px; background: #ef4444; color: white;">Delete</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function updateAnnouncementsHeroPreview(url) {
+    const preview = document.getElementById('announcementsHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero image preview" style="width: 160px; height: 96px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981;" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'text-align: center;\\'><span style=\\'font-size: 24px; color: #999;\\'>🖼️</span><p style=\\'font-size: 11px; color: #999; margin-top: 5px;\\'>No image</p></div>'">`;
+    } else {
+        preview.innerHTML = '<div style="text-align: center;"><span style="font-size: 24px; color: #999;">🖼️</span><p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p></div>';
+    }
+}
+
+function showAddAnnouncementModal() {
+    document.getElementById('addAnnouncementModal').style.display = 'flex';
+    document.getElementById('addAnnouncementForm').reset();
+}
+
+function closeAddAnnouncementModal() {
+    document.getElementById('addAnnouncementModal').style.display = 'none';
+}
+
+async function handleAddAnnouncement(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+        if (value) data[key] = value;
+    });
+    
+    try {
+        const response = await fetch('api/content/announcements.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.error) {
+            showToast('Error: ' + result.error, 'error');
+        } else {
+            showToast(result.message || 'Announcement added successfully!', 'success');
+            closeAddAnnouncementModal();
+            await loadAnnouncements();
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        showToast('Save error: ' + error.message, 'error');
+    }
+}
+
+async function deleteAnnouncement(id) {
+    if (!confirm('Are you sure you want to delete this announcement?')) return;
+    
+    try {
+        const response = await fetch('api/content/announcements.php?id=' + id, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+        if (result.error) {
+            showToast('Error: ' + result.error, 'error');
+        } else {
+            showToast(result.message || 'Announcement deleted successfully!', 'success');
+            await loadAnnouncements();
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        showToast('Delete error: ' + error.message, 'error');
+    }
+}
+
+function editAnnouncement(id) {
+    showToast('Edit functionality - use the API to update', 'info');
+}
+
+document.getElementById('addAnnouncementModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddAnnouncementModal();
+});
+</script>

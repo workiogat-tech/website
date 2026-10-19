@@ -1,0 +1,122 @@
+<div class="content-card">
+    <h2>📧 Contact Information</h2>
+    <p style="margin-bottom: 30px; color: #666;">Update contact details and information.</p>
+    
+    <!-- Hero Image Section -->
+    <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 25px; border-radius: 12px; border: 2px solid #10b981; margin-bottom: 30px;">
+        <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <span>🖼️</span> Contact Page Header Image
+        </h3>
+        <p style="color: #666; font-size: 14px; margin-bottom: 15px;">
+            This is the large background image displayed at the top of the Contact page.
+        </p>
+        
+        <form method="POST" action="api/content/contact.php" id="contactHeroForm" onsubmit="return handleAdminFormSubmit(event, this);">
+            <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 20px;">
+                <div id="contactHeroPreview" style="flex-shrink: 0; width: 160px; height: 96px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px; color: #999;">🖼️</span>
+                        <p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <input type="text" 
+                           name="hero_image" 
+                           id="contact_hero_image" 
+                           class="form-input" 
+                           value="" 
+                           placeholder="Image URL will appear here after selection"
+                           readonly
+                           onchange="updateContactHeroPreview(this.value)">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button type="button" 
+                                onclick="openMediaLibrary('contact_hero_image')" 
+                                class="btn btn-primary"
+                                style="flex: 1; background: linear-gradient(135deg, #16a34a, #059669);">
+                            🖼️ Select Hero Image
+                        </button>
+                        <button type="button" 
+                                onclick="document.getElementById('contact_hero_image').value=''; updateContactHeroPreview('');" 
+                                class="btn btn-danger"
+                                style="padding: 12px 20px;">
+                            Remove Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="background: linear-gradient(135deg, #16a34a, #059669);">
+                💾 Save Hero Image
+            </button>
+        </form>
+    </div>
+    
+    <form method="POST" action="api/content/contact.php" id="contactForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <div class="form-group">
+            <label class="form-label">Address</label>
+            <textarea name="address" class="form-input" rows="3" id="contact_address"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Phone</label>
+            <input type="text" name="phone" class="form-input" id="contact_phone">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" name="email" class="form-input" id="contact_email">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Hours</label>
+            <textarea name="hours" class="form-input" rows="3" id="contact_hours"></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+            <button type="submit" 
+                    style="padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #7e22ce); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(147, 51, 234, 0.4)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <span>💾</span> Save Changes
+            </button>
+            <button type="button" 
+                    onclick="window.open('contact.html', '_blank')"
+                    style="padding: 12px 24px; background: #4b5563; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                    onmouseover="this.style.background='#374151'; this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.background='#4b5563'; this.style.transform='translateY(0)'">
+                <span>👁️</span> Preview
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Load contact data on page load
+(async function() {
+    try {
+        const response = await fetch('api/content/contact.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.contact) {
+                const contact = data.contact;
+                document.getElementById('contact_address').value = contact.address || '';
+                document.getElementById('contact_phone').value = contact.phone || '';
+                document.getElementById('contact_email').value = contact.email || '';
+                document.getElementById('contact_hours').value = contact.hours || '';
+                document.getElementById('contact_hero_image').value = contact.hero_image || '';
+                updateContactHeroPreview(contact.hero_image || '');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading contact:', error);
+    }
+})();
+
+function updateContactHeroPreview(url) {
+    const preview = document.getElementById('contactHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero image preview" style="width: 160px; height: 96px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'text-align: center;\\'><span style=\\'font-size: 24px; color: #999;\\'>🖼️</span><p style=\\'font-size: 11px; color: #999; margin-top: 5px;\\'>Failed to load</p></div>'"><p style="text-align: center; font-size: 11px; color: #666; margin-top: 5px;">Preview</p>`;
+    } else {
+        preview.innerHTML = '<div style="text-align: center;"><span style="font-size: 24px; color: #999;">🖼️</span><p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p></div>';
+    }
+}
+</script>

@@ -1,0 +1,123 @@
+<div class="content-card" style="padding: 0;">
+    <div style="padding: 30px;">
+        <h2 style="font-size: 28px; font-weight: bold; color: #111827; margin: 0 0 30px 0;">🎯 Design & Customization</h2>
+        <p style="margin-bottom: 30px; color: #666;">Customize the visual appearance of all sections on your website. Changes save automatically and reflect immediately.</p>
+        
+        <div style="background: white; border-radius: 12px; padding: 30px; margin-top: 20px;">
+            <h3 style="margin-bottom: 20px; font-size: 24px;">Button Customization</h3>
+            <p style="color: #666; margin-bottom: 30px;">This section allows you to customize button styles, colors, and spacing throughout your website.</p>
+            
+            <form method="POST" action="api/content/button-settings.php" id="buttonCustomizationForm" onsubmit="return handleAdminFormSubmit(event, this);">
+                <!-- Global Button Settings -->
+                <div style="background: linear-gradient(135deg, #e0f2fe, #dbeafe); padding: 20px; border-radius: 12px; border: 2px solid #93c5fd; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <span>⚙️</span> Global Settings
+                    </h4>
+                    <div class="form-group">
+                        <label class="form-label">Button Spacing</label>
+                        <select name="button_spacing" class="form-input" id="button_spacing">
+                            <option value="0">None (0px)</option>
+                            <option value="2">Extra Tight (2px)</option>
+                            <option value="4">Tight (4px)</option>
+                            <option value="8" selected>Normal (8px)</option>
+                            <option value="12">Roomy (12px)</option>
+                            <option value="16">Wide (16px)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Button Colors -->
+                <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 20px; border-radius: 12px; border: 2px solid #6ee7b7; margin-bottom: 20px;">
+                    <h4 style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                        <span>🎨</span> Button Colors
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Primary Button Color</label>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <input type="color" 
+                                       id="primary_button_color_picker"
+                                       name="primary_button_color" 
+                                       style="width: 60px; height: 50px; padding: 0; border: 2px solid #d1d5db; border-radius: 8px; cursor: pointer; flex-shrink: 0;"
+                                       value="#10b981"
+                                       onchange="document.getElementById('primary_button_color_text').value=this.value">
+                                <input type="text" 
+                                       id="primary_button_color_text"
+                                       name="primary_button_color_text" 
+                                       class="form-input" 
+                                       style="flex: 1; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: monospace;"
+                                       value="#10b981"
+                                       onchange="document.getElementById('primary_button_color_picker').value=this.value"
+                                       pattern="^#[0-9A-Fa-f]{6}$">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Secondary Button Color</label>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <input type="color" 
+                                       id="secondary_button_color_picker"
+                                       name="secondary_button_color" 
+                                       style="width: 60px; height: 50px; padding: 0; border: 2px solid #d1d5db; border-radius: 8px; cursor: pointer; flex-shrink: 0;"
+                                       value="#6366f1"
+                                       onchange="document.getElementById('secondary_button_color_text').value=this.value">
+                                <input type="text" 
+                                       id="secondary_button_color_text"
+                                       name="secondary_button_color_text" 
+                                       class="form-input" 
+                                       style="flex: 1; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; font-family: monospace;"
+                                       value="#6366f1"
+                                       onchange="document.getElementById('secondary_button_color_picker').value=this.value"
+                                       pattern="^#[0-9A-Fa-f]{6}$">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                    <button type="submit" 
+                            style="padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #7e22ce); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(147, 51, 234, 0.4)'"
+                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                        <span>💾</span> Save Changes
+                    </button>
+                    <button type="button" 
+                            onclick="window.open('index.html', '_blank')"
+                            style="padding: 12px 24px; background: #4b5563; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                            onmouseover="this.style.background='#374151'; this.style.transform='translateY(-2px)'"
+                            onmouseout="this.style.background='#4b5563'; this.style.transform='translateY(0)'">
+                        <span>👁️</span> Preview
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load button customization data on page load
+(async function() {
+    try {
+        const response = await fetch('api/content/button-settings.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.settings) {
+                const settings = data.settings;
+                if (settings.button_spacing) {
+                    document.getElementById('button_spacing').value = settings.button_spacing;
+                }
+                if (settings.primary_button_color) {
+                    document.getElementById('primary_button_color_picker').value = settings.primary_button_color;
+                    document.getElementById('primary_button_color_text').value = settings.primary_button_color;
+                }
+                if (settings.secondary_button_color) {
+                    document.getElementById('secondary_button_color_picker').value = settings.secondary_button_color;
+                    document.getElementById('secondary_button_color_text').value = settings.secondary_button_color;
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error loading button settings:', error);
+    }
+})();
+</script>

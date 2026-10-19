@@ -1,0 +1,72 @@
+services:
+  # Web Service - PHP Application
+  - type: web
+    name: excellence-academy
+    runtime: php
+    plan: starter  # Options: starter, standard, pro
+    buildCommand: ""  # No build step needed for PHP
+    # Render will automatically serve PHP files, but we can specify a custom start command if needed
+    # startCommand: php -S 0.0.0.0:$PORT -t . index.php
+    envVars:
+      # Database Configuration (will be auto-populated from database service)
+      - key: DB_HOST
+        fromDatabase:
+          name: excellence-academy-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: excellence-academy-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: excellence-academy-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: excellence-academy-db
+          property: user
+      - key: DB_PASS
+        fromDatabase:
+          name: excellence-academy-db
+          property: password
+      - key: DB_CHARSET
+        value: utf8mb4
+      
+      # SMTP Configuration (update these with your email settings)
+      - key: SMTP_HOST
+        value: localhost  # Update with your SMTP host
+      - key: SMTP_PORT
+        value: "587"  # Update if using different port (465 for SSL)
+      - key: SMTP_SECURE
+        value: "false"  # Set to "true" for SSL
+      - key: SMTP_USER
+        value: ""  # Update with your email address
+      - key: SMTP_PASS
+        value: ""  # Update with your email password
+      - key: SMTP_FROM_EMAIL
+        value: ""  # Update with your from email
+      - key: SMTP_FROM_NAME
+        value: "Excellence Academy"
+      
+      # Application Configuration
+      - key: ADMIN_EMAILS
+        value: ""  # Comma-separated list of admin emails
+      - key: PHP_VERSION
+        value: "8.2"  # PHP version (8.0, 8.1, 8.2, or 8.3)
+      - key: TZ
+        value: "Africa/Kampala"  # Timezone
+
+  # Database Service
+  # NOTE: Render primarily supports PostgreSQL. For MySQL, you have two options:
+  # Option 1: Use an external MySQL service (PlanetScale, Railway, AWS RDS, etc.)
+  # Option 2: Use PostgreSQL and adapt your application (requires schema changes)
+  # 
+  # For MySQL, comment out the database service below and set environment variables manually:
+  # DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
+  
+  - type: pspg
+    name: excellence-academy-db
+    plan: starter  # Options: starter, standard, pro
+    databaseName: sjs
+    databaseUser: excellence_academy
+    # Note: This creates a PostgreSQL database. For MySQL, use an external service instead.

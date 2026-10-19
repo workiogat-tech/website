@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main id="page-content">
+        <div style="text-align: center; padding: 50px;">Loading contact page...</div>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        async function loadContactPage() {
+            try {
+                const response = await fetch('/api/content/contact.php');
+                const result = await response.json();
+                const data = result.data || result;
+                
+                if (data) {
+                    renderContactPage(data);
+                }
+            } catch (error) {
+                console.error('Error loading contact page:', error);
+            }
+        }
+
+        function renderContactPage(data) {
+            const address = data.address || '';
+            const phone = data.phone || '';
+            const email = data.email || '';
+            
+            document.getElementById('page-content').innerHTML = `
+                <section class="page-hero" style="background: linear-gradient(135deg, #800020, #6B0000); color: white; padding: 80px 0; text-align: center;">
+                    <div class="container">
+                        <h1>Contact Us</h1>
+                    </div>
+                </section>
+                <section class="section-padding">
+                    <div class="container">
+                        <div style="max-width: 800px; margin: 0 auto;">
+                            <h2>Get in Touch</h2>
+                            ${address ? `<p><strong>Address:</strong> ${escapeHtml(address)}</p>` : ''}
+                            ${phone ? `<p><strong>Phone:</strong> <a href="tel:${escapeHtml(phone)}">${escapeHtml(phone)}</a></p>` : ''}
+                            ${email ? `<p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>` : ''}
+                            
+                            <form id="contactForm" style="margin-top: 30px;">
+                                <div style="margin-bottom: 15px;">
+                                    <label>Name *</label>
+                                    <input type="text" name="name" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <label>Email *</label>
+                                    <input type="email" name="email" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                                </div>
+                                <div style="margin-bottom: 15px;">
+                                    <label>Message *</label>
+                                    <textarea name="message" required rows="5" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Send Message</button>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+            `;
+            
+            // Form submission
+            document.getElementById('contactForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target);
+                const data = Object.fromEntries(formData);
+                
+                try {
+                    const response = await fetch('/api/forms/contact.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Message sent successfully!');
+                        e.target.reset();
+                    } else {
+                        alert('Error: ' + (result.error || 'Failed to send message'));
+                    }
+                } catch (error) {
+                    alert('Error sending message. Please try again.');
+                }
+            });
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', loadContactPage);
+        } else {
+            loadContactPage();
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<div class="content-card">
+    <h2>⬇️ Footer Content Management</h2>
+    <p style="margin-bottom: 30px; color: #666;">Customize all footer content including links, hours, and social media.</p>
+    
+    <!-- Tabs for different footer sections -->
+    <div style="display: flex; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid #e5e7eb; flex-wrap: wrap;">
+        <button class="section-tab-btn active" onclick="showFooterSection('basic', this)">Basic Content</button>
+        <button class="section-tab-btn" onclick="showFooterSection('quick-links', this)">Quick Links</button>
+        <button class="section-tab-btn" onclick="showFooterSection('hours', this)">Hours of Operation</button>
+        <button class="section-tab-btn" onclick="showFooterSection('social', this)">Social Media</button>
+    </div>
+    
+    <!-- Basic Content Section -->
+    <div id="footer-basic-section" class="footer-section-content">
+        <form method="POST" action="api/content/footer.php" id="footerForm" onsubmit="return handleAdminFormSubmit(event, this);">
+            <div class="form-group">
+                <label class="form-label">Copyright Text</label>
+                <input type="text" name="copyright_text" class="form-input" id="copyright_text"
+                       placeholder="© 2024 Excellence Academy. All rights reserved.">
+            </div>
+            
+            <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+        </form>
+    </div>
+    
+    <!-- Quick Links Section -->
+    <div id="footer-quick-links-section" class="footer-section-content" style="display: none;">
+        <div style="margin-bottom: 20px;">
+            <button class="btn btn-primary" onclick="showAddQuickLinkModal()">➕ Add Quick Link</button>
+        </div>
+        
+        <div id="quickLinksList">
+            <div style="text-align: center; padding: 40px; background: #f9fafb; border-radius: 12px; color: #6b7280;">
+                <p>Loading quick links...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hours Section -->
+    <div id="footer-hours-section" class="footer-section-content" style="display: none;">
+        <div style="margin-bottom: 20px;">
+            <button class="btn btn-primary" onclick="showAddHoursModal()">➕ Add Hours Entry</button>
+        </div>
+        
+        <div id="hoursList">
+            <div style="text-align: center; padding: 40px; background: #f9fafb; border-radius: 12px; color: #6b7280;">
+                <p>Loading hours...</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Social Media Section -->
+    <div id="footer-social-section" class="footer-section-content" style="display: none;">
+        <p style="margin-bottom: 20px; color: #666;">Manage social media links in the <a href="?tab=social-media" style="color: #2563eb; text-decoration: underline;">Social Media</a> tab.</p>
+    </div>
+</div>
+
+<!-- Add Quick Link Modal -->
+<div id="addQuickLinkModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">➕ Add Quick Link</h3>
+        <form id="addQuickLinkForm" onsubmit="handleAddQuickLink(event); return false;">
+            <div class="form-group">
+                <label class="form-label">Label *</label>
+                <input type="text" name="label" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">URL *</label>
+                <input type="url" name="url" class="form-input" required>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Link</button>
+                <button type="button" onclick="closeAddQuickLinkModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Add Hours Modal -->
+<div id="addHoursModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 500px; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">➕ Add Hours Entry</h3>
+        <form id="addHoursForm" onsubmit="handleAddHours(event); return false;">
+            <div class="form-group">
+                <label class="form-label">Category *</label>
+                <input type="text" name="category" class="form-input" required placeholder="e.g., Students, Staff">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Day Range *</label>
+                <input type="text" name="day_range" class="form-input" required placeholder="e.g., Monday - Friday">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hours *</label>
+                <input type="text" name="hours" class="form-input" required placeholder="e.g., 7:00 AM – 5:00 PM">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Hours</button>
+                <button type="button" onclick="closeAddHoursModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let footerData = {};
+let quickLinks = [];
+let hours = [];
+
+(async function() {
+    await loadFooterData();
+})();
+
+async function loadFooterData() {
+    try {
+        const response = await fetch('api/content/footer.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success) {
+                footerData = data.footer || {};
+                quickLinks = data.quickLinks || [];
+                hours = data.hours || [];
+                
+                document.getElementById('copyright_text').value = footerData.copyright_text || '';
+                displayQuickLinks();
+                displayHours();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading footer data:', error);
+    }
+}
+
+function showFooterSection(section, btn) {
+    document.querySelectorAll('.footer-section-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.section-tab-btn').forEach(b => b.classList.remove('active'));
+    
+    document.getElementById('footer-' + section + '-section').style.display = 'block';
+    btn.classList.add('active');
+}
+
+function displayQuickLinks() {
+    const list = document.getElementById('quickLinksList');
+    if (quickLinks.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 40px; background: #f9fafb; border-radius: 12px; color: #6b7280;"><p>No quick links yet. Click "Add Quick Link" to create one.</p></div>';
+        return;
+    }
+    
+    list.innerHTML = quickLinks.map(link => `
+        <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>${link.label}</strong>
+                <span style="color: #6b7280; margin-left: 10px;">${link.url || ''}</span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-sm" onclick="editQuickLink(${link.id})" style="padding: 6px 12px; font-size: 12px;">✏️ Edit</button>
+                <button class="btn btn-sm" onclick="deleteQuickLink(${link.id})" style="padding: 6px 12px; font-size: 12px; background: #ef4444; color: white;">🗑️ Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayHours() {
+    const list = document.getElementById('hoursList');
+    if (hours.length === 0) {
+        list.innerHTML = '<div style="text-align: center; padding: 40px; background: #f9fafb; border-radius: 12px; color: #6b7280;"><p>No hours entries yet. Click "Add Hours Entry" to create one.</p></div>';
+        return;
+    }
+    
+    list.innerHTML = hours.map(hour => `
+        <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>${hour.category}</strong>
+                <span style="color: #6b7280; margin-left: 10px;">
+                    ${hour.day_range || ''}: ${hour.hours || ''}
+                </span>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-sm" onclick="editHours(${hour.id})" style="padding: 6px 12px; font-size: 12px;">✏️ Edit</button>
+                <button class="btn btn-sm" onclick="deleteHours(${hour.id})" style="padding: 6px 12px; font-size: 12px; background: #ef4444; color: white;">🗑️ Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showAddQuickLinkModal() {
+    document.getElementById('addQuickLinkModal').style.display = 'flex';
+    document.getElementById('addQuickLinkForm').reset();
+}
+
+function closeAddQuickLinkModal() {
+    document.getElementById('addQuickLinkModal').style.display = 'none';
+}
+
+async function handleAddQuickLink(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {
+        label: formData.get('label'),
+        url: formData.get('url'),
+        section: 'quick-links',
+        order_index: 0
+    };
+    
+    try {
+        const response = await fetch('api/content/footer-links.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast('Quick link added successfully', 'success');
+            closeAddQuickLinkModal();
+            await loadFooterData();
+        } else {
+            showToast(result.error || 'Failed to add link', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding quick link:', error);
+        showToast('Failed to add link', 'error');
+    }
+}
+
+function editQuickLink(id) {
+    const link = quickLinks.find(l => l.id == id);
+    if (!link) return;
+    
+    const label = prompt('Enter new label:', link.label);
+    if (!label) return;
+    const url = prompt('Enter new URL:', link.url);
+    if (!url) return;
+    
+    fetch('api/content/footer-links.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, label, url })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Quick link updated successfully', 'success');
+            setTimeout(() => loadFooterData(), 1000);
+        } else {
+            showToast(data.error || 'Failed to update link', 'error');
+        }
+    });
+}
+
+function deleteQuickLink(id) {
+    if (!confirm('Delete this quick link?')) return;
+    
+    fetch('api/content/footer-links.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Quick link deleted successfully', 'success');
+            setTimeout(() => loadFooterData(), 1000);
+        } else {
+            showToast(data.error || 'Failed to delete link', 'error');
+        }
+    });
+}
+
+function showAddHoursModal() {
+    document.getElementById('addHoursModal').style.display = 'flex';
+    document.getElementById('addHoursForm').reset();
+}
+
+function closeAddHoursModal() {
+    document.getElementById('addHoursModal').style.display = 'none';
+}
+
+async function handleAddHours(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {
+        category: formData.get('category'),
+        day_range: formData.get('day_range'),
+        hours: formData.get('hours'),
+        order_index: 0
+    };
+    
+    try {
+        const response = await fetch('api/content/footer-hours.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showToast('Hours entry added successfully', 'success');
+            closeAddHoursModal();
+            await loadFooterData();
+        } else {
+            showToast(result.error || 'Failed to add hours', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding hours:', error);
+        showToast('Failed to add hours', 'error');
+    }
+}
+
+function editHours(id) {
+    const hour = hours.find(h => h.id == id);
+    if (!hour) return;
+    
+    const category = prompt('Enter category:', hour.category);
+    if (!category) return;
+    const dayRange = prompt('Enter day range:', hour.day_range);
+    if (!dayRange) return;
+    const hoursText = prompt('Enter hours:', hour.hours);
+    if (!hoursText) return;
+    
+    fetch('api/content/footer-hours.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, category, day_range: dayRange, hours: hoursText })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Hours entry updated successfully', 'success');
+            setTimeout(() => loadFooterData(), 1000);
+        } else {
+            showToast(data.error || 'Failed to update hours', 'error');
+        }
+    });
+}
+
+function deleteHours(id) {
+    if (!confirm('Delete this hours entry?')) return;
+    
+    fetch('api/content/footer-hours.php', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            showToast('Hours entry deleted successfully', 'success');
+            setTimeout(() => loadFooterData(), 1000);
+        } else {
+            showToast(data.error || 'Failed to delete hours', 'error');
+        }
+    });
+}
+
+document.getElementById('addQuickLinkModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddQuickLinkModal();
+});
+
+document.getElementById('addHoursModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddHoursModal();
+});
+</script>
+
+<style>
+.section-tab-btn {
+    padding: 10px 20px;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.section-tab-btn:hover {
+    background: #e5e7eb;
+}
+
+.section-tab-btn.active {
+    background: white;
+    border-bottom: 2px solid #2563eb;
+    color: #2563eb;
+}
+
+.footer-section-content {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+}
+</style>

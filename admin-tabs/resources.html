@@ -1,0 +1,125 @@
+<div class="content-card" style="padding: 0;">
+    <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; border: 1px solid #0ea5e9; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h2 style="font-size: 24px; font-weight: bold; color: #111827; margin: 0;">📚 Resources & Information</h2>
+            <button onclick="window.open('resources.html', '_blank')" style="padding: 8px 16px; background: #4b5563; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#374151'" onmouseout="this.style.background='#4b5563'">
+                <span>🔗</span> Preview Page
+            </button>
+        </div>
+        <p style="font-size: 14px; color: #6b7280; margin: 0;">Manage the Resources page content, including hero section, section headers, and resource detail sections.</p>
+    </div>
+    
+    <form method="POST" action="api/content/resources.php" id="resourcesForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <!-- Hero Section -->
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 25px; border-radius: 12px; border: 2px solid #f59e0b; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">🎯 Page Header (Hero Section)</h3>
+            
+            <div class="form-group">
+                <label class="form-label">Hero Caption</label>
+                <input type="text" name="hero_caption" class="form-input" 
+                       id="hero_caption"
+                       value=""
+                       placeholder="Resources & Information">
+                <small style="color: #6b7280; display: block; margin-top: 5px;">This appears as the caption above the main title in the hero section</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Hero Title</label>
+                <input type="text" name="hero_title" class="form-input" 
+                       id="hero_title"
+                       value=""
+                       placeholder="Resources">
+                <small style="color: #6b7280; display: block; margin-top: 5px;">This appears as the main title in the hero section</small>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Hero Image</label>
+                <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">This image appears in the header/hero section of the Resources page</p>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="resourcesHeroPreview" style="flex-shrink: 0;"></div>
+                    <div style="flex: 1;">
+                        <input type="text" name="hero_image" id="resources_hero_image" class="form-input" 
+                               value="" 
+                               placeholder="Select image from media library" readonly>
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('resources_hero_image')" 
+                            class="btn btn-primary">🖼️ Select Image</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Section Header -->
+        <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 25px; border-radius: 12px; border: 2px solid #0ea5e9; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">📋 Main Content Section</h3>
+            
+            <div class="form-group">
+                <label class="form-label">Section Title</label>
+                <input type="text" name="section_title" class="form-input" 
+                       id="section_title"
+                       value=""
+                       placeholder="Resources & Information">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Section Subtitle</label>
+                <textarea name="section_subtitle" class="form-input" rows="3"
+                          id="section_subtitle"
+                          placeholder="Comprehensive resources and information for parents and students..."></textarea>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+            <button type="submit" 
+                    style="padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #7e22ce); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(147, 51, 234, 0.4)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                <span>💾</span> Save Changes
+            </button>
+            <button type="button" 
+                    onclick="window.open('resources.html', '_blank')"
+                    style="padding: 12px 24px; background: #4b5563; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                    onmouseover="this.style.background='#374151'; this.style.transform='translateY(-2px)'"
+                    onmouseout="this.style.background='#4b5563'; this.style.transform='translateY(0)'">
+                <span>👁️</span> Preview
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Load resources data on page load
+(async function() {
+    try {
+        const response = await fetch('api/content/resources.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.resources) {
+                const resources = data.resources;
+                document.getElementById('hero_caption').value = resources.hero_caption || 'Resources & Information';
+                document.getElementById('hero_title').value = resources.hero_title || 'Resources';
+                document.getElementById('resources_hero_image').value = resources.hero_image || '';
+                document.getElementById('section_title').value = resources.section_title || 'Resources & Information';
+                document.getElementById('section_subtitle').value = resources.section_subtitle || '';
+                updateResourcesHeroPreview(resources.hero_image || '');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading resources:', error);
+    }
+})();
+
+function updateResourcesHeroPreview(url) {
+    const preview = document.getElementById('resourcesHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero image preview" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.style.display='none'">`;
+    } else {
+        preview.innerHTML = '';
+    }
+}
+
+// Update preview when image changes
+document.getElementById('resources_hero_image').addEventListener('change', function() {
+    updateResourcesHeroPreview(this.value);
+});
+</script>

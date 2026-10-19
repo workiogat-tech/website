@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <h1 class="page-hero-title">Announcements</h1>
+                    <p class="page-hero-subtitle">Important Announcements and Updates</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div id="announcements-container">
+                    <div style="text-align: center; padding: 60px 20px;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">📢</div>
+                        <h2 style="font-size: 28px; color: #333; margin-bottom: 10px;">No Announcements Yet</h2>
+                        <p style="color: #666; font-size: 16px;">Check back soon for important announcements and updates.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            const data = await PageDataLoader.loadAnnouncementsData();
+            const container = document.getElementById('announcements-container');
+            
+            // Update hero
+            if (data.announcementsSettings) {
+                const hero = document.querySelector('.page-hero-section');
+                if (data.announcementsSettings.title) {
+                    const title = hero.querySelector('.page-hero-title');
+                    if (title) title.textContent = data.announcementsSettings.title;
+                }
+                if (data.announcementsSettings.subtitle) {
+                    const subtitle = hero.querySelector('.page-hero-subtitle');
+                    if (subtitle) subtitle.textContent = data.announcementsSettings.subtitle;
+                }
+                if (data.announcementsSettings.hero_image) {
+                    const bg = hero.querySelector('.page-hero-background');
+                    if (bg) {
+                        const heroImageUrl = data.announcementsSettings.hero_image.replace(/'/g, "\\'");
+                        bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                    }
+                }
+            }
+            
+            // Render announcements
+            if (data.announcements && data.announcements.length > 0) {
+                let announcementsHtml = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 30px; margin-top: 40px;">';
+                data.announcements.forEach(item => {
+                    const itemImage = item.image || '';
+                    const publishedDate = item.published_at || item.created_at || '';
+                    const dateFormatted = publishedDate ? new Date(publishedDate).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : '';
+                    announcementsHtml += `
+                        <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s;" 
+                             onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 12px rgba(0,0,0,0.15)'" 
+                             onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'">
+                            ${itemImage ? `
+                                <img src="${escapeHtml(itemImage)}" 
+                                     alt="${escapeHtml(item.title || '')}"
+                                     style="width: 100%; height: 200px; object-fit: cover;">
+                            ` : ''}
+                            <div style="padding: 20px;">
+                                ${dateFormatted ? `
+                                    <div style="font-size: 12px; color: #666; margin-bottom: 10px;">
+                                        📅 ${escapeHtml(dateFormatted)}
+                                    </div>
+                                ` : ''}
+                                <h3 style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 10px;">
+                                    ${escapeHtml(item.title || '')}
+                                </h3>
+                                <p style="color: #666; line-height: 1.6; margin-bottom: 15px;">
+                                    ${escapeHtml((item.content || '').substring(0, 150))}...
+                                </p>
+                                <a href="#" style="color: #800020; font-weight: 600; text-decoration: none;">Read More →</a>
+                            </div>
+                        </div>
+                    `;
+                });
+                announcementsHtml += '</div>';
+                container.innerHTML = announcementsHtml;
+            }
+        })();
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

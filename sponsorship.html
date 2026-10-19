@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sponsorship - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background" style="background-image: url(uploads/hey.jpg);"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <h1 class="page-hero-title">Sponsorship</h1>
+                    <p class="page-hero-subtitle">Support Our Students</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Transformations That Inspire</h2>
+                    <p class="section-subtitle">See the incredible impact of sponsorship through the eyes of our children. Every story is a testament to the power of education and hope.</p>
+                </div>
+                
+                <div id="success-stories-container" style="margin-top: 60px;"></div>
+
+                <div class="sponsorship-impact-section" style="margin-top: 60px;">
+                    <div class="section-header text-center">
+                        <h2 class="section-title">Choose Your Impact Level</h2>
+                        <p class="section-subtitle">Every contribution makes a difference. Choose the sponsorship level that fits your heart and budget.</p>
+                    </div>
+                    <div class="sponsorship-levels-grid" id="sponsorship-levels">
+                        <!-- Default levels - will be replaced by JS if data available -->
+                        <div class="sponsorship-level-card">
+                            <div class="level-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="level-name">Full Scholarship</h3>
+                            <div class="level-amount">UGX 500,000</div>
+                            <p class="level-description">Complete tuition, books, and uniform for one academic year</p>
+                            <ul class="level-benefits">
+                                <li>Full tuition coverage</li>
+                                <li>Textbooks and supplies</li>
+                                <li>School uniform</li>
+                                <li>Monthly progress reports</li>
+                            </ul>
+                            <button class="level-button" onclick="openSponsorshipModal('Full Scholarship')">Sponsor Now</button>
+                        </div>
+                        <div class="sponsorship-level-card">
+                            <div class="level-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="level-name">Partial Scholarship</h3>
+                            <div class="level-amount">UGX 250,000</div>
+                            <p class="level-description">Half tuition coverage for one academic year</p>
+                            <ul class="level-benefits">
+                                <li>50% tuition coverage</li>
+                                <li>Textbooks</li>
+                                <li>Quarterly progress reports</li>
+                                <li>Student communication</li>
+                            </ul>
+                            <button class="level-button" onclick="openSponsorshipModal('Partial Scholarship')">Sponsor Now</button>
+                        </div>
+                        <div class="sponsorship-level-card">
+                            <div class="level-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                </svg>
+                            </div>
+                            <h3 class="level-name">Book & Uniform</h3>
+                            <div class="level-amount">UGX 100,000</div>
+                            <p class="level-description">Essential supplies and uniform for one student</p>
+                            <ul class="level-benefits">
+                                <li>Complete textbook set</li>
+                                <li>School uniform</li>
+                                <li>School bag</li>
+                                <li>Semester progress report</li>
+                            </ul>
+                            <button class="level-button" onclick="openSponsorshipModal('Book & Uniform')">Sponsor Now</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sponsorship-how-section" style="margin-top: 60px;">
+                    <div class="section-header text-center">
+                        <h2 class="section-title">How Your Sponsorship Works</h2>
+                        <p class="section-subtitle">Our sponsorship process is simple, transparent, and impactful. Here's how you can change a child's life.</p>
+                    </div>
+                    <div class="sponsorship-steps-grid" id="sponsorship-steps">
+                        <!-- Default steps -->
+                        <div class="sponsorship-step">
+                            <div class="step-number">1</div>
+                            <h3 class="step-title">Choose Your Child</h3>
+                            <p class="step-description">Browse profiles and select a child whose story touches your heart.</p>
+                        </div>
+                        <div class="sponsorship-step">
+                            <div class="step-number">2</div>
+                            <h3 class="step-title">Make Your Pledge</h3>
+                            <p class="step-description">Choose your sponsorship level and set up your monthly contribution.</p>
+                        </div>
+                        <div class="sponsorship-step">
+                            <div class="step-number">3</div>
+                            <h3 class="step-title">Stay Connected</h3>
+                            <p class="step-description">Receive regular updates, photos, and letters from your sponsored child.</p>
+                        </div>
+                        <div class="sponsorship-step">
+                            <div class="step-number">4</div>
+                            <h3 class="step-title">See the Impact</h3>
+                            <p class="step-description">Watch your sponsored child grow, learn, and achieve their dreams.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sponsorship-cta-section" style="margin-top: 3rem; padding: 3rem; background: #800020; color: white; border-radius: 1rem; text-align: center;">
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem;">Ready to Change a Life?</h2>
+                    <p style="font-size: 1.125rem; margin-bottom: 2rem; max-width: 42rem; margin-left: auto; margin-right: auto;">
+                        Join our sponsorship program today and be part of a child's journey to a brighter future.
+                    </p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                        <button class="btn btn-primary" onclick="openApplicationModal()" style="background: white; color: #800020; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
+                            Apply for Sponsorship
+                        </button>
+                        <button class="btn btn-primary" onclick="openSponsorshipModal('Full Scholarship')" style="background: #6B0000; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
+                            Sponsor a Child
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <!-- Sponsorship Application Modal -->
+    <div id="sponsorshipApplicationModal" class="sponsorship-modal" style="display: none;">
+        <div class="sponsorship-modal-overlay"></div>
+        <div class="sponsorship-modal-content">
+            <div class="sponsorship-modal-header">
+                <h2>Apply for Sponsorship</h2>
+                <button class="sponsorship-modal-close" onclick="closeApplicationModal()">×</button>
+            </div>
+            
+            <form id="sponsorshipApplicationForm" class="sponsorship-modal-body">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" name="name" required placeholder="Enter your full name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" name="email" required placeholder="your.email@example.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" name="phone" placeholder="+256 123 456 789">
+                </div>
+                
+                <div class="form-group">
+                    <label>Sponsorship Level *</label>
+                    <select name="sponsorship_level" required>
+                        <option value="Full Scholarship">Full Scholarship</option>
+                        <option value="Partial Scholarship">Partial Scholarship</option>
+                        <option value="Book & Uniform">Book & Uniform</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Additional Message</label>
+                    <textarea name="message" rows="4" placeholder="Tell us why you're interested in sponsoring a child..."></textarea>
+                </div>
+                
+                <div id="sponsorshipFormMessage" style="display: none; padding: 1rem; margin-bottom: 1rem; border-radius: 0.5rem;"></div>
+                
+                <div class="sponsorship-modal-footer">
+                    <button type="button" onclick="closeApplicationModal()" class="btn-cancel">Cancel</button>
+                    <button type="submit" class="btn-submit">Submit Application</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            const data = await PageDataLoader.loadSponsorshipData();
+                
+                // Update hero
+                if (data.sponsorship) {
+                    const hero = document.querySelector('.page-hero-section');
+                    if (data.sponsorship.title) {
+                        const title = hero.querySelector('.page-hero-title');
+                        if (title) title.textContent = data.sponsorship.title;
+                    }
+                    if (data.sponsorship.subtitle) {
+                        const subtitle = hero.querySelector('.page-hero-subtitle');
+                        if (subtitle) subtitle.textContent = data.sponsorship.subtitle;
+                    }
+                    if (data.sponsorship.hero_image) {
+                        const bg = hero.querySelector('.page-hero-background');
+                        if (bg) {
+                            const heroImageUrl = data.sponsorship.hero_image.replace(/'/g, "\\'");
+                            bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                        }
+                    }
+                }
+                
+                // Render success stories
+                if (data.successStories && data.successStories.length > 0) {
+                    const container = document.getElementById('success-stories-container');
+                    let storiesHtml = `
+                        <div class="success-stories-section" style="margin-top: 60px;">
+                            <div class="success-stories-grid" style="display: grid; grid-template-columns: 1fr; gap: 30px;">
+                    `;
+                    data.successStories.forEach(story => {
+                        const beforeImage = story.before?.image || '';
+                        const afterImage = story.after?.image || '';
+                        storiesHtml += `
+                            <div class="success-story-card" style="background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0;">
+                                    <div style="background: linear-gradient(135deg, #fee2e2, #fecaca); padding: 30px; text-align: center; position: relative;">
+                                        <div style="position: absolute; top: 15px; right: 15px; font-size: 32px;">😢</div>
+                                        <div style="background: rgba(220, 38, 38, 0.2); color: #991b1b; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 20px; font-weight: 600; font-size: 14px;">Before</div>
+                                        ${beforeImage ? `
+                                            <img src="${escapeHtml(beforeImage)}" alt="${escapeHtml(story.name || '')} before" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 4px solid rgba(220, 38, 38, 0.3); margin: 0 auto 20px; display: block;">
+                                        ` : `
+                                            <div style="width: 120px; height: 120px; background: rgba(220, 38, 38, 0.2); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">📷</div>
+                                        `}
+                                        <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin: 0 0 10px 0;">
+                                            ${escapeHtml(story.name || '')}${story.age ? `, <span style="color: #6b7280; font-weight: 400;">${escapeHtml(story.age)}</span>` : ''}
+                                        </h3>
+                                        <p style="font-size: 14px; color: #4b5563; line-height: 1.6; margin: 0;">${escapeHtml(story.before?.description || '')}</p>
+                                    </div>
+                                    <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 30px; text-align: center; position: relative;">
+                                        <div style="position: absolute; top: 15px; right: 15px; font-size: 32px;">😊</div>
+                                        <div style="background: rgba(16, 185, 129, 0.2); color: #065f46; padding: 8px 16px; border-radius: 20px; display: inline-block; margin-bottom: 20px; font-weight: 600; font-size: 14px;">After</div>
+                                        ${afterImage ? `
+                                            <img src="${escapeHtml(afterImage)}" alt="${escapeHtml(story.name || '')} after" style="width: 120px; height: 120px; object-fit: cover; border-radius: 50%; border: 4px solid rgba(16, 185, 129, 0.3); margin: 0 auto 20px; display: block;">
+                                        ` : `
+                                            <div style="width: 120px; height: 120px; background: rgba(16, 185, 129, 0.2); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 48px;">✨</div>
+                                        `}
+                                        <h3 style="font-size: 18px; font-weight: 700; color: #1f2937; margin: 0 0 10px 0;">
+                                            ${escapeHtml(story.name || '')}${story.age ? `, <span style="color: #6b7280; font-weight: 400;">${escapeHtml(story.age)}</span>` : ''}
+                                        </h3>
+                                        <p style="font-size: 14px; color: #065f46; line-height: 1.6; margin: 0; font-weight: 500;">${escapeHtml(story.after?.description || '')}</p>
+                                    </div>
+                                </div>
+                                ${story.story ? `
+                                    <div style="padding: 25px; background: #f9fafb; border-top: 2px solid #e5e7eb;">
+                                        <p style="font-size: 15px; color: #374151; line-height: 1.7; margin: 0; font-style: italic;">
+                                            "${escapeHtml(story.story)}"
+                                        </p>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    storiesHtml += `
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('success-stories-container').innerHTML = storiesHtml;
+                }
+                
+                // Render sponsorship levels
+                if (data.sponsorshipLevels && data.sponsorshipLevels.length > 0) {
+                    const levelsContainer = document.getElementById('sponsorship-levels');
+                    let levelsHtml = '';
+                    data.sponsorshipLevels.forEach(level => {
+                        levelsHtml += `
+                            <div class="sponsorship-level-card">
+                                <div class="level-icon">
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="level-name">${escapeHtml(level.name || '')}</h3>
+                                <div class="level-amount">${escapeHtml(level.amount || '')}</div>
+                                <p class="level-description">${escapeHtml(level.description || '')}</p>
+                                ${level.benefits && level.benefits.length > 0 ? `
+                                    <ul class="level-benefits">
+                                        ${level.benefits.map(benefit => `<li>${escapeHtml(benefit)}</li>`).join('')}
+                                    </ul>
+                                ` : ''}
+                                <button class="level-button" onclick="openSponsorshipModal('${escapeHtml(level.name || '')}')">Sponsor Now</button>
+                            </div>
+                        `;
+                    });
+                    levelsContainer.innerHTML = levelsHtml;
+                }
+                
+                // Render steps
+                if (data.steps && data.steps.length > 0) {
+                    const stepsContainer = document.getElementById('sponsorship-steps');
+                    let stepsHtml = '';
+                    data.steps.forEach((step, index) => {
+                        stepsHtml += `
+                            <div class="sponsorship-step">
+                                <div class="step-number">${index + 1}</div>
+                                <h3 class="step-title">${escapeHtml(step.title || '')}</h3>
+                                <p class="step-description">${escapeHtml(step.description || '')}</p>
+                            </div>
+                        `;
+                    });
+                    stepsContainer.innerHTML = stepsHtml;
+                } else {
+                    // Use default steps
+                    const container = document.getElementById('sponsorship-steps');
+                    if (container && data.steps && data.steps.length > 0) {
+                        let stepsHtml = '';
+                        data.steps.forEach((step, index) => {
+                            stepsHtml += `
+                                <div class="sponsorship-step">
+                                    <div class="step-number">${index + 1}</div>
+                                    <h3 class="step-title">${escapeHtml(step.title || '')}</h3>
+                                    <p class="step-description">${escapeHtml(step.description || '')}</p>
+                                </div>
+                            `;
+                        });
+                        container.innerHTML = stepsHtml;
+                    }
+                }
+        })();
+        
+        function openApplicationModal() {
+            const modal = document.getElementById('sponsorshipApplicationModal');
+            if (modal) {
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeApplicationModal() {
+            const modal = document.getElementById('sponsorshipApplicationModal');
+            if (modal) {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                const form = document.getElementById('sponsorshipApplicationForm');
+                if (form) form.reset();
+            }
+        }
+        
+        function openSponsorshipModal(level) {
+            openApplicationModal();
+            const form = document.getElementById('sponsorshipApplicationForm');
+            if (form) {
+                const levelSelect = form.querySelector('select[name="sponsorship_level"]');
+                if (levelSelect) levelSelect.value = level;
+            }
+        }
+        
+        // Handle form submission
+        document.getElementById('sponsorshipApplicationForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
+            
+            try {
+                const response = await fetch('/api/forms/sponsorship-application.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                const messageDiv = document.getElementById('sponsorshipFormMessage');
+                if (messageDiv) {
+                    messageDiv.style.display = 'block';
+                    if (result.error) {
+                        messageDiv.style.background = '#fee';
+                        messageDiv.style.color = '#c33';
+                        messageDiv.textContent = result.error;
+                    } else {
+                        messageDiv.style.background = '#efe';
+                        messageDiv.style.color = '#3c3';
+                        messageDiv.textContent = 'Application submitted successfully! We will contact you soon.';
+                        this.reset();
+                        setTimeout(closeApplicationModal, 3000);
+                    }
+                }
+            } catch (error) {
+                console.error('Form submission error:', error);
+            }
+        });
+        
+        document.querySelector('.sponsorship-modal-overlay')?.addEventListener('click', closeApplicationModal);
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .success-story-card {
+            transition: all 0.3s ease;
+        }
+        @media (max-width: 768px) {
+            .success-stories-grid .success-story-card > div {
+                grid-template-columns: 1fr !important;
+            }
+        }
+        .sponsorship-modal {
+            position: fixed; inset: 0; z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 1rem;
+        }
+        .sponsorship-modal-overlay {
+            position: absolute; inset: 0; background: rgba(0, 0, 0, 0.5);
+        }
+        .sponsorship-modal-content {
+            position: relative; background: white; border-radius: 1rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); max-width: 28rem; width: 100%; max-height: 90vh; overflow-y: auto; border: 1px solid #10b981;
+        }
+        .sponsorship-modal-header {
+            background: linear-gradient(to right, #10b981, #059669); color: white; padding: 1rem; border-radius: 1rem 1rem 0 0; position: relative; display: flex; justify-content: space-between; align-items: center;
+        }
+        .sponsorship-modal-header h2 { font-size: 1.25rem; font-weight: bold; margin: 0; }
+        .sponsorship-modal-close { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.8; transition: opacity 0.2s; }
+        .sponsorship-modal-close:hover { opacity: 1; }
+        .sponsorship-modal-body { padding: 1rem; }
+        .sponsorship-modal-body .form-group { margin-bottom: 1.25rem; }
+        .sponsorship-modal-body label { display: block; font-size: 0.875rem; font-weight: 500; color: #374151; margin-bottom: 0.5rem; }
+        .sponsorship-modal-body input, .sponsorship-modal-body select, .sponsorship-modal-body textarea {
+            width: 100%; padding: 0.625rem 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; font-size: 0.875rem; transition: border-color 0.2s;
+        }
+        .sponsorship-modal-body input:focus, .sponsorship-modal-body select:focus, .sponsorship-modal-body textarea:focus {
+            outline: none; border-color: #10b981; box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+        }
+        .sponsorship-modal-body textarea { resize: none; }
+        .sponsorship-modal-footer { display: flex; gap: 0.75rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+        .btn-cancel { flex: 1; padding: 0.625rem; border: 1px solid #d1d5db; background: white; color: #374151; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .btn-cancel:hover { background: #f9fafb; }
+        .btn-submit { flex: 1; padding: 0.625rem; border: none; background: linear-gradient(to right, #10b981, #059669); color: white; border-radius: 0.5rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+        .btn-submit:hover { opacity: 0.9; }
+        .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</body>
+</html>

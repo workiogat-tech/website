@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Parents Portal</title>
+</head>
+<body>
+    <div class="content-card">
+        <h2>👥 Parents Portal</h2>
+        <p style="margin-bottom: 30px; color: #666;">Manage parents portal content.</p>
+        
+        <form method="POST" action="api/content/parents.php" id="parentsForm" onsubmit="return handleAdminFormSubmit(event, this);">
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" id="parents_title" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Subtitle</label>
+                <input type="text" name="subtitle" id="parents_subtitle" class="form-input">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea name="description" id="parents_description" class="form-input" rows="5"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Hero Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div id="parents_hero_preview" style="display: none;">
+                        <img id="parents_hero_img" src="" alt="Hero image preview"
+                             style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;"
+                             onerror="this.onerror=null; this.style.display='none';">
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="text" name="hero_image" id="parents_hero_image" class="form-input" 
+                               placeholder="Select image from media library" readonly>
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('parents_hero_image')" 
+                            class="btn btn-primary">🖼️ Select Image</button>
+                </div>
+            </div>
+            
+            <!-- Hidden field for resource_detail_sections -->
+            <input type="hidden" name="resource_detail_sections" id="resourceSectionsJson" value='[]'>
+            <input type="hidden" name="additional_slides" id="additional_slides_json" value='[]'>
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 30px;">💾 Save Changes</button>
+        </form>
+    </div>
+
+    <script>
+        // Load existing parents data
+        async function loadParentsData() {
+            try {
+                const response = await fetch('api/content/parents.php');
+                const data = await response.json();
+                
+                if (data) {
+                    if (data.title) document.getElementById('parents_title').value = data.title;
+                    if (data.subtitle) document.getElementById('parents_subtitle').value = data.subtitle;
+                    if (data.description) document.getElementById('parents_description').value = data.description;
+                    if (data.hero_image) {
+                        document.getElementById('parents_hero_image').value = data.hero_image;
+                        const img = document.getElementById('parents_hero_img');
+                        img.src = data.hero_image;
+                        document.getElementById('parents_hero_preview').style.display = 'block';
+                    }
+                    
+                    // Load resource_detail_sections
+                    if (data.resource_detail_sections) {
+                        const sections = typeof data.resource_detail_sections === 'string' ? JSON.parse(data.resource_detail_sections) : data.resource_detail_sections;
+                        document.getElementById('resourceSectionsJson').value = JSON.stringify(sections);
+                    }
+                    
+                    // Load additional slides
+                    if (data.additional_slides) {
+                        const slides = typeof data.additional_slides === 'string' ? JSON.parse(data.additional_slides) : data.additional_slides;
+                        document.getElementById('additional_slides_json').value = JSON.stringify(slides);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading parents data:', error);
+            }
+        }
+
+        function initParentsTab() {
+            loadParentsData();
+            
+            // Watch for hero image changes
+            const heroInput = document.getElementById('parents_hero_image');
+            if (heroInput) {
+                heroInput.addEventListener('change', function() {
+                    const img = document.getElementById('parents_hero_img');
+                    if (this.value) {
+                        img.src = this.value;
+                        document.getElementById('parents_hero_preview').style.display = 'block';
+                    } else {
+                        document.getElementById('parents_hero_preview').style.display = 'none';
+                    }
+                });
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initParentsTab);
+        } else {
+            setTimeout(initParentsTab, 50);
+        }
+    </script>
+</body>
+</html>

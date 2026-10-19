@@ -1,0 +1,56 @@
+<div class="content-card">
+    <h2>📍 Map Settings</h2>
+    <p style="margin-bottom: 30px; color: #666;">Configure map location and settings.</p>
+    
+    <form method="POST" action="api/content/map-settings.php" id="mapForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div class="form-group">
+                <label class="form-label">Latitude</label>
+                <input type="number" step="0.00000001" name="latitude" class="form-input" id="latitude">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Longitude</label>
+                <input type="number" step="0.00000001" name="longitude" class="form-input" id="longitude">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Zoom Level</label>
+                <input type="number" min="1" max="20" name="zoom" class="form-input" id="zoom" value="15">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Marker Title</label>
+            <input type="text" name="marker_title" class="form-input" id="marker_title">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Marker Description</label>
+            <textarea name="marker_description" class="form-input" rows="3" id="marker_description"></textarea>
+        </div>
+        
+        <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+    </form>
+</div>
+
+<script>
+(async function() {
+    try {
+        const response = await fetch('api/content/map-settings.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.mapSettings) {
+                const map = data.mapSettings;
+                document.getElementById('latitude').value = map.latitude || '';
+                document.getElementById('longitude').value = map.longitude || '';
+                document.getElementById('zoom').value = map.zoom || 15;
+                document.getElementById('marker_title').value = map.marker_title || '';
+                document.getElementById('marker_description').value = map.marker_description || '';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading map settings:', error);
+    }
+})();
+</script>

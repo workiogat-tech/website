@@ -1,0 +1,61 @@
+<div class="content-card">
+    <h2>📰 All Updates Settings</h2>
+    <p style="margin-bottom: 30px; color: #666;">Configure settings for the All Updates page.</p>
+    
+    <form method="POST" action="api/content/all-updates-settings.php" id="allUpdatesForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <div class="form-group">
+            <label class="form-label">Title</label>
+            <input type="text" name="title" class="form-input" id="all_updates_title" placeholder="All Updates">
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Subtitle</label>
+            <textarea name="subtitle" class="form-input" rows="3" id="all_updates_subtitle"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Hero Image</label>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <div id="allUpdatesHeroPreview" style="flex-shrink: 0;"></div>
+                <div style="flex: 1;">
+                    <input type="text" name="hero_image" id="all_updates_hero_image" class="form-input" 
+                           placeholder="Select image from media library" readonly
+                           onchange="updateAllUpdatesHeroPreview(this.value)">
+                </div>
+                <button type="button" onclick="openMediaLibrary('all_updates_hero_image')" 
+                        class="btn btn-primary">🖼️ Select Image</button>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="margin-top: 30px;">💾 Save Changes</button>
+    </form>
+</div>
+
+<script>
+(async function() {
+    try {
+        const response = await fetch('api/content/all-updates-settings.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.settings) {
+                const settings = data.settings;
+                document.getElementById('all_updates_title').value = settings.title || 'All Updates';
+                document.getElementById('all_updates_subtitle').value = settings.subtitle || '';
+                document.getElementById('all_updates_hero_image').value = settings.hero_image || '';
+                updateAllUpdatesHeroPreview(settings.hero_image || '');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading all updates settings:', error);
+    }
+})();
+
+function updateAllUpdatesHeroPreview(url) {
+    const preview = document.getElementById('allUpdatesHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero image preview" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.style.display='none'">`;
+    } else {
+        preview.innerHTML = '';
+    }
+}
+</script>

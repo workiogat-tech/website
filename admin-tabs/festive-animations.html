@@ -1,0 +1,118 @@
+<div class="content-card">
+    <h2 style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+        <span style="font-size: 28px;">❄️</span>
+        <span>Festive Animations Control</span>
+    </h2>
+    
+    <form method="POST" action="api/content/festive-animations.php" id="festiveForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        
+        <!-- Animation Settings Section -->
+        <div style="background: linear-gradient(135deg, #e0f2fe, #dbeafe); padding: 25px; border-radius: 12px; border: 2px solid #0ea5e9; margin-bottom: 30px;">
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 24px;">❄️</span>
+                <span>Animation Settings</span>
+            </h3>
+            
+            <!-- Enable Toggle -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px; background: white; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div>
+                    <label style="font-size: 18px; font-weight: 600; color: #111827; display: block; margin-bottom: 5px;">Enable Festive Animations</label>
+                    <p style="font-size: 14px; color: #6b7280; margin: 0;">Activate snowflake animations that fall across all website pages</p>
+                </div>
+                <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                    <input type="checkbox" 
+                           name="enabled" 
+                           id="enableAnimations"
+                           style="opacity: 0; width: 0; height: 0;"
+                           onchange="updatePreview();">
+                    <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px;">
+                        <span style="position: absolute; content: ''; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                    </span>
+                </label>
+            </div>
+            
+            <!-- Opacity Slider -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                    <label style="font-size: 16px; font-weight: 600; color: #111827;">Opacity</label>
+                    <span id="opacityValue" style="background: #0ea5e9; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;">90%</span>
+                </div>
+                <input type="range" 
+                       name="opacity" 
+                       id="opacitySlider"
+                       min="0" 
+                       max="100" 
+                       value="90"
+                       style="width: 100%;"
+                       oninput="document.getElementById('opacityValue').textContent = this.value + '%'; updatePreview();">
+                <input type="hidden" name="opacity" id="opacityHidden" value="0.9">
+            </div>
+            
+            <!-- Speed Slider -->
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                    <label style="font-size: 16px; font-weight: 600; color: #111827;">Speed</label>
+                    <span id="speedValue" style="background: #0ea5e9; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 600;">60%</span>
+                </div>
+                <input type="range" 
+                       name="speed" 
+                       id="speedSlider"
+                       min="0" 
+                       max="100" 
+                       value="60"
+                       style="width: 100%;"
+                       oninput="document.getElementById('speedValue').textContent = this.value + '%'; updatePreview();">
+                <input type="hidden" name="speed" id="speedHidden" value="0.6">
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; margin-top: 30px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; padding: 12px 24px; font-size: 16px; font-weight: 600;">
+                💾 Save Animation Settings
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+(async function() {
+    try {
+        const response = await fetch('api/content/festive-animations.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.festive) {
+                const festive = data.festive;
+                document.getElementById('enableAnimations').checked = festive.enabled || false;
+                const opacity = Math.round((festive.opacity || 0.9) * 100);
+                document.getElementById('opacitySlider').value = opacity;
+                document.getElementById('opacityValue').textContent = opacity + '%';
+                document.getElementById('opacityHidden').value = festive.opacity || 0.9;
+                
+                const speed = Math.round((festive.speed || 0.6) * 100);
+                document.getElementById('speedSlider').value = speed;
+                document.getElementById('speedValue').textContent = speed + '%';
+                document.getElementById('speedHidden').value = festive.speed || 0.6;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading festive animations:', error);
+    }
+})();
+
+function updatePreview() {
+    const enabled = document.getElementById('enableAnimations').checked;
+    const opacity = document.getElementById('opacitySlider').value;
+    const speed = document.getElementById('speedSlider').value;
+    
+    document.getElementById('opacityHidden').value = (opacity / 100).toFixed(2);
+    document.getElementById('speedHidden').value = (speed / 100).toFixed(2);
+}
+
+document.getElementById('opacitySlider')?.addEventListener('input', function() {
+    document.getElementById('opacityHidden').value = (this.value / 100).toFixed(2);
+});
+
+document.getElementById('speedSlider')?.addEventListener('input', function() {
+    document.getElementById('speedHidden').value = (this.value / 100).toFixed(2);
+});
+</script>

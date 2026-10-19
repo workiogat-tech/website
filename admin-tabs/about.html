@@ -1,0 +1,750 @@
+<div class="content-card" style="padding: 0;">
+    <div style="padding: 30px;">
+        <h2 style="font-size: 28px; font-weight: bold; color: #111827; margin: 0 0 30px 0;">About Section Management</h2>
+        
+        <form method="POST" id="aboutForm" onsubmit="handleAboutFormSubmit(event); return false;">
+            <!-- Main Section -->
+            <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">Main Section</h3>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Hero Caption -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Hero Caption</label>
+                        <input type="text" 
+                               name="hero_caption" 
+                               id="about_hero_caption"
+                               class="form-input" 
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
+                               value=""
+                               placeholder="Know Us Better"
+                               onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                        <small style="color: #6b7280; display: block; margin-top: 5px;">This appears as the caption above the title in the hero section</small>
+                    </div>
+                    
+                    <!-- Section Title -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Section Title</label>
+                        <input type="text" 
+                               name="title" 
+                               id="about_title"
+                               class="form-input" 
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
+                               value=""
+                               placeholder="About SJS Academy"
+                               onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                    </div>
+                    
+                    <!-- Main Content -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Main Content</label>
+                        <textarea name="content" 
+                                  id="about_content"
+                                  class="form-input" 
+                                  rows="4"
+                                  style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; resize: vertical; transition: all 0.2s;"
+                                  placeholder="We are dedicated to providing quality education and nurturing young minds."
+                                  onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                                  onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"></textarea>
+                    </div>
+                    
+                    <!-- Header Image -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Header Image (for PageHero)</label>
+                        <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">This image appears in the header/hero section of the About Us page</p>
+                        <div style="display: flex; align-items: start; gap: 16px;">
+                            <div style="flex: 1;">
+                                <input type="text" 
+                                       name="hero_image" 
+                                       id="about_hero_image" 
+                                       class="form-input" 
+                                       style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; color: #6b7280; margin-bottom: 12px;"
+                                       value="" 
+                                       placeholder="Select image from media library"
+                                       readonly
+                                       onchange="updateImagePreview(this.value, 'heroImagePreview')">
+                                <button type="button" 
+                                        onclick="openMediaLibrary('about_hero_image')" 
+                                        style="width: 48px; height: 48px; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
+                                        onmouseover="this.style.background='#1d4ed8'"
+                                        onmouseout="this.style.background='#2563eb'">
+                                    <span style="font-size: 20px; color: white;">🖼️</span>
+                                </button>
+                            </div>
+                            <div id="heroImagePreview" style="flex-shrink: 0;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Section Image -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Section Image (for Content Area)</label>
+                        <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">This image appears in the main content section of the About Us page</p>
+                        <div style="display: flex; align-items: start; gap: 16px;">
+                            <div style="flex: 1;">
+                                <input type="text" 
+                                       name="image" 
+                                       id="about_image" 
+                                       class="form-input" 
+                                       style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; color: #6b7280; margin-bottom: 12px;"
+                                       value="" 
+                                       placeholder="Select image from media library"
+                                       readonly
+                                       onchange="updateImagePreview(this.value, 'sectionImagePreview')">
+                                <button type="button" 
+                                        onclick="openMediaLibrary('about_image')" 
+                                        style="width: 48px; height: 48px; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
+                                        onmouseover="this.style.background='#1d4ed8'"
+                                        onmouseout="this.style.background='#2563eb'">
+                                    <span style="font-size: 20px; color: white;">🖼️</span>
+                                </button>
+                            </div>
+                            <div id="sectionImagePreview" style="flex-shrink: 0;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Mission Section -->
+            <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">Mission Section</h3>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Mission Title -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Mission Title</label>
+                        <input type="text" 
+                               name="mission_title" 
+                               id="mission_title"
+                               class="form-input" 
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
+                               value=""
+                               placeholder="Our Mission"
+                               onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                    </div>
+                    
+                    <!-- Mission Paragraph 1 -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Mission Paragraph 1</label>
+                        <textarea name="mission_content" 
+                                  id="mission_content"
+                                  class="form-input" 
+                                  rows="4"
+                                  style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; resize: vertical; transition: all 0.2s;"
+                                  placeholder="To provide a nurturing and challenging educational environment..."
+                                  onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                                  onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"></textarea>
+                    </div>
+                    
+                    <!-- Mission Paragraph 2 -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Mission Paragraph 2</label>
+                        <textarea name="mission_paragraph2" 
+                                  id="mission_paragraph2"
+                                  class="form-input" 
+                                  rows="4"
+                                  style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; resize: vertical; transition: all 0.2s;"
+                                  placeholder="We believe in holistic education..."
+                                  onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                                  onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"></textarea>
+                    </div>
+                    
+                    <!-- Mission Section Image -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Mission Section Image</label>
+                        <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">This image appears in the Mission section</p>
+                        <div style="display: flex; align-items: start; gap: 16px;">
+                            <div style="flex: 1;">
+                                <input type="text" 
+                                       name="about_image_2" 
+                                       id="about_image_2" 
+                                       class="form-input" 
+                                       style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; color: #6b7280; margin-bottom: 12px;"
+                                       value="" 
+                                       placeholder="Select image from media library"
+                                       readonly
+                                       onchange="updateImagePreview(this.value, 'missionImagePreview')">
+                                <button type="button" 
+                                        onclick="openMediaLibrary('about_image_2')" 
+                                        style="width: 48px; height: 48px; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
+                                        onmouseover="this.style.background='#1d4ed8'"
+                                        onmouseout="this.style.background='#2563eb'">
+                                    <span style="font-size: 20px; color: white;">🖼️</span>
+                                </button>
+                            </div>
+                            <div id="missionImagePreview" style="flex-shrink: 0;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Vision, Core Values, and Achievements Section -->
+            <div style="background: linear-gradient(135deg, #dc2626, #991b1b); border-radius: 12px; padding: 30px; border: 2px solid #991b1b; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h3 style="font-size: 22px; font-weight: 700; color: white; margin: 0 0 10px 0;">📊 Vision, Core Values & Achievements</h3>
+                    <p style="color: rgba(255,255,255,0.9); font-size: 14px; margin: 0;">This section controls the three-column display on the About Us page</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <!-- Vision Column -->
+                    <div style="background: white; border-radius: 8px; padding: 20px;">
+                        <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0 0 15px 0; text-transform: uppercase;">💡 OUR VISION</h4>
+                        <div>
+                            <label style="display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 8px;">Vision Text</label>
+                            <textarea name="vision_text" 
+                                      id="vision_text"
+                                      class="form-input" 
+                                      rows="3"
+                                      style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; resize: vertical;"
+                                      placeholder="To build a developmental generation."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Core Values Column -->
+                    <div style="background: white; border-radius: 8px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0; text-transform: uppercase;">⭐ OUR CORE VALUES</h4>
+                            <button type="button" 
+                                    onclick="addCoreValue()"
+                                    style="padding: 6px 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">
+                                ➕ Add
+                            </button>
+                        </div>
+                        <div id="coreValuesContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                            <p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No values yet. Click "Add" to add core values.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Achievements Column -->
+                    <div style="background: white; border-radius: 8px; padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <h4 style="font-size: 16px; font-weight: 600; color: #111827; margin: 0; text-transform: uppercase;">🏆 OUR ACHIEVEMENTS</h4>
+                            <button type="button" 
+                                    onclick="addStatistic()"
+                                    style="padding: 6px 12px; background: #16a34a; color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer;">
+                                ➕ Add
+                            </button>
+                        </div>
+                        <div id="statisticsContainer" style="display: flex; flex-direction: column; gap: 10px;">
+                            <p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No achievements yet. Click "Add" to add achievements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Why Choose SJS Section -->
+            <div style="background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; margin-bottom: 24px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 20px 0;">Why Choose SJS Section</h3>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Why Choose Title -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Section Title</label>
+                        <input type="text" 
+                               name="why_choose_title" 
+                               id="why_choose_title"
+                               class="form-input" 
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
+                               value=""
+                               placeholder="Why Choose SJS"
+                               onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
+                               onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                    </div>
+                    
+                    <!-- Why Choose Image -->
+                    <div>
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Why Choose Image</label>
+                        <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">This image appears in the Why Choose SJS section</p>
+                        <div style="display: flex; align-items: start; gap: 16px;">
+                            <div style="flex: 1;">
+                                <input type="text" 
+                                       name="why_choose_image" 
+                                       id="why_choose_image" 
+                                       class="form-input" 
+                                       style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; color: #6b7280; margin-bottom: 12px;"
+                                       value="" 
+                                       placeholder="Select image from media library"
+                                       readonly
+                                       onchange="updateImagePreview(this.value, 'whyChooseImagePreview')">
+                                <button type="button" 
+                                        onclick="openMediaLibrary('why_choose_image')" 
+                                        style="width: 48px; height: 48px; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;"
+                                        onmouseover="this.style.background='#1d4ed8'"
+                                        onmouseout="this.style.background='#2563eb'">
+                                    <span style="font-size: 20px; color: white;">🖼️</span>
+                                </button>
+                            </div>
+                            <div id="whyChooseImagePreview" style="flex-shrink: 0;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Why Choose Points -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <label style="display: block; font-size: 14px; font-weight: 500; color: #374151;">Why Choose Points</label>
+                            <button type="button" 
+                                    onclick="addWhyChoosePoint()"
+                                    style="padding: 8px 16px; background: #16a34a; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: background 0.2s;"
+                                    onmouseover="this.style.background='#15803d'"
+                                    onmouseout="this.style.background='#16a34a'">
+                                <span>➕</span> Add Point
+                            </button>
+                        </div>
+                        <div id="whyChoosePointsContainer" style="display: flex; flex-direction: column; gap: 12px;">
+                            <p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No points yet. Click "Add Point" to add why choose points.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
+                <button type="submit" 
+                        style="padding: 12px 24px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(37, 99, 235, 0.4)'"
+                        onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                    <span>💾</span> Save Changes
+                </button>
+                <button type="button" 
+                        onclick="window.open('about.html', '_blank')"
+                        style="padding: 12px 24px; background: #4b5563; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
+                        onmouseover="this.style.background='#374151'; this.style.transform='translateY(-2px)'"
+                        onmouseout="this.style.background='#4b5563'; this.style.transform='translateY(0)'">
+                    <span>👁️</span> Preview
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="../js/client-storage.js"></script>
+<script>
+let coreValueIndex = 0;
+let statisticIndex = 0;
+let whyChoosePointIndex = 0;
+let aboutData = {};
+let visionMissionData = {};
+let whyChooseData = {};
+let whyChoosePoints = [];
+
+(async function() {
+    await loadAboutData();
+})();
+
+async function loadAboutData() {
+    try {
+        // Try ClientStorage first
+        let aboutDataFromStorage = null;
+        if (typeof ClientStorage !== 'undefined') {
+            aboutDataFromStorage = await ClientStorage.about.get();
+        }
+        
+        // Also try MediaStorage for compatibility
+        let aboutDataFromMedia = {};
+        if (typeof window.MediaStorage !== 'undefined' && window.MediaStorage.loadSettings) {
+            aboutDataFromMedia = window.MediaStorage.loadSettings('about') || {};
+        }
+        
+        // Merge both sources, MediaStorage takes precedence if it has data
+        aboutData = {
+            ...aboutDataFromStorage,
+            ...aboutDataFromMedia
+        };
+        
+        // If no data found, use defaults
+        if (!aboutData || Object.keys(aboutData).length === 0) {
+            aboutData = await ClientStorage.about.get();
+        }
+            
+            document.getElementById('about_hero_caption').value = aboutData.hero_caption || 'Know Us Better';
+            document.getElementById('about_title').value = aboutData.title || 'About SJS Academy';
+            document.getElementById('about_content').value = aboutData.content || '';
+            document.getElementById('about_hero_image').value = aboutData.hero_image || '';
+            document.getElementById('about_image').value = aboutData.image || '';
+            document.getElementById('about_image_2').value = aboutData.about_image_2 || '';
+            document.getElementById('mission_title').value = aboutData.mission_title || 'Our Mission';
+            document.getElementById('mission_content').value = aboutData.mission_content || '';
+            document.getElementById('mission_paragraph2').value = aboutData.mission_paragraph2 || '';
+            document.getElementById('vision_text').value = aboutData.vision_text || '';
+            document.getElementById('why_choose_title').value = aboutData.why_choose_title || 'Why Choose SJS';
+            document.getElementById('why_choose_image').value = aboutData.why_choose_image || '';
+            
+            updateImagePreview(aboutData.hero_image || '', 'heroImagePreview');
+            updateImagePreview(aboutData.image || '', 'sectionImagePreview');
+            updateImagePreview(aboutData.about_image_2 || '', 'missionImagePreview');
+            updateImagePreview(aboutData.why_choose_image || '', 'whyChooseImagePreview');
+            
+            // Load core values
+            let coreValues = [];
+            if (aboutData.core_values) {
+                coreValues = typeof aboutData.core_values === 'string' ? JSON.parse(aboutData.core_values) : aboutData.core_values;
+                if (!Array.isArray(coreValues)) coreValues = [];
+            }
+            coreValueIndex = coreValues.length;
+            displayCoreValues(coreValues);
+            
+            // Load statistics
+            let statistics = [];
+            if (aboutData.statistics) {
+                statistics = typeof aboutData.statistics === 'string' ? JSON.parse(aboutData.statistics) : aboutData.statistics;
+                if (!Array.isArray(statistics)) statistics = [];
+            }
+            statisticIndex = statistics.length;
+            displayStatistics(statistics);
+            
+            // Load why choose points
+            try {
+                const whyChooseResponse = await fetch('api/content/homepage-sections.php?section=why-choose');
+                if (whyChooseResponse.ok) {
+                    const whyChooseResult = await whyChooseResponse.json();
+                    if (whyChooseResult.success && whyChooseResult.whyChoosePoints) {
+                        whyChoosePoints = whyChooseResult.whyChoosePoints;
+                        whyChoosePointIndex = whyChoosePoints.length;
+                        displayWhyChoosePoints(whyChoosePoints);
+                    }
+                }
+            } catch (e) {
+                console.error('Error loading why choose points:', e);
+            }
+        }
+    } catch (error) {
+        console.error('Error loading about data:', error);
+    }
+}
+
+function displayCoreValues(coreValues) {
+    const container = document.getElementById('coreValuesContainer');
+    if (coreValues.length === 0) {
+        container.innerHTML = '<p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No values yet. Click "Add" to add core values.</p>';
+        return;
+    }
+    
+    container.innerHTML = coreValues.map((value, index) => {
+        const label = typeof value === 'string' ? value : (value.label || '');
+        return `
+            <div class="core-value-item" style="display: flex; gap: 8px; align-items: center; padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;">
+                <input type="text" 
+                       name="core_values[${index}][label]" 
+                       class="form-input" 
+                       style="flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;"
+                       value="${(label || '').replace(/"/g, '&quot;')}"
+                       placeholder="e.g., Faith, Discipline">
+                <input type="hidden" name="core_values[${index}][bgColor]" value="${value.bgColor || 'bg-blue-100'}">
+                <input type="hidden" name="core_values[${index}][textColor]" value="${value.textColor || 'text-blue-800'}">
+                <button type="button" 
+                        onclick="removeCoreValue(this)"
+                        style="width: 32px; height: 32px; background: #dc2626; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px;">
+                    🗑️
+                </button>
+            </div>
+        `;
+    }).join('');
+}
+
+function displayStatistics(statistics) {
+    const container = document.getElementById('statisticsContainer');
+    if (statistics.length === 0) {
+        container.innerHTML = '<p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No achievements yet. Click "Add" to add achievements.</p>';
+        return;
+    }
+    
+    container.innerHTML = statistics.map((stat, index) => `
+        <div class="statistic-item" style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;">
+            <div style="display: flex; gap: 8px;">
+                <input type="text" 
+                       name="statistics[${index}][label]" 
+                       class="form-input" 
+                       style="flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;"
+                       value="${(stat.label || '').replace(/"/g, '&quot;')}"
+                       placeholder="Label (e.g., Students)">
+                <input type="text" 
+                       name="statistics[${index}][value]" 
+                       class="form-input" 
+                       style="width: 100px; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;"
+                       value="${(stat.value || '').replace(/"/g, '&quot;')}"
+                       placeholder="2,500+">
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <select name="statistics[${index}][icon]" 
+                        class="form-input" 
+                        style="flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: white; cursor: pointer;">
+                    <option value="Users" ${(stat.icon || 'Users') === 'Users' ? 'selected' : ''}>👥 Users</option>
+                    <option value="BookOpen" ${(stat.icon || 'Users') === 'BookOpen' ? 'selected' : ''}>📚 BookOpen</option>
+                    <option value="Award" ${(stat.icon || 'Users') === 'Award' ? 'selected' : ''}>🏆 Award</option>
+                    <option value="Target" ${(stat.icon || 'Users') === 'Target' ? 'selected' : ''}>🎯 Target</option>
+                </select>
+                <button type="button" 
+                        onclick="removeStatistic(this)"
+                        style="width: 32px; height: 32px; background: #dc2626; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px;">
+                    🗑️
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function displayWhyChoosePoints(points) {
+    const container = document.getElementById('whyChoosePointsContainer');
+    if (points.length === 0) {
+        container.innerHTML = '<p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No points yet. Click "Add Point" to add why choose points.</p>';
+        return;
+    }
+    
+    container.innerHTML = points.map((point, index) => `
+        <div class="why-choose-point-item" data-point-id="${point.id || ''}" style="display: flex; gap: 12px; align-items: center; padding: 12px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+            <input type="hidden" name="why_choose_points[${index}][id]" value="${point.id || ''}">
+            <input type="text" 
+                   name="why_choose_points[${index}][point_text]" 
+                   class="form-input" 
+                   style="flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;"
+                   value="${(point.point_text || '').replace(/"/g, '&quot;')}"
+                   placeholder="e.g., Strong spiritual foundation and values">
+            <button type="button" 
+                    onclick="removeWhyChoosePoint(this)"
+                    style="width: 40px; height: 40px; background: #dc2626; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0;"
+                    onmouseover="this.style.background='#b91c1c'"
+                    onmouseout="this.style.background='#dc2626'">
+                <span style="font-size: 16px;">🗑️</span>
+            </button>
+        </div>
+    `).join('');
+}
+
+function updateImagePreview(url, previewId) {
+    const preview = document.getElementById(previewId);
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Image preview" style="width: 300px; height: 200px; object-fit: cover; border-radius: 8px; border: 2px solid #e5e7eb;" onerror="this.style.display='none'">`;
+    } else {
+        preview.innerHTML = '';
+    }
+}
+
+function addWhyChoosePoint() {
+    const container = document.getElementById('whyChoosePointsContainer');
+    const emptyMsg = container.querySelector('p[style*="No points yet"]');
+    if (emptyMsg) emptyMsg.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'why-choose-point-item';
+    div.style.cssText = 'display: flex; gap: 12px; align-items: center; padding: 12px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;';
+    div.innerHTML = `
+        <input type="hidden" name="why_choose_points[${whyChoosePointIndex}][id]" value="">
+        <input type="text" 
+               name="why_choose_points[${whyChoosePointIndex}][point_text]" 
+               class="form-input" 
+               style="flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;"
+               placeholder="e.g., Strong spiritual foundation and values">
+        <button type="button" 
+                onclick="removeWhyChoosePoint(this)"
+                style="width: 40px; height: 40px; background: #dc2626; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0;"
+                onmouseover="this.style.background='#b91c1c'"
+                onmouseout="this.style.background='#dc2626'">
+            <span style="font-size: 16px;">🗑️</span>
+        </button>
+    `;
+    container.appendChild(div);
+    whyChoosePointIndex++;
+}
+
+function removeWhyChoosePoint(button) {
+    const item = button.closest('.why-choose-point-item');
+    if (item) {
+        item.remove();
+        const container = document.getElementById('whyChoosePointsContainer');
+        if (container && container.children.length === 0) {
+            container.innerHTML = '<p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No points yet. Click "Add Point" to add why choose points.</p>';
+        }
+    }
+}
+
+function addCoreValue() {
+    const container = document.getElementById('coreValuesContainer');
+    const emptyMsg = container.querySelector('p[style*="No values yet"]');
+    if (emptyMsg) emptyMsg.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'core-value-item';
+    div.style.cssText = 'display: flex; gap: 8px; align-items: center; padding: 10px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;';
+    div.innerHTML = `
+        <input type="text" 
+               name="core_values[${coreValueIndex}][label]" 
+               class="form-input" 
+               style="flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;"
+               placeholder="e.g., Faith, Discipline">
+        <input type="hidden" name="core_values[${coreValueIndex}][bgColor]" value="bg-blue-100">
+        <input type="hidden" name="core_values[${coreValueIndex}][textColor]" value="text-blue-800">
+        <button type="button" 
+                onclick="removeCoreValue(this)"
+                style="width: 32px; height: 32px; background: #dc2626; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px;">
+            🗑️
+        </button>
+    `;
+    container.appendChild(div);
+    coreValueIndex++;
+}
+
+function removeCoreValue(button) {
+    const item = button.closest('.core-value-item');
+    if (item) {
+        item.remove();
+        const container = document.getElementById('coreValuesContainer');
+        if (container && container.children.length === 0) {
+            container.innerHTML = '<p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No values yet. Click "Add" to add core values.</p>';
+        }
+    }
+}
+
+function addStatistic() {
+    const container = document.getElementById('statisticsContainer');
+    const emptyMsg = container.querySelector('p[style*="No achievements yet"]');
+    if (emptyMsg) emptyMsg.remove();
+    
+    const div = document.createElement('div');
+    div.className = 'statistic-item';
+    div.style.cssText = 'display: flex; flex-direction: column; gap: 8px; padding: 12px; background: #f9fafb; border-radius: 6px; border: 1px solid #e5e7eb;';
+    div.innerHTML = `
+        <div style="display: flex; gap: 8px;">
+            <input type="text" 
+                   name="statistics[${statisticIndex}][label]" 
+                   class="form-input" 
+                   style="flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;"
+                   placeholder="Label (e.g., Students)">
+            <input type="text" 
+                   name="statistics[${statisticIndex}][value]" 
+                   class="form-input" 
+                   style="width: 100px; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px;"
+                   placeholder="2,500+">
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <select name="statistics[${statisticIndex}][icon]" 
+                    class="form-input" 
+                    style="flex: 1; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 13px; background: white; cursor: pointer;">
+                <option value="Users">👥 Users</option>
+                <option value="BookOpen">📚 BookOpen</option>
+                <option value="Award">🏆 Award</option>
+                <option value="Target">🎯 Target</option>
+            </select>
+            <button type="button" 
+                    onclick="removeStatistic(this)"
+                    style="width: 32px; height: 32px; background: #dc2626; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 12px;">
+                🗑️
+            </button>
+        </div>
+    `;
+    container.appendChild(div);
+    statisticIndex++;
+}
+
+function removeStatistic(button) {
+    const item = button.closest('.statistic-item');
+    if (item) {
+        item.remove();
+        const container = document.getElementById('statisticsContainer');
+        if (container && container.children.length === 0) {
+            container.innerHTML = '<p style="color: #9ca3af; font-style: italic; padding: 15px; text-align: center; background: #f9fafb; border-radius: 6px; font-size: 12px;">No achievements yet. Click "Add" to add achievements.</p>';
+        }
+    }
+}
+
+function handleAboutFormSubmit(event) {
+    event.preventDefault();
+    const form = event.target;
+    
+    // Collect core values
+    const coreValues = [];
+    form.querySelectorAll('.core-value-item').forEach((item) => {
+        const label = item.querySelector('input[name*="[label]"]').value.trim();
+        const bgColor = item.querySelector('input[name*="[bgColor]"]').value;
+        const textColor = item.querySelector('input[name*="[textColor]"]').value;
+        if (label) {
+            coreValues.push({ label, bgColor, textColor });
+        }
+    });
+    
+    // Collect statistics
+    const statistics = [];
+    form.querySelectorAll('.statistic-item').forEach((item) => {
+        const label = item.querySelector('input[name*="[label]"]').value.trim();
+        const value = item.querySelector('input[name*="[value]"]').value.trim();
+        const icon = item.querySelector('select[name*="[icon]"]').value;
+        if (label) {
+            statistics.push({ label, value, icon });
+        }
+    });
+    
+    // Collect why choose points
+    const whyChoosePoints = [];
+    form.querySelectorAll('.why-choose-point-item').forEach((item) => {
+        const pointText = item.querySelector('input[name*="[point_text]"]').value.trim();
+        const pointId = item.querySelector('input[name*="[id]"]').value;
+        if (pointText) {
+            whyChoosePoints.push({
+                id: pointId || null,
+                point_text: pointText
+            });
+        }
+    });
+    
+    // Build data object
+    const data = {
+        hero_caption: form.querySelector('input[name="hero_caption"]').value || '',
+        title: form.querySelector('input[name="title"]').value || '',
+        content: form.querySelector('textarea[name="content"]').value || '',
+        image: form.querySelector('input[name="image"]').value || '',
+        hero_image: form.querySelector('input[name="hero_image"]').value || '',
+        about_image_2: form.querySelector('input[name="about_image_2"]').value || '',
+        mission_title: form.querySelector('input[name="mission_title"]').value || '',
+        mission_content: form.querySelector('textarea[name="mission_content"]').value || '',
+        mission_paragraph2: form.querySelector('textarea[name="mission_paragraph2"]').value || '',
+        vision_text: form.querySelector('textarea[name="vision_text"]').value || '',
+        why_choose_title: form.querySelector('input[name="why_choose_title"]').value || '',
+        why_choose_image: form.querySelector('input[name="why_choose_image"]').value || '',
+        why_choose_points: whyChoosePoints,
+        core_values: coreValues,
+        statistics: statistics
+    };
+    
+    // Show loading
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span>💾</span> Saving...';
+    submitBtn.disabled = true;
+    
+    // Save using client-side storage - saves to both ClientStorage and MediaStorage
+    ClientStorage.about.save(data)
+        .then(result => {
+            if (result.success) {
+                // Also explicitly save to MediaStorage for compatibility
+                if (typeof window.MediaStorage !== 'undefined' && window.MediaStorage.saveSettings) {
+                    window.MediaStorage.saveSettings('about', data);
+                }
+                
+                // Trigger update event
+                window.dispatchEvent(new CustomEvent('adminDataSaved', { 
+                    detail: { settingsKey: 'about', data: data } 
+                }));
+                
+                if (typeof showToast === 'function') {
+                    showToast(result.message || 'About content saved successfully!', 'success');
+                } else {
+                    alert('About content saved successfully!');
+                }
+                
+                setTimeout(() => loadAboutData(), 500);
+            } else {
+                throw new Error('Save failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving about content:', error);
+            if (typeof showToast === 'function') {
+                showToast('Failed to save about content. Please try again.', 'error');
+            } else {
+                alert('Failed to save about content. Please try again.');
+            }
+        })
+        .finally(() => {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        });
+}
+</script>

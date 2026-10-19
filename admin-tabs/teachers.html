@@ -1,0 +1,284 @@
+<div class="content-card">
+    <h2>👨‍🏫 Teachers</h2>
+    <p style="margin-bottom: 30px; color: #666;">Manage teaching staff and page settings.</p>
+    
+    <!-- Page Header Image Section -->
+    <div style="background: linear-gradient(135deg, #d1fae5, #a7f3d0); padding: 25px; border-radius: 12px; border: 2px solid #10b981; margin-bottom: 30px;">
+        <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <span>🖼️</span> Teachers Page Header Image
+        </h3>
+        <form method="POST" action="api/content/teachers-settings.php" id="teachersHeaderForm" onsubmit="return handleAdminFormSubmit(event, this);">
+            <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 20px;">
+                <div id="teachersHeroPreview" style="flex-shrink: 0; width: 160px; height: 96px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px; color: #999;">🖼️</span>
+                        <p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <input type="text" 
+                           name="hero_image" 
+                           id="teachers_hero_image" 
+                           class="form-input" 
+                           placeholder="Image URL will appear here after selection"
+                           readonly
+                           onchange="updateTeachersHeroPreview(this.value)">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button type="button" 
+                                onclick="openMediaLibrary('teachers_hero_image')" 
+                                class="btn btn-primary"
+                                style="flex: 1; background: linear-gradient(135deg, #16a34a, #059669);">
+                            🖼️ Select Image from Media Library
+                        </button>
+                        <button type="button" 
+                                onclick="document.getElementById('teachers_hero_image').value=''; updateTeachersHeroPreview('');" 
+                                class="btn btn-danger"
+                                style="padding: 12px 20px;">
+                            Remove Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Page Title</label>
+                    <input type="text" name="title" class="form-input" id="teachers_page_title" placeholder="Our Teachers">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Page Subtitle</label>
+                    <input type="text" name="subtitle" class="form-input" id="teachers_page_subtitle" placeholder="Meet Our Expert Faculty Members">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px; background: linear-gradient(135deg, #16a34a, #059669);">
+                💾 Save Page Header Settings
+            </button>
+        </form>
+    </div>
+    
+    <!-- Teachers List -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <p style="color: #666;">Manage teaching staff.</p>
+        <button class="btn btn-primary" onclick="showAddTeacherModal()">➕ Add Teacher</button>
+    </div>
+    
+    <div id="teachersList">
+        <div style="text-align: center; padding: 40px; color: #999;">
+            Loading teachers...
+        </div>
+    </div>
+</div>
+
+<!-- Add Teacher Modal -->
+<div id="addTeacherModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <h3 style="font-size: 24px; font-weight: bold; margin-bottom: 20px;">➕ Add New Teacher</h3>
+        <form id="addTeacherForm" onsubmit="handleAddTeacher(event); return false;">
+            <div class="form-group">
+                <label class="form-label">Name *</label>
+                <input type="text" name="name" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Position *</label>
+                <input type="text" name="position" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Department</label>
+                <input type="text" name="department" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" name="email" class="form-input">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Bio/Description</label>
+                <textarea name="bio" class="form-input" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <div style="flex: 1;">
+                        <input type="text" name="image" id="teacher_image" class="form-input" 
+                               placeholder="Select image from media library" readonly>
+                    </div>
+                    <button type="button" onclick="openMediaLibrary('teacher_image')" 
+                            class="btn btn-primary">🖼️ Select</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">💾 Save Teacher</button>
+                <button type="button" onclick="closeAddTeacherModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let teachers = [];
+let teachersSettings = {};
+
+(async function() {
+    await loadTeachers();
+    await loadTeachersSettings();
+})();
+
+async function loadTeachers() {
+    try {
+        const response = await fetch('api/content/teachers.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.teachers) {
+                teachers = data.teachers;
+                displayTeachers();
+            }
+        }
+    } catch (error) {
+        console.error('Error loading teachers:', error);
+    }
+}
+
+async function loadTeachersSettings() {
+    try {
+        const response = await fetch('api/content/teachers-settings.php');
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.settings) {
+                teachersSettings = data.settings;
+                document.getElementById('teachers_page_title').value = teachersSettings.title || 'Our Teachers';
+                document.getElementById('teachers_page_subtitle').value = teachersSettings.subtitle || '';
+                document.getElementById('teachers_hero_image').value = teachersSettings.hero_image || '';
+                updateTeachersHeroPreview(teachersSettings.hero_image || '');
+            }
+        }
+    } catch (error) {
+        console.error('Error loading teachers settings:', error);
+    }
+}
+
+function displayTeachers() {
+    const list = document.getElementById('teachersList');
+    if (teachers.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                No teachers found. Click "Add Teacher" to create one.
+            </div>
+        `;
+        return;
+    }
+    
+    list.innerHTML = `
+        <table class="data-table" style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Image</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Name</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Position</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Department</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Email</th>
+                    <th style="padding: 12px; text-align: left; font-weight: 600;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${teachers.map(teacher => `
+                    <tr style="border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding: 12px;">
+                            ${teacher.image ? `
+                                <img src="${teacher.image}" alt="${teacher.name || ''}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 50%;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                <div style="display: none; width: 50px; height: 50px; background: #e0e0e0; border-radius: 50%; align-items: center; justify-content: center; color: #999; font-size: 20px;">👨‍🏫</div>
+                            ` : `
+                                <div style="width: 50px; height: 50px; background: #e0e0e0; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #999;">👤</div>
+                            `}
+                        </td>
+                        <td style="padding: 12px;">${teacher.name || ''}</td>
+                        <td style="padding: 12px;">${teacher.position || ''}</td>
+                        <td style="padding: 12px;">${teacher.department || ''}</td>
+                        <td style="padding: 12px;">${teacher.email || ''}</td>
+                        <td style="padding: 12px;">
+                            <button class="btn" onclick="editTeacher(${teacher.id})" style="padding: 5px 10px; font-size: 12px; margin-right: 5px;">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteTeacher(${teacher.id})" style="padding: 5px 10px; font-size: 12px; background: #ef4444; color: white;">Delete</button>
+                        </td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+    `;
+}
+
+function updateTeachersHeroPreview(url) {
+    const preview = document.getElementById('teachersHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Page header preview" style="width: 160px; height: 96px; object-fit: cover; border-radius: 8px; border: 2px solid #10b981; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'text-align: center;\\'><span style=\\'font-size: 24px; color: #999;\\'>🖼️</span><p style=\\'font-size: 11px; color: #999; margin-top: 5px;\\'>No image</p></div>'"><p style="text-align: center; font-size: 11px; color: #666; margin-top: 5px;">Preview</p>`;
+    } else {
+        preview.innerHTML = '<div style="text-align: center;"><span style="font-size: 24px; color: #999;">🖼️</span><p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p></div>';
+    }
+}
+
+function showAddTeacherModal() {
+    document.getElementById('addTeacherModal').style.display = 'flex';
+    document.getElementById('addTeacherForm').reset();
+}
+
+function closeAddTeacherModal() {
+    document.getElementById('addTeacherModal').style.display = 'none';
+}
+
+async function handleAddTeacher(event) {
+    event.preventDefault();
+    const form = event.target;
+    const formData = new FormData(form);
+    const data = {};
+    formData.forEach((value, key) => {
+        if (value) data[key] = value;
+    });
+    
+    try {
+        const response = await fetch('api/content/teachers.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (result.error) {
+            showToast('Error: ' + result.error, 'error');
+        } else {
+            showToast(result.message || 'Teacher added successfully!', 'success');
+            closeAddTeacherModal();
+            await loadTeachers();
+        }
+    } catch (error) {
+        console.error('Save error:', error);
+        showToast('Save error: ' + error.message, 'error');
+    }
+}
+
+async function deleteTeacher(id) {
+    if (!confirm('Are you sure you want to delete this teacher?')) return;
+    
+    try {
+        const response = await fetch('api/content/teachers.php?id=' + id, {
+            method: 'DELETE'
+        });
+        const result = await response.json();
+        if (result.error) {
+            showToast('Error: ' + result.error, 'error');
+        } else {
+            showToast(result.message || 'Teacher deleted successfully!', 'success');
+            await loadTeachers();
+        }
+    } catch (error) {
+        console.error('Delete error:', error);
+        showToast('Delete error: ' + error.message, 'error');
+    }
+}
+
+function editTeacher(id) {
+    const teacher = teachers.find(t => t.id == id);
+    if (!teacher) return;
+    showToast('Edit functionality - use the API to update', 'info');
+}
+
+document.getElementById('addTeacherModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeAddTeacherModal();
+});
+</script>

@@ -1,0 +1,212 @@
+<div class="content-card">
+    <h2>🖼️ School Gallery</h2>
+    <p style="margin-bottom: 30px; color: #666;">Manage gallery images displayed on the gallery page.</p>
+    
+    <!-- Hero Image Section -->
+    <div style="background: linear-gradient(135deg, #dbeafe, #bfdbfe); padding: 25px; border-radius: 12px; border: 2px solid #3b82f6; margin-bottom: 30px;">
+        <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+            <span>🖼️</span> Gallery Page Hero Image
+        </h3>
+        <form method="POST" action="api/content/gallery-settings.php" id="galleryHeroForm" onsubmit="return handleGalleryFormSubmit(event, this);">
+            <div style="display: flex; align-items: start; gap: 15px; margin-bottom: 20px;">
+                <div id="galleryHeroPreview" style="flex-shrink: 0; width: 160px; height: 96px; background: #f0f0f0; border-radius: 8px; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center;">
+                    <div style="text-align: center;">
+                        <span style="font-size: 24px; color: #999;">🖼️</span>
+                        <p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p>
+                    </div>
+                </div>
+                <div style="flex: 1;">
+                    <input type="text" 
+                           name="hero_image" 
+                           id="gallery_hero_image" 
+                           class="form-input" 
+                           placeholder="Image URL will appear here after selection"
+                           readonly
+                           onchange="updateGalleryHeroPreview(this.value)">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button type="button" 
+                                onclick="openMediaLibrary('gallery_hero_image')" 
+                                class="btn btn-primary"
+                                style="flex: 1; background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                            🖼️ Select Hero Image
+                        </button>
+                        <button type="button" 
+                                onclick="document.getElementById('gallery_hero_image').value=''; updateGalleryHeroPreview('');" 
+                                class="btn btn-danger"
+                                style="padding: 12px 20px;">
+                            Remove Image
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 20px; background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                💾 Save Hero Image
+            </button>
+        </form>
+    </div>
+    
+    <!-- Gallery Images -->
+    <div style="margin-bottom: 20px;">
+        <p style="color: #666; margin-bottom: 15px;">Gallery images are managed through the <a href="?tab=media&section=gallery" style="color: #2563eb; text-decoration: underline;">Media Library</a>. Upload images to the "Gallery" section to display them here.</p>
+        <button class="btn btn-primary" onclick="window.location.href='?tab=media&section=gallery'">📤 Go to Media Library</button>
+    </div>
+    
+    <div id="galleryImagesList">
+        <div style="text-align: center; padding: 40px; color: #999;">
+            Loading gallery images...
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize MediaStorage if not available
+if (typeof window.MediaStorage === 'undefined') {
+    window.MediaStorage = {
+        loadMedia() {
+            try {
+                const stored = localStorage.getItem('media_items');
+                if (!stored) return [];
+                const parsed = JSON.parse(stored);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return [];
+            }
+        },
+        loadSections() {
+            try {
+                const stored = localStorage.getItem('media_sections');
+                return stored ? JSON.parse(stored) : [];
+            } catch (e) {
+                return [];
+            }
+        },
+        loadSettings(key) {
+            try {
+                const stored = localStorage.getItem('admin_settings_' + key);
+                return stored ? JSON.parse(stored) : {};
+            } catch (e) {
+                return {};
+            }
+        },
+        saveSettings(key, settings) {
+            try {
+                localStorage.setItem('admin_settings_' + key, JSON.stringify(settings));
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+    };
+}
+
+let gallerySettings = {};
+let galleryImages = [];
+
+// Load immediately - no async delays
+(function() {
+    loadGallerySettings();
+    loadGalleryImages();
+})();
+
+function loadGallerySettings() {
+    try {
+        // Use client-side storage - no PHP
+        gallerySettings = window.MediaStorage.loadSettings('gallery');
+        const heroImage = gallerySettings.hero_image || '';
+        const input = document.getElementById('gallery_hero_image');
+        if (input) {
+            input.value = heroImage;
+            updateGalleryHeroPreview(heroImage);
+        }
+    } catch (error) {
+        console.error('Error loading gallery settings:', error);
+    }
+}
+
+function loadGalleryImages() {
+    try {
+        // Use client-side storage - get images from "Gallery" section
+        const allMedia = window.MediaStorage.loadMedia();
+        const sections = window.MediaStorage.loadSections();
+        
+        // Find Gallery section
+        const gallerySection = sections.find(s => 
+            s.name && s.name.toLowerCase() === 'gallery'
+        );
+        
+        if (gallerySection) {
+            // Filter images by gallery section
+            galleryImages = allMedia.filter(item => 
+                item.section_id == gallerySection.id || 
+                item.section_name && item.section_name.toLowerCase() === 'gallery'
+            );
+        } else {
+            // If no gallery section, show all images
+            galleryImages = allMedia;
+        }
+        
+        displayGalleryImages();
+    } catch (error) {
+        console.error('Error loading gallery images:', error);
+        displayGalleryImages(); // Show empty state
+    }
+}
+
+function displayGalleryImages() {
+    const list = document.getElementById('galleryImagesList');
+    if (galleryImages.length === 0) {
+        list.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: #999;">
+                <p>No gallery images found. Upload images to the "Gallery" section in Media Library.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    list.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+            ${galleryImages.map(img => `
+                <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 10px; transition: all 0.3s;"
+                     onmouseover="this.style.borderColor='#3b82f6'; this.style.boxShadow='0 4px 12px rgba(59,130,246,0.15)'"
+                     onmouseout="this.style.borderColor='#e5e7eb'; this.style.boxShadow='none'">
+                    <img src="${img.file_path || img.file_url || img.filename || ''}" 
+                         alt="Gallery image"
+                         style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;"
+                         onerror="this.style.display='none'">
+                    <p style="margin: 0; font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${img.original_name || 'Image'}</p>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function updateGalleryHeroPreview(url) {
+    const preview = document.getElementById('galleryHeroPreview');
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Hero image preview" style="width: 160px; height: 96px; object-fit: cover; border-radius: 8px; border: 2px solid #3b82f6; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onerror="this.onerror=null; this.parentElement.innerHTML='<div style=\\'text-align: center;\\'><span style=\\'font-size: 24px; color: #999;\\'>🖼️</span><p style=\\'font-size: 11px; color: #999; margin-top: 5px;\\'>No image</p></div>'"><p style="text-align: center; font-size: 11px; color: #666; margin-top: 5px;">Preview</p>`;
+    } else {
+        preview.innerHTML = '<div style="text-align: center;"><span style="font-size: 24px; color: #999;">🖼️</span><p style="font-size: 11px; color: #999; margin-top: 5px;">No image</p></div>';
+    }
+}
+
+// Save gallery settings to localStorage (no PHP needed)
+function handleGalleryFormSubmit(event, form) {
+    event.preventDefault();
+    
+    const formData = new FormData(form);
+    const heroImage = formData.get('hero_image') || '';
+    
+    // Save to localStorage
+    gallerySettings = { hero_image: heroImage };
+    window.MediaStorage.saveSettings('gallery', gallerySettings);
+    
+    // Show success message
+    if (typeof showToast !== 'undefined') {
+        showToast('Gallery settings saved successfully! (Saved locally)', 'success');
+    } else {
+        alert('Gallery settings saved successfully! (Saved locally)');
+    }
+    
+    return false;
+}
+</script>

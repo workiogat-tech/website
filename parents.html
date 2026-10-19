@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parents Portal - Excellence Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    
+    <main>
+        <section class="page-hero-section">
+            <div class="page-hero-background"></div>
+            <div class="page-hero-overlay">
+                <div class="container">
+                    <h1 class="page-hero-title">Parent Portal</h1>
+                    <p class="page-hero-subtitle">Resources for Parents</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Upcoming Events</h2>
+                    <p class="section-subtitle">Stay informed about important school events.</p>
+                </div>
+                <div class="events-grid" id="upcoming-events" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                    <!-- Default events -->
+                    <div class="event-card" style="background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; background: #dbeafe; color: #1e40af;">Meeting</span>
+                            <span style="font-size: 1.25rem;">📅</span>
+                        </div>
+                        <h3 style="font-size: 1.25rem; font-weight: bold; color: #111827; margin-bottom: 0.75rem;">Parent-Teacher Conference</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; color: #4b5563; font-size: 0.875rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span>🕐</span>
+                                <span>March 15, 2024 • 2:00 PM - 4:00 PM</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <span>📍</span>
+                                <span>School Auditorium</span>
+                            </div>
+                        </div>
+                        <button class="add-to-calendar-btn" onclick="addToCalendar(event, 'Parent-Teacher Conference', 'March 15, 2024', '2:00 PM - 4:00 PM', 'School Auditorium')" style="width: 100%; margin-top: 1rem; padding: 0.5rem; background: var(--primary-color); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Add to Calendar</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-gray-50" id="resources-section">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Resources & Information</h2>
+                    <p class="section-subtitle">Access important documents, policies, and resources to support your child's education.</p>
+                </div>
+                <div class="resources-grid" id="resources-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                    <!-- Default resources -->
+                    <div class="resource-card" style="background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                        <div style="font-size: 3rem; margin-bottom: 1rem; text-align: center;">📘</div>
+                        <h3 style="font-size: 1.25rem; font-weight: bold; color: #111827; margin-bottom: 0.75rem; text-align: center;">Parent Handbook</h3>
+                        <p style="color: #4b5563; font-size: 0.875rem; margin-bottom: 1rem; text-align: center;">Complete guide to school policies and procedures</p>
+                        <a href="resources.html#parent-handbook" class="resource-link-btn" style="display: inline-block; text-align: center; padding: 0.625rem 1.25rem; background: transparent; color: var(--primary-color); border: 2px solid var(--primary-color); border-radius: 0.5rem; font-weight: 600; text-decoration: none; transition: all 0.2s; margin-top: auto;">View Resource →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div class="section-header text-center">
+                    <h2 class="section-title">Contact Information</h2>
+                    <p class="section-subtitle">Get in touch with us for any questions or concerns about your child's education.</p>
+                </div>
+                <div class="contact-grid" id="contact-info" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+                    <!-- Default contact info -->
+                    <div class="contact-card" style="background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-align: center;">
+                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">📞</div>
+                        <h3 style="font-size: 1.125rem; font-weight: bold; color: #111827; margin-bottom: 0.5rem;">Main Office</h3>
+                        <p style="color: #2563eb; font-weight: 600; margin-bottom: 0.5rem;">+256 123 456 789</p>
+                        <p style="color: #4b5563; font-size: 0.875rem;">General inquiries</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section-padding bg-white">
+            <div class="container">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; align-items: center;">
+                    <div>
+                        <h2 style="font-size: 2rem; font-weight: bold; color: #111827; margin-bottom: 1rem;">Stay Updated</h2>
+                        <p style="font-size: 1.125rem; color: #4b5563; margin-bottom: 1.5rem;">Subscribe to our newsletter to receive important updates about school events and academic progress.</p>
+                        <ul style="list-style: none; padding: 0; margin: 0;">
+                            <li style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; color: #374151;">
+                                <span style="color: #10b981;">✓</span>
+                                <span>Monthly school newsletters</span>
+                            </li>
+                            <li style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; color: #374151;">
+                                <span style="color: #10b981;">✓</span>
+                                <span>Event announcements</span>
+                            </li>
+                            <li style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; color: #374151;">
+                                <span style="color: #10b981;">✓</span>
+                                <span>Academic updates</span>
+                            </li>
+                            <li style="display: flex; align-items: center; gap: 0.75rem; color: #374151;">
+                                <span style="color: #10b981;">✓</span>
+                                <span>Educational tips and updates</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div>
+                        <form id="newsletterForm" style="background: #f9fafb; padding: 1.5rem; border-radius: 0.75rem;">
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">Name</label>
+                                <input type="text" name="name" required style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
+                            </div>
+                            <div style="margin-bottom: 1rem;">
+                                <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">Email Address</label>
+                                <input type="email" name="email" required style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
+                            </div>
+                            <button type="submit" style="width: 100%; padding: 0.75rem; background: #800020; color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Subscribe</button>
+                            <div id="newsletterMessage" style="display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 0.5rem;"></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <div id="footer-placeholder"></div>
+    
+    <script src="js/static-pages.js"></script>
+    <script src="js/page-data-loader.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        (async function() {
+            const data = await PageDataLoader.loadParentsData();
+                
+                // Update hero
+                if (data.parentsContent) {
+                    const hero = document.querySelector('.page-hero-section');
+                    if (data.parentsContent.title) {
+                        const title = hero.querySelector('.page-hero-title');
+                        if (title) title.textContent = data.parentsContent.title;
+                    }
+                    if (data.parentsContent.subtitle) {
+                        const subtitle = hero.querySelector('.page-hero-subtitle');
+                        if (subtitle) subtitle.textContent = data.parentsContent.subtitle;
+                    }
+                    if (data.parentsContent.hero_image) {
+                        const bg = hero.querySelector('.page-hero-background');
+                        if (bg) {
+                            const heroImageUrl = data.parentsContent.hero_image.replace(/'/g, "\\'");
+                            bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                        }
+                    }
+                }
+                
+                // Render upcoming events
+                if (data.upcomingEvents && data.upcomingEvents.length > 0) {
+                    const container = document.getElementById('upcoming-events');
+                    let eventsHtml = '';
+                    data.upcomingEvents.forEach(event => {
+                        eventsHtml += `
+                            <div class="event-card" style="background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <span style="padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; background: #dbeafe; color: #1e40af;">${escapeHtml(event.type || 'Event')}</span>
+                                    <span style="font-size: 1.25rem;">📅</span>
+                                </div>
+                                <h3 style="font-size: 1.25rem; font-weight: bold; color: #111827; margin-bottom: 0.75rem;">${escapeHtml(event.title || '')}</h3>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; color: #4b5563; font-size: 0.875rem;">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span>🕐</span>
+                                        <span>${escapeHtml(event.date || '')} • ${escapeHtml(event.time || '')}</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                        <span>📍</span>
+                                        <span>${escapeHtml(event.location || '')}</span>
+                                    </div>
+                                </div>
+                                <button class="add-to-calendar-btn" onclick="addToCalendar(event, '${escapeHtml(event.title || '')}', '${escapeHtml(event.date || '')}', '${escapeHtml(event.time || '')}', '${escapeHtml(event.location || '')}')" style="width: 100%; margin-top: 1rem; padding: 0.5rem; background: var(--primary-color); color: white; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">Add to Calendar</button>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = eventsHtml;
+                }
+                
+                // Render resources
+                if (data.resources && data.resources.length > 0) {
+                    const container = document.getElementById('resources-container');
+                    let resourcesHtml = '';
+                    data.resources.forEach(resource => {
+                        resourcesHtml += `
+                            <div class="resource-card" style="background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                                <div style="font-size: 3rem; margin-bottom: 1rem; text-align: center;">${escapeHtml(resource.icon || '📄')}</div>
+                                <h3 style="font-size: 1.25rem; font-weight: bold; color: #111827; margin-bottom: 0.75rem; text-align: center;">${escapeHtml(resource.title || '')}</h3>
+                                <p style="color: #4b5563; font-size: 0.875rem; margin-bottom: 1rem; text-align: center;">${escapeHtml(resource.description || '')}</p>
+                                <a href="${escapeHtml(resource.link || '#')}" class="resource-link-btn" style="display: inline-block; text-align: center; padding: 0.625rem 1.25rem; background: transparent; color: var(--primary-color); border: 2px solid var(--primary-color); border-radius: 0.5rem; font-weight: 600; text-decoration: none; transition: all 0.2s; margin-top: auto;">View Resource →</a>
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = resourcesHtml;
+                } else {
+                    document.getElementById('resources-section').style.display = 'none';
+                }
+                
+                // Render contact info
+                if (data.contactInfo && data.contactInfo.length > 0) {
+                    const container = document.getElementById('contact-info');
+                    const icons = ['📞', '✉️', '🕐', '📍', '💬', '🌐', '📱', '🏢'];
+                    let contactHtml = '';
+                    data.contactInfo.forEach((contact, index) => {
+                        const icon = contact.icon || icons[index % icons.length];
+                        contactHtml += `
+                            <div class="contact-card" style="background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-align: center;">
+                                <div style="font-size: 2.5rem; margin-bottom: 1rem;">${escapeHtml(icon)}</div>
+                                <h3 style="font-size: 1.125rem; font-weight: bold; color: #111827; margin-bottom: 0.5rem;">${escapeHtml(contact.title || 'Contact')}</h3>
+                                ${contact.link ? `
+                                    <a href="${escapeHtml(contact.link)}" style="color: #2563eb; font-weight: 600; margin-bottom: 0.5rem; text-decoration: none; display: block;">${escapeHtml(contact.value || '')}</a>
+                                ` : `
+                                    <p style="color: #2563eb; font-weight: 600; margin-bottom: 0.5rem;">${escapeHtml(contact.value || '')}</p>
+                                `}
+                                ${contact.description ? `
+                                    <p style="color: #4b5563; font-size: 0.875rem;">${escapeHtml(contact.description)}</p>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    container.innerHTML = contactHtml;
+                } else {
+                    // Use default contact info
+                    const container = document.getElementById('contact-info');
+                    if (container) {
+                        const defaultContacts = data.contactInfo || [];
+                        if (defaultContacts.length > 0) {
+                            const icons = ['📞', '✉️', '🕐', '📍', '💬', '🌐', '📱', '🏢'];
+                            let contactHtml = '';
+                            defaultContacts.forEach((contact, index) => {
+                                const icon = contact.icon || icons[index % icons.length];
+                                contactHtml += `
+                                    <div class="contact-card" style="background: white; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-align: center;">
+                                        <div style="font-size: 2.5rem; margin-bottom: 1rem;">${escapeHtml(icon)}</div>
+                                        <h3 style="font-size: 1.125rem; font-weight: bold; color: #111827; margin-bottom: 0.5rem;">${escapeHtml(contact.title || 'Contact')}</h3>
+                                        ${contact.link ? `
+                                            <a href="${escapeHtml(contact.link)}" style="color: #2563eb; font-weight: 600; margin-bottom: 0.5rem; text-decoration: none; display: block;">${escapeHtml(contact.value || '')}</a>
+                                        ` : `
+                                            <p style="color: #2563eb; font-weight: 600; margin-bottom: 0.5rem;">${escapeHtml(contact.value || '')}</p>
+                                        `}
+                                        ${contact.description ? `
+                                            <p style="color: #4b5563; font-size: 0.875rem;">${escapeHtml(contact.description)}</p>
+                                        ` : ''}
+                                    </div>
+                                `;
+                            });
+                            container.innerHTML = contactHtml;
+                        }
+                    }
+                }
+        })();
+        
+        function addToCalendar(event, title, dateStr, timeStr, location) {
+            event.preventDefault();
+            alert('Add to calendar functionality - to be implemented');
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // Newsletter subscription
+        document.getElementById('newsletterForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Newsletter subscription - to be implemented');
+        });
+    </script>
+</body>
+</html>

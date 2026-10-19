@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Admin Panel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        * {
+            transition: all 0.3s ease;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .login-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .login-box {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #4facfe);
+            background-size: 200% 100%;
+            animation: gradient 3s ease infinite;
+        }
+        
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        .login-box h1 {
+            text-align: center;
+            color: #800020;
+            margin-bottom: 10px;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .login-subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #800020;
+            box-shadow: 0 0 0 4px rgba(128,0,32,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #800020 0%, #a00030 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(128,0,32,0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(128,0,32,0.4);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .message-alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message-error {
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #c33;
+        }
+        
+        .message-success {
+            background: #efe;
+            color: #3c3;
+            border-left: 4px solid #3c3;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 25px;
+        }
+        
+        .back-link a {
+            color: #800020;
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <h1>🔐 Admin Login</h1>
+            <p class="login-subtitle">Access the admin panel</p>
+            
+            <div id="message-container"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">
+                        📧 Email
+                    </label>
+                    <input type="email" id="email" name="email" class="form-input" required placeholder="Enter your email">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="password">
+                        🔒 Password
+                    </label>
+                    <div style="position: relative;">
+                        <input type="password" id="password" name="password" class="form-input" required placeholder="Enter your password" style="padding-right: 50px;">
+                        <button type="button" id="togglePassword" style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px; color: #666; padding: 5px;" aria-label="Toggle password visibility">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    🚀 Login
+                </button>
+            </form>
+            
+            <div class="back-link">
+                <a href="index.html">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Password visibility toggle
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                if (type === 'text') {
+                    togglePassword.textContent = '🙈';
+                    togglePassword.setAttribute('aria-label', 'Hide password');
+                } else {
+                    togglePassword.textContent = '👁️';
+                    togglePassword.setAttribute('aria-label', 'Show password');
+                }
+            });
+        }
+
+        // Login form submission
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const messageContainer = document.getElementById('message-container');
+            messageContainer.innerHTML = '';
+            
+            const formData = new FormData(e.target);
+            const data = {
+                email: formData.get('email'),
+                password: formData.get('password')
+            };
+            
+            try {
+                const response = await fetch('/api/auth/login.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const text = await response.text();
+                
+                // Check if we got PHP code instead of JSON
+                if (text.trim().startsWith('<?php') || text.trim().startsWith('<!')) {
+                    messageContainer.innerHTML = `
+                        <div class="message-alert message-error">
+                            ⚠️ PHP server not available. Please use a PHP server for login functionality.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const result = JSON.parse(text);
+                
+                if (result.success || result.message === 'Login successful') {
+                    messageContainer.innerHTML = `
+                        <div class="message-alert message-success">
+                            ✅ Login successful! Redirecting...
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        window.location.href = 'admin.html';
+                    }, 1000);
+                } else {
+                    messageContainer.innerHTML = `
+                        <div class="message-alert message-error">
+                            ⚠️ ${escapeHtml(result.error || 'Invalid email or password')}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                messageContainer.innerHTML = `
+                    <div class="message-alert message-error">
+                        ⚠️ Error: ${escapeHtml(error.message || 'Failed to connect to server')}
+                    </div>
+                `;
+            }
+        });
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
