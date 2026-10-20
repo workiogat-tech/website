@@ -65,11 +65,7 @@ if (is_array($_FILES['file']['name'])) {
 }
 
 $sectionId = $_POST['section_id'] ?? null;
-if (!$sectionId) {
-    http_response_code(400);
-    echo json_encode(['error' => 'Section ID required']);
-    exit;
-}
+ensureImageColumns($db);
 
 // Handle single file (when name is 'file') or array (when name is 'file[]')
 $files = [];
@@ -127,11 +123,19 @@ foreach ($files as $file) {
         continue;
     }
     
-    // Check file type
-    if (!in_array($file['type'], $allowedTypes)) {
-        $errors[] = $file['name'] . ': Invalid file type (' . $file['type'] . '). Only images (JPEG, PNG, GIF, WEBP) are allowed';
+    $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    $mimeByExt = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+    ];
+    if (!isset($mimeByExt[$extension]) && !in_array($file['type'], $allowedTypes, true)) {
+        $errors[] = $file['name'] . ': Only JPEG, PNG, GIF, and WEBP images can be saved';
         continue;
     }
+    $file['type'] = $mimeByExt[$extension] ?? $file['type'];
     
     // Generate unique filename
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);

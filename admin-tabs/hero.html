@@ -320,7 +320,7 @@ var heroData = window.heroData;
 })();
 
 function usableHeroImage(url) {
-    return typeof url === 'string' && url.trim() !== '' && url.indexOf('data:') !== 0 && url.length < 2000;
+    return typeof url === 'string' && url.trim() !== '' && url.indexOf('data:') !== 0 && (url.indexOf('http') === 0 || url.indexOf('/') === 0);
 }
 
 function updateHeroBackgroundPreview(url) {

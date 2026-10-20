@@ -11,6 +11,7 @@ error_reporting(E_ALL);
 
 require_once __DIR__ . '/../../config/config.php';
 require_once __DIR__ . '/../../includes/auth.php';
+require_once __DIR__ . '/../../includes/storage.php';
 
 // Clear any output that may have been generated
 ob_clean();
@@ -28,11 +29,11 @@ if (!$auth->isLoggedIn() || !$auth->isAdmin()) {
 $db = getDB();
 
 try {
+    ensureImageColumns($db);
     $media = $db->fetchAll("SELECT m.*, ms.name as section_name, ms.color as section_color 
                            FROM media m 
                            LEFT JOIN media_sections ms ON m.section_id = ms.id 
-                           ORDER BY m.created_at DESC 
-                           LIMIT 100");
+                           ORDER BY m.created_at DESC");
     
     // Format media items
     $formatted = [];
@@ -83,6 +84,45 @@ try {
             'section_name' => $item['section_name'] ?? null,
             'section_color' => $item['section_color'] ?? null,
         ];
+    }
+
+    $known = [];
+    foreach ($formatted as $item) {
+        $known[$item['filename']] = true;
+        $known[basename(parse_url($item['file_url'], PHP_URL_PATH) ?: '')] = true;
+    }
+
+    try {
+        foreach (listSupabaseImages() as $object) {
+            $base = basename($object['name']);
+            if (isset($known[$object['name']]) || isset($known[$base]) || isset($known[$object['url']])) {
+                continue;
+            }
+            $known[$base] = true;
+            $rowId = null;
+            try {
+                $rowId = $db->insert(
+                    "INSERT INTO media (section_id, filename, original_name, file_path, file_size, file_type, created_at)
+                     VALUES (?, ?, ?, ?, ?, ?, NOW())",
+                    [null, $base, $base, $object['url'], $object['size'], $object['mime']]
+                );
+            } catch (Exception $insertError) {
+                error_log('Could not record storage file ' . $base . ': ' . $insertError->getMessage());
+            }
+            $formatted[] = [
+                'id' => $rowId,
+                'filename' => $base,
+                'original_name' => $base,
+                'file_path' => $object['url'],
+                'file_url' => $object['url'],
+                'file_size' => $object['size'],
+                'section_id' => null,
+                'section_name' => null,
+                'section_color' => null,
+            ];
+        }
+    } catch (Exception $storageError) {
+        error_log('Storage list failed: ' . $storageError->getMessage());
     }
     
     echo json_encode(['success' => true, 'media' => $formatted], JSON_UNESCAPED_SLASHES);

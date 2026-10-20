@@ -59,6 +59,7 @@ if (!function_exists('session_start_safe')) {
 
 // Include config - it will call session_start, but we've suppressed errors
 require_once __DIR__ . '/../../config/config.php';
+require_once __DIR__ . '/../../includes/storage.php';
 
 // Re-disable error display after config.php (in case it re-enabled it)
 ini_set('display_errors', 0);
@@ -380,15 +381,11 @@ if ($method === 'GET') {
             }
         }
         
-        // Get existing content to update or create new
+        ensureImageColumns($db);
+
+        // Keep the current row. Replacing it used to hide the previous photo when the new save failed.
         $existing = $db->fetchOne("SELECT * FROM hero_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
         
-        if ($existing) {
-            // Update existing - deactivate old, create new active one
-            $db->update("UPDATE hero_content SET is_active = 0 WHERE id = ?", [$existing['id']]);
-        }
-        
-        // Prepare fields for insert (only include existing columns)
         $fields = [];
         $values = [];
         $placeholders = [];
@@ -402,25 +399,34 @@ if ($method === 'GET') {
         }
         
         if (empty($fields)) {
-            throw new Exception('No valid fields to insert');
+            throw new Exception('No valid fields to save');
         }
         
-        $sql = "INSERT INTO hero_content (" . implode(', ', $fields) . ", created_at) VALUES (" . implode(', ', $placeholders) . ", NOW())";
-        
-        // Log the SQL and values for debugging
-        error_log("Hero content INSERT SQL: " . $sql);
-        error_log("Hero content values: " . json_encode($values));
-        error_log("Hero content data being saved: " . json_encode($data));
-        
         try {
-            $id = $db->insert($sql, $values);
-            if (!$id || $id <= 0) {
-                throw new Exception('Insert failed - no ID returned');
+            if ($existing) {
+                $assignments = [];
+                foreach ($fields as $field) {
+                    $assignments[] = $field . ' = ?';
+                }
+                if (in_array('updated_at', $existingColumns, true)) {
+                    $assignments[] = 'updated_at = NOW()';
+                }
+                $updateValues = $values;
+                $updateValues[] = $existing['id'];
+                $db->update(
+                    "UPDATE hero_content SET " . implode(', ', $assignments) . " WHERE id = ?",
+                    $updateValues
+                );
+                $id = $existing['id'];
+            } else {
+                $sql = "INSERT INTO hero_content (" . implode(', ', $fields) . ", created_at) VALUES (" . implode(', ', $placeholders) . ", NOW())";
+                $id = $db->insert($sql, $values);
+                if (!$id || $id <= 0) {
+                    throw new Exception('Insert failed - no ID returned');
+                }
             }
         } catch (Exception $e) {
-            error_log("Hero content insert error: " . $e->getMessage());
-            error_log("SQL: " . $sql);
-            error_log("Values: " . json_encode($values));
+            error_log("Hero content save error: " . $e->getMessage());
             throw new Exception('Failed to save hero content: ' . $e->getMessage());
         }
         

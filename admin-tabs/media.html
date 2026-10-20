@@ -577,20 +577,14 @@ async function handleFileUpload() {
     const sectionSelect = document.getElementById('uploadSection');
     const sectionIdInput = document.getElementById('uploadSectionId');
     
-    if (!sectionSelect || !sectionSelect.value) {
-        showToast('Please select a section first! Click "New Section" to create one if needed.', 'error');
-        fileInput.value = '';
-        return;
-    }
-    
     const files = fileInput.files;
     if (!files || files.length === 0) {
         showToast('Please select at least one file to upload!', 'error');
         return;
     }
-    
-    const sectionId = sectionSelect.value;
-    sectionIdInput.value = sectionId;
+
+    const sectionId = sectionSelect ? sectionSelect.value : '';
+    if (sectionIdInput) sectionIdInput.value = sectionId;
     
     const uploadLabel = document.querySelector('label[for="fileUpload"]');
     const originalText = uploadLabel.textContent;
@@ -599,15 +593,24 @@ async function handleFileUpload() {
     uploadLabel.style.opacity = '0.7';
     
     try {
-        // NO PHP - use client-side storage only for images/media
-        const uploadPromises = Array.from(files).map(file => 
-            MediaStorage.addMediaItem(file, sectionId)
-        );
-        
-        const uploadedItems = await Promise.all(uploadPromises);
-        showToast(`Successfully uploaded ${uploadedItems.length} file(s)!`, 'success');
-        loadMedia();
+        const saved = [];
+        const failed = [];
+        for (const file of Array.from(files)) {
+            try {
+                saved.push(await MediaStorage.addMediaItem(file, sectionId));
+            } catch (error) {
+                failed.push((file.name || 'Image') + ': ' + error.message);
+            }
+        }
+        await loadMedia();
         updateMediaStats();
+        if (saved.length && failed.length) {
+            showToast('Saved ' + saved.length + ' photo(s). ' + failed.join(' '), 'error');
+        } else if (saved.length) {
+            showToast('Saved ' + saved.length + ' photo(s) to the library.', 'success');
+        } else {
+            showToast(failed.join(' ') || 'The photos could not be saved.', 'error');
+        }
     } catch (error) {
         console.error('Upload error:', error);
         showToast('Upload failed: ' + error.message, 'error');
