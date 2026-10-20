@@ -223,32 +223,104 @@ class Database {
         )->fetch();
         $readyValue = $readyRow['ready'] ?? false;
         $isReady = $readyValue === true || $readyValue === 1 || $readyValue === '1' || $readyValue === 't';
-        if ($isReady) {
-            $ready = true;
+        if (!$isReady) {
+            $schemaFile = dirname(__DIR__) . '/database/schema-supabase.sql';
+            if (!is_file($schemaFile)) {
+                throw new Exception('Missing database/schema-supabase.sql');
+            }
+
+            $sql = preg_replace('/--.*$/m', '', file_get_contents($schemaFile));
+            $statements = array_filter(array_map('trim', explode(';', $sql)));
+            foreach ($statements as $statement) {
+                try {
+                    $this->conn->exec($statement);
+                } catch (PDOException $e) {
+                    error_log('Schema statement failed: ' . $e->getMessage());
+                }
+            }
+
+            try {
+                $this->bootstrapAdmin();
+            } catch (Exception $e) {
+                error_log('Admin bootstrap failed: ' . $e->getMessage());
+            }
+        }
+
+        // Existing databases already have hero_content, so the full schema
+        // file is skipped. These columns were added after that table existed.
+        $this->ensureHeroColumns();
+        $ready = true;
+    }
+
+    private function ensureHeroColumns(): void {
+        $table = $this->conn->query("SELECT to_regclass('public.hero_content')")->fetchColumn();
+        if (!$table) {
             return;
         }
 
-        $schemaFile = dirname(__DIR__) . '/database/schema-supabase.sql';
-        if (!is_file($schemaFile)) {
-            throw new Exception('Missing database/schema-supabase.sql');
+        $meta = $this->conn->query(
+            "SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'hero_content'"
+        )->fetchAll();
+        $have = [];
+        $types = [];
+        foreach ($meta as $row) {
+            $name = strtolower($row['column_name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+            $have[] = $name;
+            $types[$name] = strtolower($row['data_type'] ?? '');
         }
 
-        $sql = preg_replace('/--.*$/m', '', file_get_contents($schemaFile));
-        $statements = array_filter(array_map('trim', explode(';', $sql)));
-        foreach ($statements as $statement) {
+        $columns = [
+            'description' => 'TEXT',
+            'background_image' => 'TEXT',
+            'slides' => 'TEXT',
+            'headline' => 'TEXT',
+            'subheadline' => 'TEXT',
+            'slide_interval_ms' => 'INTEGER DEFAULT 5000',
+            'slide_direction' => "VARCHAR(10) DEFAULT 'left'",
+            'slide_mode' => "VARCHAR(20) DEFAULT 'marquee'",
+            'background_size' => "VARCHAR(20) DEFAULT 'contain'",
+            'background_position' => "VARCHAR(20) DEFAULT 'center'",
+            'image_scale' => 'NUMERIC(4,2) DEFAULT 1',
+            'headline_color' => "VARCHAR(50) DEFAULT '#ffffff'",
+            'subheadline_color' => "VARCHAR(50) DEFAULT '#ffffff'",
+            'description_color' => "VARCHAR(50) DEFAULT '#ffffff'",
+        ];
+
+        foreach ($columns as $name => $type) {
+            if (in_array($name, $have, true)) {
+                continue;
+            }
             try {
-                $this->conn->exec($statement);
+                $this->conn->exec("ALTER TABLE hero_content ADD COLUMN IF NOT EXISTS {$name} {$type}");
             } catch (PDOException $e) {
-                error_log('Schema statement failed: ' . $e->getMessage());
+                error_log("Hero column {$name} was not added: " . $e->getMessage());
+            }
+        }
+
+        foreach (['background_image', 'slides'] as $wideColumn) {
+            if (!isset($types[$wideColumn]) || $types[$wideColumn] === 'text') {
+                continue;
+            }
+            try {
+                $this->conn->exec("ALTER TABLE hero_content ALTER COLUMN {$wideColumn} TYPE TEXT");
+            } catch (PDOException $e) {
+                error_log("Hero column {$wideColumn} was not widened: " . $e->getMessage());
             }
         }
 
         try {
-            $this->bootstrapAdmin();
-        } catch (Exception $e) {
-            error_log('Admin bootstrap failed: ' . $e->getMessage());
+            if (in_array('title', $have, true)) {
+                $this->conn->exec("UPDATE hero_content SET headline = title WHERE (headline IS NULL OR btrim(headline) = '') AND title IS NOT NULL AND btrim(title) <> ''");
+            }
+            if (in_array('subtitle', $have, true)) {
+                $this->conn->exec("UPDATE hero_content SET subheadline = subtitle WHERE (subheadline IS NULL OR btrim(subheadline) = '') AND subtitle IS NOT NULL AND btrim(subtitle) <> ''");
+            }
+        } catch (PDOException $e) {
+            error_log('Hero text backfill skipped: ' . $e->getMessage());
         }
-        $ready = true;
     }
 
     private function bootstrapAdmin(): void {

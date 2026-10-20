@@ -750,12 +750,19 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
                 
-                // CRITICAL: Store ONLY unique slides (frontend will create exactly 3 copies for seamless loop)
+                // Store the current image list, including an empty list when every slide was removed.
                 const validSlides = heroSlides.filter(s => s && s.trim());
-                const uniqueSlides = [...new Set(validSlides)]; // Ensure only unique slides
-                if (uniqueSlides.length > 0) {
-                    data.slides = uniqueSlides; // Store unique slides only - frontend duplicates to 3 copies
-                }
+                data.slides = [...new Set(validSlides)];
+
+                data.slide_interval_ms = parseInt(form.querySelector('input[name="slide_interval_ms"]')?.value || 5000, 10);
+                data.slide_direction = form.querySelector('select[name="slide_direction"]')?.value || 'left';
+                data.slide_mode = form.querySelector('select[name="slide_mode"]')?.value || 'marquee';
+                data.background_size = form.querySelector('select[name="background_size"]')?.value || 'contain';
+                data.background_position = form.querySelector('select[name="background_position"]')?.value || 'center';
+                data.image_scale = parseFloat(form.querySelector('input[name="image_scale"]')?.value || 1);
+                data.headline = form.querySelector('#hero_headline')?.value || '';
+                data.subheadline = form.querySelector('#hero_subheadline')?.value || '';
+                data.description = form.querySelector('#hero_description')?.value || '';
                 
                 // CRITICAL: Sync color picker values - ALWAYS use the actual color value
                 // This ensures colors are saved even if the picker or text field is empty

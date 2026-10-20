@@ -183,7 +183,13 @@ if ($method === 'GET') {
             // Ensure all required columns exist
             try {
                 $columns = $db->fetchAll("SHOW COLUMNS FROM hero_content");
-                $columnNames = array_column($columns, 'Field');
+                $columnNames = [];
+                foreach ($columns as $column) {
+                    $name = $column['Field'] ?? $column['field'] ?? $column['column_name'] ?? '';
+                    if ($name !== '') {
+                        $columnNames[] = strtolower($name);
+                    }
+                }
                 
                 $requiredColumns = [
                     'headline' => "ALTER TABLE hero_content ADD COLUMN headline TEXT AFTER subtitle",
@@ -256,6 +262,8 @@ if ($method === 'GET') {
         
         // Handle slides array from form
         // Store ONLY unique slides - frontend will create exactly 2 copies (1 original + 1 duplicate)
+        // Missing slides means "leave the saved images alone". An empty array clears them.
+        $slidesProvided = is_array($input) && array_key_exists('slides', $input);
         $slides = [];
         if (isset($input['slides']) && is_array($input['slides'])) {
             // Filter out empty slides
@@ -298,11 +306,22 @@ if ($method === 'GET') {
         // Check which columns exist in the table
         try {
             $columns = $db->fetchAll("SHOW COLUMNS FROM hero_content");
-            $existingColumns = array_column($columns, 'Field');
+            $existingColumns = [];
+            foreach ($columns as $column) {
+                $name = $column['Field'] ?? $column['field'] ?? $column['column_name'] ?? '';
+                if ($name !== '') {
+                    $existingColumns[] = strtolower($name);
+                }
+            }
         } catch (Exception $e) {
             error_log("Error checking hero_content columns: " . $e->getMessage());
-            // If we can't check columns, use default set
-            $existingColumns = ['id', 'title', 'subtitle', 'headline', 'subheadline', 'description', 'background_image', 'slides', 'slide_interval_ms', 'slide_direction', 'slide_mode', 'background_size', 'background_position', 'image_scale', 'headline_color', 'subheadline_color', 'description_color', 'cta_text', 'cta_link', 'is_active', 'created_at', 'updated_at'];
+            $existingColumns = [];
+        }
+
+        $requiredHeroColumns = ['headline', 'subheadline', 'slide_interval_ms', 'slide_direction', 'slide_mode', 'background_size', 'background_position', 'image_scale', 'headline_color', 'subheadline_color', 'description_color', 'slides'];
+        $missingHeroColumns = array_values(array_diff($requiredHeroColumns, $existingColumns));
+        if (!empty($missingHeroColumns)) {
+            throw new Exception('Hero settings are not in the database yet: ' . implode(', ', $missingHeroColumns));
         }
         
         // Handle color fields - use text field if color picker is empty
@@ -341,7 +360,7 @@ if ($method === 'GET') {
             $dbField = $fieldMapping[$key] ?? $key;
             
             // Only add if column exists in table
-            if (!in_array($dbField, $existingColumns)) {
+            if (!in_array(strtolower($dbField), $existingColumns, true)) {
                 continue;
             }
             
@@ -355,30 +374,63 @@ if ($method === 'GET') {
         
         // CRITICAL: Always set color fields AFTER processing other fields
         // This ensures colors are ALWAYS saved, even if they were missing from input
-        if (in_array('headline_color', $existingColumns)) {
+        if (in_array('headline_color', $existingColumns, true)) {
             $data['headline_color'] = $input['headline_color'] ?? $data['headline_color'] ?? '#ffffff';
         }
-        if (in_array('subheadline_color', $existingColumns)) {
+        if (in_array('subheadline_color', $existingColumns, true)) {
             $data['subheadline_color'] = $input['subheadline_color'] ?? $data['subheadline_color'] ?? '#ffffff';
         }
-        if (in_array('description_color', $existingColumns)) {
+        if (in_array('description_color', $existingColumns, true)) {
             $data['description_color'] = $input['description_color'] ?? $data['description_color'] ?? '#ffffff';
         }
-        
-        if (!in_array('headline', $existingColumns, true) && in_array('title', $existingColumns, true)) {
-            $data['title'] = $input['headline'] ?? $input['title'] ?? ($data['title'] ?? '');
+
+        if (array_key_exists('headline', $input) || array_key_exists('title', $input)) {
+            $headline = $input['headline'] ?? $input['title'] ?? '';
+            if (in_array('headline', $existingColumns, true)) {
+                $data['headline'] = $headline;
+            }
+            if (in_array('title', $existingColumns, true)) {
+                $data['title'] = $headline;
+            }
         }
-        if (!in_array('subheadline', $existingColumns, true) && in_array('subtitle', $existingColumns, true)) {
-            $data['subtitle'] = $input['subheadline'] ?? $input['subtitle'] ?? ($data['subtitle'] ?? '');
+        if (array_key_exists('subheadline', $input) || array_key_exists('subtitle', $input)) {
+            $subheadline = $input['subheadline'] ?? $input['subtitle'] ?? '';
+            if (in_array('subheadline', $existingColumns, true)) {
+                $data['subheadline'] = $subheadline;
+            }
+            if (in_array('subtitle', $existingColumns, true)) {
+                $data['subtitle'] = $subheadline;
+            }
         }
 
-        // Add slides as JSON (if column exists)
-        if (in_array('slides', $existingColumns)) {
-            if (!empty($slides)) {
-                $data['slides'] = json_encode($slides);
-            } else {
-                $data['slides'] = null;
+        $choices = [
+            'slide_direction' => ['left', 'right'],
+            'slide_mode' => ['marquee', 'fade'],
+            'background_size' => ['contain', 'cover', 'auto'],
+            'background_position' => ['center', 'top', 'bottom', 'left', 'right'],
+        ];
+        foreach ($choices as $field => $options) {
+            if (!array_key_exists($field, $input) || !in_array($field, $existingColumns, true)) {
+                continue;
             }
+            $value = strtolower(trim((string) $input[$field]));
+            $data[$field] = in_array($value, $options, true) ? $value : $options[0];
+        }
+        if (array_key_exists('slide_interval_ms', $input) && in_array('slide_interval_ms', $existingColumns, true)) {
+            $interval = (int) $input['slide_interval_ms'];
+            $data['slide_interval_ms'] = $interval >= 1000 ? $interval : 5000;
+        }
+        if (array_key_exists('image_scale', $input) && in_array('image_scale', $existingColumns, true)) {
+            $scale = (float) $input['image_scale'];
+            if ($scale < 0.5 || $scale > 2) {
+                $scale = 1;
+            }
+            $data['image_scale'] = round($scale, 1);
+        }
+
+        // Add slides as JSON only when the form actually sent them.
+        if ($slidesProvided && in_array('slides', $existingColumns, true)) {
+            $data['slides'] = !empty($slides) ? json_encode(array_values($slides)) : null;
         }
         
         ensureImageColumns($db);
@@ -418,6 +470,11 @@ if ($method === 'GET') {
                     $updateValues
                 );
                 $id = $existing['id'];
+                try {
+                    $db->update("UPDATE hero_content SET is_active = 0 WHERE id <> ? AND is_active = 1", [$id]);
+                } catch (Exception $ignore) {
+                    error_log('Could not deactivate older hero rows: ' . $ignore->getMessage());
+                }
             } else {
                 $sql = "INSERT INTO hero_content (" . implode(', ', $fields) . ", created_at) VALUES (" . implode(', ', $placeholders) . ", NOW())";
                 $id = $db->insert($sql, $values);
@@ -430,10 +487,24 @@ if ($method === 'GET') {
             throw new Exception('Failed to save hero content: ' . $e->getMessage());
         }
         
-        // Verify the colors were saved by fetching the record
-        if ($id) {
-            $saved = $db->fetchOne("SELECT headline_color, subheadline_color, description_color FROM hero_content WHERE id = ?", [$id]);
-            error_log("Hero colors after save: " . json_encode($saved));
+        // Confirm the slider settings are actually in the row that the admin page reads back.
+        $saved = $id ? $db->fetchOne("SELECT * FROM hero_content WHERE id = ?", [$id]) : null;
+        if (!$saved) {
+            throw new Exception('Hero content was not stored.');
+        }
+        $savedRow = array_change_key_case($saved, CASE_LOWER);
+        foreach (['slide_interval_ms', 'slide_direction', 'slide_mode', 'background_size', 'background_position'] as $field) {
+            if (!isset($data[$field])) {
+                continue;
+            }
+            if (!array_key_exists($field, $savedRow) || (string) $savedRow[$field] !== (string) $data[$field]) {
+                throw new Exception('Hero setting "' . $field . '" was not saved to the database.');
+            }
+        }
+        if (isset($data['image_scale'])) {
+            if (!array_key_exists('image_scale', $savedRow) || abs((float) $savedRow['image_scale'] - (float) $data['image_scale']) > 0.05) {
+                throw new Exception('Image scale was not saved to the database.');
+            }
         }
         
         // Ensure we output valid JSON - clear any previous output
