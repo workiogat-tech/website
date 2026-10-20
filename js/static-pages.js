@@ -130,13 +130,13 @@ const StaticPages = {
                                 </a>
                             </div>
                             <div class="header-actions">
-                                <button class="search-button" id="searchButton">
+                                <button type="button" class="search-button" id="searchButton" aria-label="Search">
                                     <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
                                         <circle cx="11" cy="11" r="8"></circle>
                                         <path d="m21 21-4.35-4.35"></path>
                                     </svg>
                                 </button>
-                                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                                <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false">
                                     <span class="menu-icon">☰</span>
                                     <span class="close-icon" style="display: none;">✕</span>
                                 </button>
@@ -147,10 +147,40 @@ const StaticPages = {
                         </nav>
                     </div>
                 </div>
+                ${this.renderSearchOverlay()}
             </header>
         `;
     },
     
+    renderSearchOverlay() {
+        return `
+            <div class="search-overlay" id="searchOverlay">
+                <div class="search-overlay-content">
+                    <form class="search-form" id="searchForm">
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search pages..." autocomplete="off">
+                        <button type="submit" class="search-submit" aria-label="Search">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <path d="m21 21-4.35-4.35"></path>
+                            </svg>
+                        </button>
+                        <button type="button" class="search-close" id="searchClose" aria-label="Close search">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </form>
+                    <div class="search-results" id="searchResults">
+                        <div class="search-placeholder">
+                            <p>Start typing to search...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
     renderNav(items, isMobile) {
         return items.map(item => {
             if (item.children && item.children.length > 0) {
@@ -232,6 +262,17 @@ const StaticPages = {
         `;
     },
     
+    mergeFilled(base, extra) {
+        const next = { ...base };
+        Object.keys(extra || {}).forEach(key => {
+            const value = extra[key];
+            if (value !== undefined && value !== null && String(value).trim() !== '') {
+                next[key] = value;
+            }
+        });
+        return next;
+    },
+
     // Load branding from localStorage
     async loadBranding() {
         try {
@@ -239,10 +280,7 @@ const StaticPages = {
             if (typeof window.ClientStorage !== 'undefined') {
                 const branding = await window.ClientStorage.branding.get();
                 if (branding && Object.keys(branding).length > 0) {
-                    this.branding = {
-                        ...this.branding,
-                        ...branding
-                    };
+                    this.branding = this.mergeFilled(this.branding, branding);
                 }
             }
             
@@ -250,10 +288,7 @@ const StaticPages = {
             if (typeof window.MediaStorage !== 'undefined' && window.MediaStorage.loadSettings) {
                 const stored = window.MediaStorage.loadSettings('branding');
                 if (stored && Object.keys(stored).length > 0) {
-                    this.branding = {
-                        ...this.branding,
-                        ...stored
-                    };
+                    this.branding = this.mergeFilled(this.branding, stored);
                 }
             }
         } catch (error) {
@@ -267,10 +302,7 @@ const StaticPages = {
             if (typeof window.ClientStorage !== 'undefined') {
                 const contact = await window.ClientStorage.contact.get();
                 if (contact && Object.keys(contact).length > 0) {
-                    this.contactInfo = {
-                        ...this.contactInfo,
-                        ...contact
-                    };
+                    this.contactInfo = this.mergeFilled(this.contactInfo, contact);
                 }
             }
             
@@ -278,10 +310,7 @@ const StaticPages = {
             if (typeof window.MediaStorage !== 'undefined' && window.MediaStorage.loadSettings) {
                 const stored = window.MediaStorage.loadSettings('contact');
                 if (stored && Object.keys(stored).length > 0) {
-                    this.contactInfo = {
-                        ...this.contactInfo,
-                        ...stored
-                    };
+                    this.contactInfo = this.mergeFilled(this.contactInfo, stored);
                 }
             }
         } catch (error) {
@@ -342,28 +371,9 @@ const StaticPages = {
     },
     
     initHeader() {
-        // Mobile menu toggle
-        const mobileToggle = document.getElementById('mobileMenuToggle');
-        if (mobileToggle) {
-            mobileToggle.addEventListener('click', () => {
-                const nav = document.getElementById('mainNav');
-                if (nav) {
-                    nav.classList.toggle('active');
-                    document.body.classList.toggle('mobile-menu-open');
-                }
-            });
+        if (typeof window.initHeaderChrome === 'function') {
+            window.initHeaderChrome();
         }
-        
-        // Dropdown triggers
-        document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
-            trigger.addEventListener('click', (e) => {
-                e.preventDefault();
-                const dropdown = trigger.nextElementSibling;
-                if (dropdown) {
-                    dropdown.classList.toggle('active');
-                }
-            });
-        });
     },
     
     initFooter() {

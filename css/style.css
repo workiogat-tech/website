@@ -752,6 +752,7 @@ body {
 }
 
 .search-result-item {
+    display: block;
     padding: 16px;
     margin-bottom: 8px;
     background: rgba(0,0,0,0.05);
@@ -759,6 +760,7 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
     color: var(--text-color);
+    text-decoration: none;
 }
 
 .search-result-item:hover {
@@ -805,8 +807,7 @@ body {
     padding: 0 !important;
     left: 0;
     right: 0;
-    background: transparent !important;
-    background-color: transparent !important;
+    background-color: #4a0014;
     display: block;
 }
 
@@ -823,7 +824,6 @@ body {
     right: 0;
     top: 0;
     bottom: 0;
-    background: transparent !important;
 }
 
 .hero-background {
@@ -1007,6 +1007,15 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
+}
+
+.hero-overlay::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(32, 0, 10, 0.55), rgba(32, 0, 10, 0.42));
+    z-index: -1;
     pointer-events: none;
 }
 
@@ -4780,12 +4789,14 @@ svg {
     font-size: 64px;
     font-weight: bold;
     margin-bottom: 20px;
+    color: #fff;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
 }
 
 .page-hero-subtitle {
     font-size: 28px;
     font-weight: 300;
+    color: #fff;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
@@ -6438,5 +6449,244 @@ svg {
     
     .hide-desktop {
         display: none !important;
+    }
+}
+
+/* Mobile layout: header, hero, and stacked sections */
+@media (max-width: 1023px) {
+    body {
+        padding-top: 128px;
+    }
+
+    .site-header,
+    .header-main {
+        background: #fff;
+    }
+
+    .header-main {
+        padding: 6px 0 8px;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
+    }
+
+    .header-top-content {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .contact-info {
+        width: 100%;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 14px;
+        min-width: 0;
+    }
+
+    .contact-item {
+        min-width: 0;
+        max-width: 48%;
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .contact-item span:not(.contact-icon) {
+        display: inline !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .header-main > .container {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .header-content {
+        height: 64px;
+        padding: 0 16px;
+    }
+
+    .header-actions {
+        gap: 4px;
+    }
+
+    .search-button,
+    .mobile-menu-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        flex-shrink: 0;
+    }
+
+    .logo-placeholder {
+        width: 52px;
+        height: 52px;
+    }
+
+    .hero-section,
+    .hero-content {
+        height: 460px;
+        min-height: 460px;
+        max-height: none;
+        margin-top: 0;
+    }
+
+    .hero-overlay {
+        padding: 36px 12px 32px;
+    }
+
+    .hero-slides-container {
+        min-height: 100%;
+    }
+
+    .hero-title {
+        font-size: 34px !important;
+        line-height: 1.15;
+        margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+        font-size: 18px !important;
+        line-height: 1.35;
+        margin-bottom: 12px;
+    }
+
+    .hero-description {
+        font-size: 16px !important;
+        line-height: 1.55;
+        margin-bottom: 8px;
+    }
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-top: 22px;
+    }
+
+    .hero-buttons .btn {
+        width: 100%;
+        max-width: none;
+    }
+
+    .hero-buttons .btn-primary {
+        background: #ffffff;
+        color: var(--primary-color);
+    }
+
+    .hero-buttons .btn-primary:hover {
+        background: #f7e8ec;
+        color: var(--primary-color);
+    }
+
+    .btn-outline-white {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .page-hero-section,
+    .admission-hero-section {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0;
+        min-height: 280px;
+        padding: 36px 0;
+    }
+
+    .page-hero-title {
+        font-size: 34px !important;
+        line-height: 1.15;
+    }
+
+    .page-hero-subtitle {
+        font-size: 18px !important;
+    }
+
+    .three-column-grid,
+    .news-grid,
+    .academics-content {
+        grid-template-columns: 1fr;
+    }
+
+    .three-column-image {
+        height: 200px;
+    }
+
+    .three-column-sections {
+        padding: 36px 0;
+    }
+
+    .section-padding {
+        padding: 36px 0;
+    }
+
+    .news-card,
+    .school-life-card,
+    .event-card,
+    .teacher-card {
+        transform: none;
+    }
+
+    .mobile-nav {
+        border-radius: 0;
+        box-shadow: 0 16px 30px rgba(0, 0, 0, 0.18);
+    }
+
+    .search-overlay {
+        padding-top: 72px;
+    }
+
+    .search-overlay-content {
+        margin: 0 12px;
+    }
+
+    .search-form {
+        gap: 8px;
+        padding: 12px;
+    }
+
+    .search-input {
+        font-size: 16px;
+        padding: 10px 8px;
+        min-width: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding-top: 128px;
+    }
+
+    .contact-item {
+        font-size: 11px;
+        padding: 2px 0;
+    }
+
+    .hero-section,
+    .hero-content {
+        height: 420px;
+        min-height: 420px;
+    }
+
+    .hero-title {
+        font-size: 28px !important;
+    }
+
+    .hero-subtitle {
+        font-size: 16px !important;
+    }
+
+    .hero-description {
+        font-size: 15px !important;
+    }
+
+    .academics-stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .stat-number {
+        font-size: 32px;
     }
 }

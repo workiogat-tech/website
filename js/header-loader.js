@@ -78,13 +78,13 @@ const HeaderLoader = {
                                 </a>
                             </div>
                             <div class="header-actions">
-                                <button class="search-button" id="searchButton">
+                                <button type="button" class="search-button" id="searchButton" aria-label="Search">
                                     <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
                                         <circle cx="11" cy="11" r="8"></circle>
                                         <path d="m21 21-4.35-4.35"></path>
                                     </svg>
                                 </button>
-                                <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                                <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false">
                                     <span class="menu-icon">☰</span>
                                     <span class="close-icon" style="display: none;">✕</span>
                                 </button>
@@ -93,6 +93,28 @@ const HeaderLoader = {
                         <nav class="main-nav mobile-nav" id="mainNav">
                             ${this.renderNavigation(navigation, navChildren, true)}
                         </nav>
+                    </div>
+                </div>
+                <div class="search-overlay" id="searchOverlay">
+                    <div class="search-overlay-content">
+                        <form class="search-form" id="searchForm">
+                            <input type="text" id="searchInput" class="search-input" placeholder="Search pages..." autocomplete="off">
+                            <button type="submit" class="search-submit" aria-label="Search">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <path d="m21 21-4.35-4.35"></path>
+                                </svg>
+                            </button>
+                            <button type="button" class="search-close" id="searchClose" aria-label="Close search">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                            </button>
+                        </form>
+                        <div class="search-results" id="searchResults">
+                            <div class="search-placeholder"><p>Start typing to search...</p></div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -185,29 +207,9 @@ const HeaderLoader = {
     },
     
     init() {
-        // Initialize mobile menu
-        const mobileToggle = document.getElementById('mobileMenuToggle');
-        if (mobileToggle) {
-            mobileToggle.addEventListener('click', () => {
-                const nav = document.getElementById('mainNav');
-                const body = document.body;
-                if (nav) {
-                    nav.classList.toggle('active');
-                    body.classList.toggle('mobile-menu-open');
-                }
-            });
+        if (typeof window.initHeaderChrome === 'function') {
+            window.initHeaderChrome();
         }
-        
-        // Initialize dropdowns
-        document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
-            trigger.addEventListener('click', (e) => {
-                e.preventDefault();
-                const dropdown = trigger.nextElementSibling;
-                if (dropdown) {
-                    dropdown.classList.toggle('active');
-                }
-            });
-        });
     },
     
     escapeHtml(text) {

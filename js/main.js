@@ -3,8 +3,67 @@
  * Excellence Academy School Management System
  */
 
-// Mobile Menu Toggle and Search
-document.addEventListener('DOMContentLoaded', function() {
+function escapeSearchText(value) {
+    return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+const SEARCH_PAGES = [
+    { title: 'Home', url: 'index.html', type: 'Page', description: 'Welcome to the school homepage' },
+    { title: 'About Us', url: 'about.html', type: 'Page', description: 'Learn about our school' },
+    { title: 'School Background', url: 'school-background.html', type: 'Page', description: 'Our history and background' },
+    { title: 'Teachers', url: 'teachers.html', type: 'Page', description: 'Meet our teaching staff' },
+    { title: 'Testimonials', url: 'testimonials.html', type: 'Page', description: 'What families say about us' },
+    { title: 'Gallery', url: 'gallery.html', type: 'Page', description: 'School gallery and photos' },
+    { title: 'Events', url: 'events.html', type: 'Page', description: 'Upcoming school events' },
+    { title: 'Clubs', url: 'clubs.html', type: 'Page', description: 'Student clubs and organizations' },
+    { title: 'Activities', url: 'activities.html', type: 'Page', description: 'Student activities' },
+    { title: 'Facilities', url: 'facilities.html', type: 'Page', description: 'Our school facilities' },
+    { title: 'Curriculum', url: 'curriculum.html', type: 'Page', description: 'Academic curriculum' },
+    { title: 'Admission', url: 'admission.html', type: 'Page', description: 'Apply for admission' },
+    { title: 'News', url: 'news.html', type: 'Page', description: 'School news and updates' },
+    { title: 'Announcements', url: 'announcements.html', type: 'Page', description: 'Important announcements' },
+    { title: 'Sponsorship', url: 'sponsorship.html', type: 'Page', description: 'Support a student' },
+    { title: 'Give Back', url: 'give-back.html', type: 'Page', description: 'Give back to the school' },
+    { title: 'Parents', url: 'parents.html', type: 'Page', description: 'Parent portal' },
+    { title: 'Resources', url: 'resources.html', type: 'Page', description: 'Learning resources' },
+    { title: 'Contact', url: 'contact.html', type: 'Page', description: 'Get in touch with us' }
+];
+
+function closeSiteSearch() {
+    const searchOverlay = document.getElementById('searchOverlay');
+    const searchInput = document.getElementById('searchInput');
+    const searchResults = document.getElementById('searchResults');
+    if (searchOverlay) searchOverlay.classList.remove('active');
+    document.body.style.overflow = '';
+    if (searchInput) searchInput.value = '';
+    if (searchResults) {
+        searchResults.innerHTML = `
+            <div class="search-placeholder">
+                <p>Start typing to search...</p>
+            </div>
+        `;
+    }
+}
+
+function setMobileMenuOpen(isOpen) {
+    const mainNav = document.getElementById('mainNav');
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    if (!mainNav || !mobileMenuToggle) return;
+    mainNav.classList.toggle('active', isOpen);
+    mobileMenuToggle.classList.toggle('active', isOpen);
+    mobileMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    const menuIcon = mobileMenuToggle.querySelector('.menu-icon');
+    const closeIcon = mobileMenuToggle.querySelector('.close-icon');
+    if (menuIcon) menuIcon.style.display = isOpen ? 'none' : 'block';
+    if (closeIcon) closeIcon.style.display = isOpen ? 'block' : 'none';
+    document.body.classList.toggle('mobile-menu-open', isOpen);
+}
+
+window.initHeaderChrome = function() {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const mainNav = document.getElementById('mainNav');
     const searchButton = document.getElementById('searchButton');
@@ -13,211 +72,178 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     const searchForm = document.getElementById('searchForm');
     const searchResults = document.getElementById('searchResults');
-    
-    function setMobileMenuOpen(isOpen) {
-        mainNav.classList.toggle('active', isOpen);
-        mobileMenuToggle.classList.toggle('active', isOpen);
-        const menuIcon = mobileMenuToggle.querySelector('.menu-icon');
-        const closeIcon = mobileMenuToggle.querySelector('.close-icon');
-        if (menuIcon) menuIcon.style.display = isOpen ? 'none' : 'block';
-        if (closeIcon) closeIcon.style.display = isOpen ? 'block' : 'none';
-    }
 
-    if (mobileMenuToggle && mainNav) {
+    if (mobileMenuToggle && mainNav && !mobileMenuToggle.dataset.chromeBound) {
+        mobileMenuToggle.dataset.chromeBound = '1';
         mobileMenuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
             e.stopPropagation();
             setMobileMenuOpen(!mainNav.classList.contains('active'));
         });
 
-        document.addEventListener('click', function(e) {
-            if (mainNav.classList.contains('active') &&
-                !mainNav.contains(e.target) &&
-                !mobileMenuToggle.contains(e.target)) {
-                setMobileMenuOpen(false);
-            }
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && mainNav.classList.contains('active')) {
-                setMobileMenuOpen(false);
-            }
-        });
-
-        mainNav.querySelectorAll('.nav-link').forEach(link => {
+        mainNav.querySelectorAll('a.nav-link').forEach(link => {
             link.addEventListener('click', function() {
-                if (!this.classList.contains('dropdown-trigger') &&
-                    !this.closest('.dropdown-menu')) {
-                    setTimeout(() => setMobileMenuOpen(false), 300);
+                if (!this.classList.contains('dropdown-trigger')) {
+                    setTimeout(() => setMobileMenuOpen(false), 200);
                 }
             });
         });
 
         mainNav.querySelectorAll('.dropdown-menu a').forEach(link => {
             link.addEventListener('click', function() {
-                setTimeout(() => setMobileMenuOpen(false), 300);
+                setTimeout(() => setMobileMenuOpen(false), 200);
             });
         });
     }
-    
-    // Mobile dropdown toggle - prevent overlapping
-    document.querySelectorAll('.dropdown-trigger').forEach(trigger => {
+
+    document.querySelectorAll('.mobile-nav .dropdown-trigger').forEach(trigger => {
+        if (trigger.dataset.chromeBound) return;
+        trigger.dataset.chromeBound = '1';
         trigger.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
             const dropdown = this.closest('.nav-dropdown');
-            const isActive = dropdown.classList.contains('active');
-            
-            // Close all other dropdowns first
+            if (!dropdown) return;
+            const willOpen = !dropdown.classList.contains('active');
             document.querySelectorAll('.mobile-nav .nav-dropdown').forEach(otherDropdown => {
-                if (otherDropdown !== dropdown) {
-                    otherDropdown.classList.remove('active');
-                }
+                otherDropdown.classList.remove('active');
             });
-            
-            // Toggle the clicked dropdown
-            if (isActive) {
-                dropdown.classList.remove('active');
-            } else {
-                dropdown.classList.add('active');
-            }
+            if (willOpen) dropdown.classList.add('active');
         });
     });
-    
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('.nav-dropdown')) {
-            document.querySelectorAll('.mobile-nav .nav-dropdown').forEach(dropdown => {
-                dropdown.classList.remove('active');
-            });
-        }
-    });
-    
-    // Prevent navigation on dropdown parent links (hover only)
+
     document.querySelectorAll('.top-nav-dropdown > .top-nav-link').forEach(link => {
+        if (link.dataset.chromeBound) return;
+        link.dataset.chromeBound = '1';
         link.addEventListener('click', function(e) {
             e.preventDefault();
         });
     });
-    
-    // Search Overlay
-    if (searchButton && searchOverlay) {
-        searchButton.addEventListener('click', function() {
-            searchOverlay.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            setTimeout(() => {
-                if (searchInput) searchInput.focus();
-            }, 100);
-        });
-    }
-    
-    function closeSearch() {
-        if (!searchOverlay) return;
-        searchOverlay.classList.remove('active');
-        document.body.style.overflow = '';
-        if (searchInput) searchInput.value = '';
-        updateSearchResults([]);
-    }
 
-    if (searchClose && searchOverlay) {
-        searchClose.addEventListener('click', closeSearch);
-    }
-
-    if (searchOverlay) {
-        searchOverlay.addEventListener('click', function(e) {
-            if (e.target === searchOverlay) closeSearch();
-        });
-    }
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && searchOverlay && searchOverlay.classList.contains('active')) {
-            closeSearch();
-        }
-    });
-    
-    // Search functionality
     function updateSearchResults(results) {
         if (!searchResults) return;
-        
+
         if (results.length === 0) {
             if (searchInput && searchInput.value.trim()) {
                 searchResults.innerHTML = `
                     <div class="search-placeholder">
-                        <span class="search-placeholder-icon">🔍</span>
-                        <p>No results found for "${searchInput.value}"</p>
+                        <p>No results found for "${escapeSearchText(searchInput.value)}"</p>
                     </div>
                 `;
             } else {
                 searchResults.innerHTML = `
                     <div class="search-placeholder">
-                        <span class="search-placeholder-icon">🔍</span>
                         <p>Start typing to search...</p>
                     </div>
                 `;
             }
             return;
         }
-        
+
         searchResults.innerHTML = results.map(result => `
-            <div class="search-result-item" onclick="window.location.href='${result.url}'">
-                <span class="search-result-type">${result.type}</span>
-                <div class="search-result-title">${result.title}</div>
-                ${result.description ? `<div class="search-result-description">${result.description}</div>` : ''}
-            </div>
+            <a class="search-result-item" href="${escapeSearchText(result.url)}">
+                <span class="search-result-type">${escapeSearchText(result.type)}</span>
+                <div class="search-result-title">${escapeSearchText(result.title)}</div>
+                ${result.description ? `<div class="search-result-description">${escapeSearchText(result.description)}</div>` : ''}
+            </a>
         `).join('');
     }
-    
-    if (searchInput) {
+
+    if (searchButton && searchOverlay && !searchButton.dataset.chromeBound) {
+        searchButton.dataset.chromeBound = '1';
+        searchButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            setMobileMenuOpen(false);
+            searchOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => {
+                if (searchInput) searchInput.focus();
+            }, 50);
+        });
+    }
+
+    if (searchClose && !searchClose.dataset.chromeBound) {
+        searchClose.dataset.chromeBound = '1';
+        searchClose.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeSiteSearch();
+        });
+    }
+
+    if (searchOverlay && !searchOverlay.dataset.chromeBound) {
+        searchOverlay.dataset.chromeBound = '1';
+        searchOverlay.addEventListener('click', function(e) {
+            if (e.target === searchOverlay) closeSiteSearch();
+        });
+    }
+
+    if (searchInput && !searchInput.dataset.chromeBound) {
+        searchInput.dataset.chromeBound = '1';
         let searchTimeout;
         searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
             const query = this.value.trim().toLowerCase();
-            
             if (query.length < 2) {
                 updateSearchResults([]);
                 return;
             }
-            
             searchTimeout = setTimeout(() => {
-                // Simple search - you can enhance this with AJAX
-                const results = [];
-                
-                // Search pages
-                const pages = [
-                    { title: 'Home', url: 'index.html', type: 'Page', description: 'Welcome to Excellence Academy' },
-                    { title: 'About Us', url: 'about.html', type: 'Page', description: 'Learn about our school' },
-                    { title: 'Teachers', url: 'teachers.html', type: 'Page', description: 'Meet our teaching staff' },
-                    { title: 'Events', url: 'events.html', type: 'Page', description: 'Upcoming school events' },
-                    { title: 'Clubs', url: 'clubs.html', type: 'Page', description: 'Student clubs and organizations' },
-                    { title: 'Facilities', url: 'facilities.html', type: 'Page', description: 'Our school facilities' },
-                    { title: 'Contact', url: 'contact.html', type: 'Page', description: 'Get in touch with us' },
-                ];
-                
-                pages.forEach(page => {
-                    if (page.title.toLowerCase().includes(query) || 
-                        page.description.toLowerCase().includes(query)) {
-                        results.push(page);
-                    }
-                });
-                
+                const results = SEARCH_PAGES.filter(page =>
+                    page.title.toLowerCase().includes(query) ||
+                    page.description.toLowerCase().includes(query)
+                );
                 updateSearchResults(results);
-            }, 300);
+            }, 200);
         });
     }
-    
-    if (searchForm) {
+
+    if (searchForm && !searchForm.dataset.chromeBound) {
+        searchForm.dataset.chromeBound = '1';
         searchForm.addEventListener('submit', function(e) {
             e.preventDefault();
-            const query = searchInput ? searchInput.value.trim() : '';
-            if (query) {
-                // Navigate to first result or search page
-                const firstResult = searchResults.querySelector('.search-result-item');
-                if (firstResult) {
-                    firstResult.click();
-                }
+            const firstResult = searchResults ? searchResults.querySelector('.search-result-item') : null;
+            if (firstResult) firstResult.click();
+        });
+    }
+
+    if (!window.__headerDocBound) {
+        window.__headerDocBound = true;
+        document.addEventListener('click', function(e) {
+            const nav = document.getElementById('mainNav');
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (nav && toggle && nav.classList.contains('active') &&
+                !nav.contains(e.target) && !toggle.contains(e.target)) {
+                setMobileMenuOpen(false);
+            }
+            if (!e.target.closest('.nav-dropdown')) {
+                document.querySelectorAll('.mobile-nav .nav-dropdown.active').forEach(dropdown => {
+                    dropdown.classList.remove('active');
+                });
+            }
+        });
+        document.addEventListener('keydown', function(e) {
+            if (e.key !== 'Escape') return;
+            const overlay = document.getElementById('searchOverlay');
+            if (overlay && overlay.classList.contains('active')) {
+                closeSiteSearch();
+                return;
+            }
+            const nav = document.getElementById('mainNav');
+            if (nav && nav.classList.contains('active')) {
+                setMobileMenuOpen(false);
             }
         });
     }
-    
+};
+
+window.initHeaderChrome();
+
+// Mobile Menu Toggle and Search
+document.addEventListener('DOMContentLoaded', function() {
+    window.initHeaderChrome();
+
     // Add fade-in animation to elements
     const observerOptions = {
         threshold: 0.1,
