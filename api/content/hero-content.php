@@ -100,6 +100,60 @@ try {
     exit;
 }
 
+function heroSlideUrl($slide): string {
+    if (is_string($slide)) {
+        return trim($slide);
+    }
+    if (is_array($slide)) {
+        foreach (['url', 'image', 'src', 'file_path', 'file_url', 'background_image'] as $key) {
+            if (!empty($slide[$key]) && is_string($slide[$key])) {
+                return trim($slide[$key]);
+            }
+        }
+    }
+    return '';
+}
+
+function decodeHeroSlides($value): array {
+    if (is_array($value)) {
+        $list = $value;
+    } elseif (is_string($value)) {
+        $trimmed = trim($value);
+        if ($trimmed === '') {
+            return [];
+        }
+        $decoded = json_decode($trimmed, true);
+        if (is_string($decoded)) {
+            $decoded = json_decode($decoded, true);
+        }
+        $list = is_array($decoded) ? $decoded : [$trimmed];
+    } else {
+        return [];
+    }
+
+    $slides = [];
+    foreach ($list as $slide) {
+        $url = heroSlideUrl($slide);
+        if ($url === '' || stripos($url, 'data:') === 0) {
+            continue;
+        }
+        if (!in_array($url, $slides, true)) {
+            $slides[] = $url;
+        }
+    }
+    return $slides;
+}
+
+function widenHeroImageColumns($db): void {
+    foreach (['slides', 'background_image'] as $column) {
+        try {
+            $db->query("ALTER TABLE hero_content ALTER COLUMN {$column} TYPE TEXT USING {$column}::text");
+        } catch (Exception $e) {
+            error_log('Hero column widen skipped: ' . $e->getMessage());
+        }
+    }
+}
+
 if ($method === 'GET') {
     try {
         // Check if table exists first
@@ -116,10 +170,7 @@ if ($method === 'GET') {
         );
         
         if ($content) {
-            // Decode JSON fields
-            if (isset($content['slides'])) {
-                $content['slides'] = json_decode($content['slides'], true) ?: [];
-            }
+            $content['slides'] = decodeHeroSlides($content['slides'] ?? null);
             // Map title/subtitle to headline/subheadline for backward compatibility
             if (isset($content['title']) && !isset($content['headline'])) {
                 $content['headline'] = $content['title'];
@@ -260,45 +311,9 @@ if ($method === 'GET') {
             'ctaLink' => 'cta_link',
         ];
         
-        // Handle slides array from form
-        // Store ONLY unique slides - frontend will create exactly 2 copies (1 original + 1 duplicate)
         // Missing slides means "leave the saved images alone". An empty array clears them.
         $slidesProvided = is_array($input) && array_key_exists('slides', $input);
-        $slides = [];
-        if (isset($input['slides']) && is_array($input['slides'])) {
-            // Filter out empty slides
-            $filtered = array_filter($input['slides'], function($slide) {
-                return !empty(trim($slide));
-            });
-            // Get unique slides only (preserve order by using first occurrence)
-            $seen = [];
-            foreach ($filtered as $slide) {
-                $trimmed = trim($slide);
-                if (!empty($trimmed) && !in_array($trimmed, $seen)) {
-                    $slides[] = $trimmed;
-                    $seen[] = $trimmed;
-                }
-            }
-            $slides = array_values($slides); // Re-index
-        } elseif (isset($input['slides']) && is_string($input['slides'])) {
-            // Already JSON string, decode it
-            $decoded = json_decode($input['slides'], true);
-            if (is_array($decoded)) {
-                $filtered = array_filter($decoded, function($slide) {
-                    return !empty(trim($slide));
-                });
-                // Get unique slides only (preserve order by using first occurrence)
-                $seen = [];
-                foreach ($filtered as $slide) {
-                    $trimmed = trim($slide);
-                    if (!empty($trimmed) && !in_array($trimmed, $seen)) {
-                        $slides[] = $trimmed;
-                        $seen[] = $trimmed;
-                    }
-                }
-                $slides = array_values($slides); // Re-index
-            }
-        }
+        $slides = $slidesProvided ? decodeHeroSlides($input['slides']) : [];
         
         // Prepare data for database
         $data = ['is_active' => 1];
@@ -430,10 +445,15 @@ if ($method === 'GET') {
 
         // Add slides as JSON only when the form actually sent them.
         if ($slidesProvided && in_array('slides', $existingColumns, true)) {
-            $data['slides'] = !empty($slides) ? json_encode(array_values($slides)) : null;
+            $encodedSlides = json_encode(array_values($slides), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            if ($encodedSlides === false) {
+                throw new Exception('Slide images could not be saved.');
+            }
+            $data['slides'] = $encodedSlides;
         }
-        
+
         ensureImageColumns($db);
+        widenHeroImageColumns($db);
 
         // Keep the current row. Replacing it used to hide the previous photo when the new save failed.
         $existing = $db->fetchOne("SELECT * FROM hero_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
@@ -506,6 +526,13 @@ if ($method === 'GET') {
                 throw new Exception('Image scale was not saved to the database.');
             }
         }
+        $savedSlides = [];
+        if ($slidesProvided) {
+            $savedSlides = decodeHeroSlides($savedRow['slides'] ?? null);
+            if ($savedSlides !== array_values($slides)) {
+                throw new Exception('Slide images were not saved to the database.');
+            }
+        }
         
         // Ensure we output valid JSON - clear any previous output
         $output = ob_get_clean();
@@ -519,6 +546,7 @@ if ($method === 'GET') {
             'success' => true,
             'id' => $id, 
             'message' => 'Hero content saved successfully',
+            'slides' => $slidesProvided ? $savedSlides : decodeHeroSlides($savedRow['slides'] ?? null),
             'colors_saved' => [
                 'headline_color' => $data['headline_color'] ?? null,
                 'subheadline_color' => $data['subheadline_color'] ?? null,

@@ -3,6 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+    (function(){
+      var file=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+      var map={'index.html':'/api/public/homepage-data.php','':'/api/public/homepage-data.php','about.html':'/api/content/about.php','clubs.html':'/api/content/clubs.php','curriculum.html':'/api/content/curriculum.php','facilities.html':'/api/content/facilities-settings.php','teachers.html':'/api/content/teachers-settings.php','testimonials.html':'/api/content/testimonials-settings.php','gallery.html':'/api/content/gallery-settings.php','activities.html':'/api/content/activities-settings.php','events.html':'/api/content/activities-settings.php','news.html':'/api/content/news-settings.php','announcements.html':'/api/content/announcements-settings.php','admission.html':'/api/content/admission.php','school-background.html':'/api/content/school-background.php','sponsorship.html':'/api/content/sponsorship.php','give-back.html':'/api/content/giveback.php','parents.html':'/api/content/parents.php','people-behind-school.html':'/api/content/people-behind-school.php','resources.html':'/api/content/resources.php'};
+      var api=map[file];
+      if(!api)return;
+      window.__pagePath=api.split('/').pop();
+      window.__pageData=fetch(api).then(function(r){return r.ok?r.json():null;}).then(function(data){
+        var urls=[], seen={};
+        function add(url){if(!url||seen[url]||String(url).indexOf('data:')===0)return;if(String(url).indexOf('http')!==0&&String(url).indexOf('/')!==0)return;seen[url]=1;urls.push(url);}
+        function walk(value,key){if(!value)return;if(typeof value==='string'){if(/image|slide|logo|photo|background|file_path|file_url/i.test(key||''))add(value);return;}if(Array.isArray(value)){value.forEach(function(item){walk(item,key);});return;}if(typeof value==='object'){Object.keys(value).forEach(function(name){walk(value[name],name);});}}
+        walk(data&&data.data?data.data:data,'');
+        urls.slice(0,8).forEach(function(url,index){var link=document.createElement('link');link.rel='preload';link.as='image';link.href=url;if(index===0)link.setAttribute('fetchpriority','high');document.head.appendChild(link);});
+        return data;
+      }).catch(function(){return null;});
+    })();
+    </script>
     <title>School Facilities - Excellence Academy</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -44,7 +61,6 @@
     
     <script src="js/static-pages.js"></script>
     <script src="js/page-data-loader.js"></script>
-    <script src="js/main.js"></script>
     <script>
         (async function() {
             const data = await PageDataLoader.loadFacilitiesData();
@@ -66,7 +82,7 @@
                     const bg = hero.querySelector('.page-hero-background');
                     if (bg) {
                         const heroImageUrl = data.facilitiesSettings.hero_image.replace(/'/g, "\\'");
-                        bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                        PageDataLoader.paintHero(heroImageUrl);
                     }
                 }
             }
@@ -166,5 +182,6 @@
             return div.innerHTML;
         }
     </script>
+<script src="js/main.js"></script>
 </body>
 </html>

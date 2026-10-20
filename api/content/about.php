@@ -77,12 +77,32 @@ if ($method === 'GET') {
         $content = $db->fetchOne(
             "SELECT * FROM about_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"
         );
-        
-        if ($content) {
-            echo json_encode($content);
-        } else {
-            echo json_encode([]);
+        if (!$content) {
+            $content = [];
         }
+
+        try {
+            $vision = $db->fetchOne("SELECT vision_text FROM vision_mission_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
+            if ($vision && array_key_exists('vision_text', $vision)) {
+                $content['vision_text'] = $vision['vision_text'] ?? '';
+            }
+        } catch (Exception $e) {
+            error_log('About vision load skipped: ' . $e->getMessage());
+        }
+
+        try {
+            $whyChoose = $db->fetchOne("SELECT title, image FROM why_choose_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
+            if ($whyChoose) {
+                $content['why_choose_title'] = $whyChoose['title'] ?? '';
+                $content['why_choose_image'] = $whyChoose['image'] ?? '';
+            }
+            $points = $db->fetchAll("SELECT id, point_text, order_index FROM why_choose_points WHERE is_active = 1 ORDER BY order_index ASC, id ASC");
+            $content['why_choose_points'] = is_array($points) ? $points : [];
+        } catch (Exception $e) {
+            error_log('About why-choose load skipped: ' . $e->getMessage());
+        }
+
+        echo json_encode($content);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch about content: ' . $e->getMessage()]);

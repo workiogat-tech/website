@@ -148,8 +148,8 @@ function ensureImageColumns($db): void {
         'ALTER TABLE media ALTER COLUMN file_path TYPE TEXT',
         'ALTER TABLE media ALTER COLUMN filename TYPE TEXT',
         'ALTER TABLE media ALTER COLUMN original_name TYPE TEXT',
-        'ALTER TABLE hero_content ALTER COLUMN background_image TYPE TEXT',
-        'ALTER TABLE hero_content ALTER COLUMN slides TYPE TEXT',
+        'ALTER TABLE hero_content ALTER COLUMN background_image TYPE TEXT USING background_image::text',
+        'ALTER TABLE hero_content ALTER COLUMN slides TYPE TEXT USING slides::text',
     ];
     foreach ($statements as $sql) {
         try {

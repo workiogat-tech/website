@@ -148,6 +148,7 @@
                     ➕ Add From Media Library
                 </button>
                 <div id="heroSlidesContainer" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 12px;"></div>
+                <input type="hidden" name="slides" id="heroSlidesInput" value="[]">
                 <div id="heroSlidesMessage" style="display: block;">
                     <p style="color: #9ca3af; font-size: 14px; margin-top: 12px; font-style: italic;">No slide images added yet. Click "Add From Media Library" to add images.</p>
                 </div>
@@ -319,8 +320,49 @@ var heroData = window.heroData;
     await loadHeroData();
 })();
 
+function heroSlideUrl(slide) {
+    if (typeof slide === 'string') return slide.trim();
+    if (slide && typeof slide === 'object') {
+        const url = slide.url || slide.image || slide.src || slide.file_path || slide.file_url || '';
+        return typeof url === 'string' ? url.trim() : '';
+    }
+    return '';
+}
+
 function usableHeroImage(url) {
-    return typeof url === 'string' && url.trim() !== '' && url.indexOf('data:') !== 0 && (url.indexOf('http') === 0 || url.indexOf('/') === 0);
+    const value = heroSlideUrl(url);
+    return value !== '' && value.indexOf('data:') !== 0;
+}
+
+function rememberHeroSlides(list) {
+    const unique = [];
+    (Array.isArray(list) ? list : []).forEach(function (slide) {
+        const url = heroSlideUrl(slide);
+        if (usableHeroImage(url) && unique.indexOf(url) === -1) unique.push(url);
+    });
+    window.heroSlides = unique;
+    heroSlides = window.heroSlides;
+    const hidden = document.getElementById('heroSlidesInput');
+    if (hidden) hidden.value = JSON.stringify(unique);
+    return unique;
+}
+
+function collectHeroSlides() {
+    const found = [];
+    document.querySelectorAll('#heroSlidesContainer [data-slide-url]').forEach(function (node) {
+        found.push(node.getAttribute('data-slide-url') || '');
+    });
+    if (Array.isArray(window.heroSlides)) {
+        window.heroSlides.forEach(function (url) { found.push(url); });
+    }
+    const hidden = document.getElementById('heroSlidesInput');
+    if (hidden && hidden.value) {
+        try {
+            const parsed = JSON.parse(hidden.value);
+            if (Array.isArray(parsed)) parsed.forEach(function (url) { found.push(url); });
+        } catch (e) {}
+    }
+    return rememberHeroSlides(found);
 }
 
 function updateHeroBackgroundPreview(url) {
@@ -350,17 +392,6 @@ async function loadHeroData() {
             heroData = {};
         }
 
-        const localHero = await ClientStorage.hero.get();
-        if (!heroData.background_image && (!heroData.slides || heroData.slides.length === 0)) {
-            if (localHero.background_image || (localHero.slides && localHero.slides.length)) {
-                heroData = Object.assign({}, localHero, heroData);
-                heroData.background_image = localHero.background_image || heroData.background_image || '';
-                heroData.slides = localHero.slides || heroData.slides || [];
-            }
-        }
-        if (!heroData.headline && !heroData.title) {
-            heroData = Object.assign({}, localHero, heroData);
-        }
         window.heroData = heroData;
         
         document.getElementById('hero_headline').value = heroData.headline || heroData.title || 'Welcome to SJS';
@@ -385,25 +416,12 @@ async function loadHeroData() {
             document.getElementById('image_scale').value = heroData.image_scale || heroData.imageScale || 1;
             document.getElementById('imageScaleValue').textContent = (heroData.image_scale || heroData.imageScale || 1) + 'x';
             
-            // Load slides
-            if (heroData.slides) {
-                const allSlides = typeof heroData.slides === 'string' ? JSON.parse(heroData.slides) : heroData.slides;
-                if (Array.isArray(allSlides)) {
-                    // Get unique slides only
-                    const uniqueSlides = [];
-                    const seen = [];
-                    allSlides.forEach(slide => {
-                        const trimmed = slide ? String(slide).trim() : '';
-                        if (usableHeroImage(trimmed) && !seen.includes(trimmed)) {
-                            uniqueSlides.push(trimmed);
-                            seen.push(trimmed);
-                        }
-                    });
-                    window.heroSlides = uniqueSlides;
-                    // Update local reference
-                    heroSlides.length = 0;
-                    heroSlides.push(...uniqueSlides);
+            if (Object.prototype.hasOwnProperty.call(heroData, 'slides')) {
+                let loadedSlides = heroData.slides;
+                if (typeof loadedSlides === 'string') {
+                    try { loadedSlides = JSON.parse(loadedSlides); } catch (e) { loadedSlides = []; }
                 }
+                rememberHeroSlides(Array.isArray(loadedSlides) ? loadedSlides : []);
             }
             
             updateHeadlinePreview();
@@ -446,60 +464,23 @@ function updateSubHeadlinePreview() {
 }
 
 function removeSlide(button) {
-    const container = button.closest('div');
+    const container = button.closest('[data-slide-url]');
     if (!container) return;
     
     const slideUrl = container.getAttribute('data-slide-url');
     if (!slideUrl) return;
     
-    window.heroSlides = window.heroSlides.filter(url => url !== slideUrl);
-    heroSlides.length = 0;
-    heroSlides.push(...window.heroSlides);
+    rememberHeroSlides((window.heroSlides || []).filter(url => url !== slideUrl));
     updateSlidesDisplay();
+    updateSliderPreview();
 }
 
-// Handle media library selection for slides
-// Store original selectImage function
-if (typeof window.originalSelectImage === 'undefined') {
-    window.originalSelectImage = window.selectImage;
-}
-
-// Override selectImage to handle hero slides
-window.selectImage = function(imageUrl) {
-    // Check if we're selecting for hero slides
-    const currentField = window.currentImageField || currentImageField || '';
-    if (currentField === 'hero_slides') {
-        if (!window.heroSlides) {
-            window.heroSlides = [];
-        }
-        if (!window.heroSlides.includes(imageUrl)) {
-            window.heroSlides.push(imageUrl);
-            if (heroSlides) {
-                heroSlides.push(imageUrl);
-            }
-        }
-        updateSlidesDisplay();
-        updateSliderPreview();
-        if (typeof closeMediaLibrary === 'function') {
-            closeMediaLibrary();
-        }
-        return;
-    }
-    
-    // For other fields, use original function
-    if (window.originalSelectImage && typeof window.originalSelectImage === 'function') {
-        window.originalSelectImage(imageUrl);
-    } else {
-        // Fallback: direct field update
-        const field = document.getElementById(currentField);
-        if (field) {
-            field.value = imageUrl;
-            field.dispatchEvent(new Event('change'));
-        }
-        if (typeof closeMediaLibrary === 'function') {
-            closeMediaLibrary();
-        }
-    }
+window.handleAdminMediaPick = function(fieldId, imageUrl) {
+    if (fieldId !== 'hero_slides') return false;
+    rememberHeroSlides((window.heroSlides || []).concat([imageUrl]));
+    updateSlidesDisplay();
+    updateSliderPreview();
+    return true;
 };
 
 function updateSlidesDisplay() {
@@ -681,8 +662,7 @@ async function handleHeroFormSubmit(event, form) {
         window.heroSlides = [];
     }
     
-    const validSlides = window.heroSlides.filter(s => usableHeroImage(s));
-    const uniqueSlides = [...new Set(validSlides)];
+    const uniqueSlides = collectHeroSlides();
     const backgroundImage = form.querySelector('input[name="background_image"]').value || '';
     
     const data = {
@@ -719,6 +699,10 @@ async function handleHeroFormSubmit(event, form) {
         }
         
         if (result.success) {
+            if (Array.isArray(result.slides)) {
+                rememberHeroSlides(result.slides);
+                updateSlidesDisplay();
+            }
             window.dispatchEvent(new CustomEvent('adminDataSaved', { 
                 detail: { settingsKey: 'hero', data: data } 
             }));
@@ -734,10 +718,11 @@ async function handleHeroFormSubmit(event, form) {
         }
     } catch (error) {
         console.error('Error:', error);
+        const message = (error && error.message) ? error.message : 'Failed to save hero content. Please try again.';
         if (typeof showToast === 'function') {
-            showToast('Failed to save hero content. Please try again.', 'error');
+            showToast(message, 'error');
         } else {
-            alert('Failed to save hero content. Please try again.');
+            alert(message);
         }
     } finally {
         submitBtn.innerHTML = originalText;
@@ -746,4 +731,8 @@ async function handleHeroFormSubmit(event, form) {
     
     return false;
 }
+
+window.updateSlidesDisplay = updateSlidesDisplay;
+window.updateSliderPreview = updateSliderPreview;
+window.rememberHeroSlides = rememberHeroSlides;
 </script>

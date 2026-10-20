@@ -6,9 +6,7 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
-header('Cache-Control: no-cache, no-store, must-revalidate');
-header('Pragma: no-cache');
-header('Expires: 0');
+header('Cache-Control: public, max-age=60');
 
 // Start output buffering
 ob_start();
@@ -83,12 +81,37 @@ try {
         'galleryImages' => $decodeList($packed['galleryImages'] ?? null),
     ];
     
-    // Decode JSON fields
-    if ($data['heroContent'] && isset($data['heroContent']['slides'])) {
-        $decoded = json_decode($data['heroContent']['slides'], true);
-        if (is_array($decoded)) {
-            $data['heroContent']['slides'] = $decoded;
+    // Decode JSON fields. row_to_json leaves a TEXT slides value as a string,
+    // and a JSON column as an array. Both have to become a list of image URLs.
+    if ($data['heroContent'] && array_key_exists('slides', $data['heroContent'])) {
+        $rawSlides = $data['heroContent']['slides'];
+        if (is_string($rawSlides)) {
+            $decoded = json_decode($rawSlides, true);
+            if (is_string($decoded)) {
+                $decoded = json_decode($decoded, true);
+            }
+            $rawSlides = is_array($decoded) ? $decoded : ($rawSlides !== '' ? [$rawSlides] : []);
         }
+        if (!is_array($rawSlides)) {
+            $rawSlides = [];
+        }
+        $urls = [];
+        foreach ($rawSlides as $slide) {
+            $url = '';
+            if (is_string($slide)) {
+                $url = $slide;
+            } elseif (is_array($slide)) {
+                $url = $slide['url'] ?? $slide['image'] ?? $slide['src'] ?? $slide['file_path'] ?? $slide['file_url'] ?? '';
+            }
+            if (!is_string($url) || $url === '' || stripos($url, 'data:') === 0) {
+                continue;
+            }
+            $url = normalizeImageUrl($url);
+            if ($url !== '' && !in_array($url, $urls, true)) {
+                $urls[] = $url;
+            }
+        }
+        $data['heroContent']['slides'] = $urls;
     }
     
     // Normalize image URLs

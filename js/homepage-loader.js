@@ -1,18 +1,6 @@
 /**
- * Homepage Loader - Loads homepage content from localStorage or PHP
- * Ensures changes from admin panel appear immediately
+ * Homepage Loader - photos start downloading as soon as this file runs.
  */
-
-// Wait for ClientStorage to be available
-function waitForClientStorage(callback, maxAttempts = 10) {
-    if (typeof window.ClientStorage !== 'undefined') {
-        callback();
-    } else if (maxAttempts > 0) {
-        setTimeout(() => waitForClientStorage(callback, maxAttempts - 1), 100);
-    } else {
-        console.warn('ClientStorage not available, using defaults');
-    }
-}
 
 const HomepageLoader = {
     async loadHeroContent() {
@@ -40,11 +28,34 @@ const HomepageLoader = {
 
     fetchHomepage() {
         if (!this._homepagePromise) {
-            this._homepagePromise = fetch('/api/public/homepage-data.php', { cache: 'no-store' })
+            const early = window.__pageData;
+            this._homepagePromise = early || fetch('/api/public/homepage-data.php')
                 .then(response => response.ok ? response.json() : null)
                 .catch(() => null);
         }
         return this._homepagePromise;
+    },
+
+    preloadPhotos(urls) {
+        (urls || []).forEach((url, index) => {
+            if (!url || String(url).indexOf('data:') === 0) return;
+            const link = document.createElement('link');
+            link.rel = 'preload';
+            link.as = 'image';
+            link.href = url;
+            if (index === 0) link.setAttribute('fetchpriority', 'high');
+            document.head.appendChild(link);
+        });
+    },
+
+    photoElement(url, eager) {
+        const img = document.createElement('img');
+        img.className = 'hero-slide-photo';
+        img.alt = '';
+        img.decoding = 'async';
+        img.fetchPriority = eager ? 'high' : 'low';
+        img.src = url;
+        return img;
     },
     
     renderHero(data) {
@@ -76,8 +87,21 @@ const HomepageLoader = {
         
         // Get slides
         let heroSlides = [];
-        if (data.slides && Array.isArray(data.slides) && data.slides.length > 0) {
-            heroSlides = data.slides.filter(s => typeof s === 'string' && s.trim() && s.indexOf('data:') !== 0);
+        let slideList = data.slides;
+        if (typeof slideList === 'string') {
+            try { slideList = JSON.parse(slideList); } catch (e) { slideList = []; }
+        }
+        if (slideList && !Array.isArray(slideList) && typeof slideList === 'object') {
+            slideList = Object.values(slideList);
+        }
+        if (Array.isArray(slideList) && slideList.length > 0) {
+            heroSlides = slideList.map(function (slide) {
+                if (typeof slide === 'string') return slide.trim();
+                if (slide && typeof slide === 'object') {
+                    return String(slide.url || slide.image || slide.src || slide.file_path || slide.file_url || '').trim();
+                }
+                return '';
+            }).filter(function (url) { return url && url.indexOf('data:') !== 0; });
         } else if (typeof data.background_image === 'string' && data.background_image && data.background_image.indexOf('data:') !== 0) {
             heroSlides = [data.background_image];
         }
@@ -88,6 +112,7 @@ const HomepageLoader = {
         const backgroundSize = data.background_size || 'contain';
         const backgroundPosition = data.background_position || 'center';
         const imageScale = parseFloat(data.image_scale || 1) || 1;
+        this.preloadPhotos(heroSlides);
         
         // Remove existing slider
         const existingSlider = heroSection.querySelector('.hero-slides-container');
@@ -116,13 +141,10 @@ const HomepageLoader = {
                 
                 const marqueeDiv = document.createElement('div');
                 marqueeDiv.className = 'hero-slides-marquee';
-                duplicatedSlides.forEach(slide => {
+                duplicatedSlides.forEach((slide, index) => {
                     const slideItem = document.createElement('div');
                     slideItem.className = 'hero-slide-item';
-                    const slideBg = document.createElement('div');
-                    slideBg.className = 'hero-slide-bg';
-                    slideBg.style.backgroundImage = `url('${slide.replace(/'/g, "\\'")}')`;
-                    slideItem.appendChild(slideBg);
+                    slideItem.appendChild(this.photoElement(slide, index < uniqueSlides.length));
                     marqueeDiv.appendChild(slideItem);
                 });
                 sliderContainer.appendChild(marqueeDiv);
@@ -133,13 +155,7 @@ const HomepageLoader = {
                 heroSlides.forEach((slide, index) => {
                     const slideItem = document.createElement('div');
                     slideItem.className = `hero-slide-item fade-slide ${index === 0 ? 'active' : ''}`;
-                    slideItem.style.backgroundImage = `url('${slide.replace(/'/g, "\\'")}')`;
-                    if (imageScale !== 1) {
-                        slideItem.style.backgroundSize = `${imageScale * 100}%`;
-                    } else {
-                        slideItem.style.backgroundSize = backgroundSize;
-                    }
-                    slideItem.style.backgroundPosition = backgroundPosition;
+                    slideItem.appendChild(this.photoElement(slide, index === 0));
                     fadeDiv.appendChild(slideItem);
                 });
                 sliderContainer.appendChild(fadeDiv);
@@ -250,6 +266,7 @@ const HomepageLoader = {
             try {
             const result = await this.fetchHomepage();
             if (result && result.success && result.data && result.data.threeColumnSections && result.data.threeColumnSections.length > 0) {
+                this.preloadPhotos(result.data.threeColumnSections.map(section => section.image).filter(Boolean));
                 this.renderThreeColumnSections(result.data.threeColumnSections);
                 return;
             }
@@ -289,8 +306,10 @@ const HomepageLoader = {
                     </div>
                     <div class="three-column-image">
                         ${imageUrl ? 
-                            `<img src="${this.escapeHtml(imageUrl)}?t=${Date.now()}" 
+                            `<img src="${this.escapeHtml(imageUrl)}" 
                                   alt="${this.escapeHtml(title)}" 
+                                  fetchpriority="high"
+                                  decoding="async"
                                   onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'three-column-placeholder\\'><span>🖼️</span><p>Image not found</p></div>';"
                                   style="width: 100%; height: 200px; object-fit: cover;">` :
                             `<div class="three-column-placeholder">
@@ -339,13 +358,12 @@ const HomepageLoader = {
     }
 };
 
-// Auto-load on page load
+HomepageLoader.fetchHomepage();
+
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        waitForClientStorage(() => HomepageLoader.init());
-    });
+    document.addEventListener('DOMContentLoaded', () => HomepageLoader.init());
 } else {
-    waitForClientStorage(() => HomepageLoader.init());
+    HomepageLoader.init();
 }
 
 // Make it globally accessible

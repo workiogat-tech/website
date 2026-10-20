@@ -35,7 +35,10 @@ const PageDataLoader = {
             announcements: 'announcements.php'
         };
         const read = async (path) => {
-            const response = await fetch(this.baseURL + '/' + path, { cache: 'no-store' });
+            if (window.__pagePath === path && window.__pageData) {
+                return window.__pageData;
+            }
+            const response = await fetch(this.baseURL + '/' + path);
             if (!response.ok) return null;
             return response.json();
         };
@@ -50,6 +53,34 @@ const PageDataLoader = {
         } catch (error) {
             return {};
         }
+    },
+
+    preload(url) {
+        if (!url || String(url).indexOf('data:') === 0) return;
+        const link = document.createElement('link');
+        link.rel = 'preload';
+        link.as = 'image';
+        link.href = url;
+        link.setAttribute('fetchpriority', 'high');
+        document.head.appendChild(link);
+    },
+
+    paintHero(url) {
+        if (!url || String(url).indexOf('data:') === 0) return;
+        this.preload(url);
+        const hero = document.getElementById('page-hero');
+        const bg = hero && hero.querySelector('.page-hero-background');
+        if (!bg) return;
+        let img = bg.querySelector('img.page-hero-photo');
+        if (!img) {
+            img = document.createElement('img');
+            img.className = 'page-hero-photo';
+            img.alt = '';
+            img.decoding = 'async';
+            img.fetchPriority = 'high';
+            bg.appendChild(img);
+        }
+        if (img.getAttribute('src') !== url) img.src = url;
     },
 
     // Helper to initialize MediaStorage
@@ -98,28 +129,46 @@ const PageDataLoader = {
     // Load about page data
     async loadAboutData() {
         try {
-            this.initMediaStorage();
             const settings = await this.loadDb('about');
             const defaultData = this.getDefaultAboutData();
-            
-            // Merge saved settings with defaults
+            const saved = settings && settings.id;
+            const asList = (value) => {
+                if (!value) return null;
+                if (typeof value === 'string') {
+                    try { value = JSON.parse(value); } catch (e) { return null; }
+                }
+                return Array.isArray(value) ? value : null;
+            };
+            const text = (value, fallback) => (value === undefined || value === null || value === '') ? fallback : value;
+
+            if (!saved) {
+                return defaultData;
+            }
+
+            const points = asList(settings.why_choose_points) || [];
+            [settings.hero_image, settings.image, settings.about_image_2, settings.why_choose_image].forEach((url) => this.preload(url));
             return {
                 aboutContent: {
                     ...defaultData.aboutContent,
-                    ...settings.aboutContent,
-                    hero_image: settings.hero_image || settings.aboutContent?.hero_image || defaultData.aboutContent.hero_image,
-                    title: settings.title || settings.aboutContent?.title || defaultData.aboutContent.title,
-                    hero_caption: settings.hero_caption || settings.aboutContent?.hero_caption || defaultData.aboutContent.hero_caption
+                    title: text(settings.title, ''),
+                    content: text(settings.content, ''),
+                    hero_caption: text(settings.hero_caption, ''),
+                    image: settings.image || '',
+                    hero_image: settings.hero_image || '',
+                    about_image_2: settings.about_image_2 || '',
+                    mission_title: text(settings.mission_title, ''),
+                    mission_content: [settings.mission_content, settings.mission_paragraph2].filter(Boolean).join('\n\n'),
+                    core_values: asList(settings.core_values) || [],
+                    statistics: asList(settings.statistics) || []
                 },
                 visionMissionContent: {
-                    ...defaultData.visionMissionContent,
-                    ...settings.visionMissionContent
+                    vision_text: text(settings.vision_text, '')
                 },
                 whyChooseContent: {
-                    ...defaultData.whyChooseContent,
-                    ...settings.whyChooseContent
+                    title: text(settings.why_choose_title, ''),
+                    image: settings.why_choose_image || ''
                 },
-                whyChoosePoints: settings.whyChoosePoints || defaultData.whyChoosePoints
+                whyChoosePoints: points.map((point) => typeof point === 'string' ? point : (point.point_text || '')).filter(Boolean)
             };
         } catch (error) {
             console.warn('Using default about data:', error);

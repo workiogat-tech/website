@@ -3,6 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+    (function(){
+      var file=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+      var map={'index.html':'/api/public/homepage-data.php','':'/api/public/homepage-data.php','about.html':'/api/content/about.php','clubs.html':'/api/content/clubs.php','curriculum.html':'/api/content/curriculum.php','facilities.html':'/api/content/facilities-settings.php','teachers.html':'/api/content/teachers-settings.php','testimonials.html':'/api/content/testimonials-settings.php','gallery.html':'/api/content/gallery-settings.php','activities.html':'/api/content/activities-settings.php','events.html':'/api/content/activities-settings.php','news.html':'/api/content/news-settings.php','announcements.html':'/api/content/announcements-settings.php','admission.html':'/api/content/admission.php','school-background.html':'/api/content/school-background.php','sponsorship.html':'/api/content/sponsorship.php','give-back.html':'/api/content/giveback.php','parents.html':'/api/content/parents.php','people-behind-school.html':'/api/content/people-behind-school.php','resources.html':'/api/content/resources.php'};
+      var api=map[file];
+      if(!api)return;
+      window.__pagePath=api.split('/').pop();
+      window.__pageData=fetch(api).then(function(r){return r.ok?r.json():null;}).then(function(data){
+        var urls=[], seen={};
+        function add(url){if(!url||seen[url]||String(url).indexOf('data:')===0)return;if(String(url).indexOf('http')!==0&&String(url).indexOf('/')!==0)return;seen[url]=1;urls.push(url);}
+        function walk(value,key){if(!value)return;if(typeof value==='string'){if(/image|slide|logo|photo|background|file_path|file_url/i.test(key||''))add(value);return;}if(Array.isArray(value)){value.forEach(function(item){walk(item,key);});return;}if(typeof value==='object'){Object.keys(value).forEach(function(name){walk(value[name],name);});}}
+        walk(data&&data.data?data.data:data,'');
+        urls.slice(0,8).forEach(function(url,index){var link=document.createElement('link');link.rel='preload';link.as='image';link.href=url;if(index===0)link.setAttribute('fetchpriority','high');document.head.appendChild(link);});
+        return data;
+      }).catch(function(){return null;});
+    })();
+    </script>
     <title>School Gallery - Excellence Academy</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
@@ -48,7 +65,7 @@
             
             <div class="lightbox-content" style="position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center;">
                 <div class="lightbox-image-container" style="position: relative; max-width: 100%; max-height: 85vh; display: flex; align-items: center; justify-content: center;">
-                    <img id="modalImage" src="" alt="" class="lightbox-image" style="max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px; opacity: 0; transition: opacity 0.4s ease; transform: scale(0.9);">
+                    <img id="modalImage" src="" alt="" class="lightbox-image" style="max-width: 100%; max-height: 85vh; object-fit: contain; border-radius: 8px;">
                 </div>
                 <div class="lightbox-info" style="color: white; text-align: center; margin-top: 20px; opacity: 0; transition: opacity 0.3s ease;">
                     <p id="modalImageTitle" style="font-size: 18px; margin: 0 0 8px 0; font-weight: 500;"></p>
@@ -62,7 +79,6 @@
     
     <script src="js/static-pages.js"></script>
     <script src="js/page-data-loader.js"></script>
-    <script src="js/main.js"></script>
     <script>
         let galleryImages = [];
         let currentImageIndex = 0;
@@ -87,7 +103,7 @@
                     if (bg) {
                         // Escape single quotes in the URL for CSS
                         const heroImageUrl = data.gallerySettings.hero_image.replace(/'/g, "\\'");
-                        bg.style.backgroundImage = `url('${heroImageUrl}')`;
+                        PageDataLoader.paintHero(heroImageUrl);
                     }
                 }
             }
@@ -112,8 +128,9 @@
                                  onclick="openImageModal(${index})">
                                 <img src="${image.url.replace(/'/g, "\\'")}" 
                                      alt="${escapeHtml(image.title)}"
-                                     style="width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.5s ease;"
-                                     loading="lazy"
+                                     style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                                     fetchpriority="${index < 6 ? 'high' : 'auto'}"
+                                     decoding="async"
                                      onerror="this.onerror=null; this.style.display='none';">
                             </div>
                         `;
@@ -270,12 +287,11 @@
             e.stopPropagation();
         });
     </script>
+    <script src="js/main.js"></script>
     <style>
         .scroll-reveal {
-            opacity: 0;
-            transform: translateY(40px) scale(0.98);
-            transition: opacity 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
-                        transform 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            opacity: 1;
+            transform: none;
         }
         .scroll-reveal.revealed {
             opacity: 1;

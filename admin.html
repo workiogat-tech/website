@@ -665,67 +665,74 @@
             `;
         }
         
+        function findImageInput(fieldId) {
+            if (!fieldId) return null;
+            const byId = document.getElementById(fieldId);
+            if (byId) return byId;
+            const safe = (window.CSS && CSS.escape) ? CSS.escape(fieldId) : fieldId.replace(/"/g, '');
+            return document.querySelector('[data-image-field="' + safe + '"]')
+                || document.querySelector('[name="' + safe + '"]');
+        }
+
+        function paintChosenImage(input, imageUrl) {
+            if (!input || !imageUrl) return;
+            let node = input.parentElement;
+            for (let depth = 0; depth < 3 && node; depth++) {
+                const boxes = node.querySelectorAll('[id]');
+                for (const box of boxes) {
+                    if (box === input || box.contains(input)) continue;
+                    if ((box.id || '').toLowerCase().indexOf('preview') === -1) continue;
+                    box.style.display = 'block';
+                    box.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.src = imageUrl;
+                    img.alt = 'Selected image';
+                    img.style.cssText = 'width:160px;height:96px;object-fit:cover;border-radius:8px;border:2px solid #e5e7eb;display:block;';
+                    box.appendChild(img);
+                    return;
+                }
+                node = node.parentElement;
+            }
+            const created = document.createElement('div');
+            created.id = (input.id || 'chosenImage') + 'Preview';
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = 'Selected image';
+            img.style.cssText = 'width:160px;height:96px;object-fit:cover;border-radius:8px;border:2px solid #e5e7eb;display:block;margin-top:8px;';
+            created.appendChild(img);
+            input.insertAdjacentElement('afterend', created);
+        }
+
         function selectImage(imageUrl) {
-            if (currentImageField) {
-                const input = document.getElementById(currentImageField);
+            const fieldId = window.currentImageField || currentImageField || '';
+            if (!imageUrl || String(imageUrl).indexOf('data:') === 0) {
+                closeMediaLibrary();
+                return;
+            }
+
+            let handled = false;
+            if (typeof window.handleAdminMediaPick === 'function') {
+                try {
+                    handled = window.handleAdminMediaPick(fieldId, imageUrl) === true;
+                } catch (pickError) {
+                    console.warn('Section image handler failed:', pickError);
+                }
+            }
+
+            if (!handled && fieldId === 'hero_slides' && typeof window.rememberHeroSlides === 'function') {
+                window.rememberHeroSlides((window.heroSlides || []).concat([imageUrl]));
+                if (typeof window.updateSlidesDisplay === 'function') window.updateSlidesDisplay();
+                if (typeof window.updateSliderPreview === 'function') window.updateSliderPreview();
+                handled = true;
+            }
+
+            if (!handled) {
+                const input = findImageInput(fieldId);
                 if (input) {
                     input.value = imageUrl;
-                    // Trigger change event
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
                     input.dispatchEvent(new Event('input', { bubbles: true }));
-                    
-                    // Try to find and call specific preview function
-                    // Pattern 1: update{FieldName}Preview (e.g., updateFacilitiesHeroPreview)
-                    const fieldParts = currentImageField.split('_');
-                    const camelCaseName = fieldParts.map((part, index) => 
-                        index === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1)
-                    ).join('');
-                    const updateFuncName1 = 'update' + camelCaseName.charAt(0).toUpperCase() + camelCaseName.slice(1) + 'Preview';
-                    
-                    // Pattern 2: update{FieldName}Preview with full field name
-                    const updateFuncName2 = 'update' + currentImageField.split('_').map(part => 
-                        part.charAt(0).toUpperCase() + part.slice(1)
-                    ).join('') + 'Preview';
-                    
-                    // Pattern 3: updateImagePreview(url, previewId)
-                    const previewId = input.id + 'Preview';
-                    if (typeof window.updateImagePreview === 'function') {
-                        window.updateImagePreview(imageUrl, previewId);
-                    }
-                    
-                    // Try specific preview functions
-                    if (typeof window[updateFuncName1] === 'function') {
-                        window[updateFuncName1](imageUrl);
-                    } else if (typeof window[updateFuncName2] === 'function') {
-                        window[updateFuncName2](imageUrl);
-                    } else {
-                        // Generic preview update
-                        const previewElement = document.getElementById(previewId);
-                        let previewImg = input.parentElement?.querySelector('img');
-                        if (!previewImg) {
-                            previewImg = input.closest('.form-group')?.querySelector('img');
-                        }
-                        if (!previewImg && previewElement) {
-                            previewImg = previewElement.querySelector('img');
-                        }
-                        
-                        if (previewImg) {
-                            previewImg.src = imageUrl;
-                            previewImg.style.display = 'block';
-                            previewImg.onerror = function() {
-                                this.style.display = 'none';
-                            };
-                        }
-                        
-                        // Update preview container if it exists
-                        if (previewElement) {
-                            if (imageUrl && imageUrl.trim()) {
-                                previewElement.innerHTML = `<img src="${imageUrl}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e5e7eb;" onerror="this.style.display='none'">`;
-                            } else {
-                                previewElement.innerHTML = '';
-                            }
-                        }
-                    }
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    paintChosenImage(input, imageUrl);
                 }
             }
             closeMediaLibrary();
@@ -733,13 +740,12 @@
         
         // Helper function for updating image previews
         window.updateImagePreview = function(imageUrl, previewId) {
-            const preview = document.getElementById(previewId);
-            if (preview) {
-                if (imageUrl && imageUrl.trim()) {
-                    preview.innerHTML = `<img src="${imageUrl}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e5e7eb; margin-top: 10px;" onerror="this.style.display='none'">`;
-                } else {
-                    preview.innerHTML = '';
-                }
+            const preview = previewId ? document.getElementById(previewId) : null;
+            if (!preview) return;
+            if (imageUrl && String(imageUrl).trim() && String(imageUrl).indexOf('data:') !== 0) {
+                preview.innerHTML = `<img src="${imageUrl}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 8px; border: 2px solid #e5e7eb; margin-top: 10px;" onerror="this.style.display='none'">`;
+            } else {
+                preview.innerHTML = '';
             }
         };
         
@@ -807,34 +813,36 @@
             // Wait for all files to be read
             await Promise.all(filePromises);
             
-            // Collect all form data
+            const assignFormValue = (target, key, value) => {
+                const parts = [];
+                const pattern = /([^\[\]]+)|\[(.*?)\]/g;
+                let piece;
+                while ((piece = pattern.exec(key))) {
+                    const token = piece[1] !== undefined ? piece[1] : piece[2];
+                    if (token !== '') parts.push(/^\d+$/.test(token) ? Number(token) : token);
+                }
+                if (parts.length === 0) return;
+                let cursor = target;
+                for (let i = 0; i < parts.length - 1; i++) {
+                    const part = parts[i];
+                    const next = parts[i + 1];
+                    if (cursor[part] === undefined || cursor[part] === null || typeof cursor[part] !== 'object') {
+                        cursor[part] = typeof next === 'number' ? [] : {};
+                    }
+                    cursor = cursor[part];
+                }
+                cursor[parts[parts.length - 1]] = value;
+            };
+
+            // Collect all form data, including photos stored as section[0][image]
             for (let [key, value] of formData.entries()) {
-                // Skip file inputs (already handled above)
                 if (form.querySelector(`input[type="file"][name="${key}"]`)) continue;
-                
                 if (key.endsWith('[]')) {
                     const baseKey = key.slice(0, -2);
                     if (!data[baseKey]) data[baseKey] = [];
                     data[baseKey].push(value);
-                } else if (key.includes('[') && key.includes(']')) {
-                    // Handle nested arrays like club_name[], club_image[]
-                    const match = key.match(/^(.+?)\[(\d+)\]$/);
-                    if (match) {
-                        const baseKey = match[1];
-                        if (!data[baseKey]) data[baseKey] = [];
-                        data[baseKey][parseInt(match[2])] = value;
-                    } else {
-                        // Handle nested objects like payment_details[bank_name]
-                        const nestedMatch = key.match(/^(.+?)\[(.+?)\]$/);
-                        if (nestedMatch) {
-                            const objKey = nestedMatch[1];
-                            const propKey = nestedMatch[2];
-                            if (!data[objKey]) data[objKey] = {};
-                            data[objKey][propKey] = value;
-                        } else {
-                            data[key] = value;
-                        }
-                    }
+                } else if (key.includes('[')) {
+                    assignFormValue(data, key, value);
                 } else {
                     data[key] = value;
                 }
@@ -1193,6 +1201,8 @@
 
         // Helper function to process tab content
         function processTabContent(html, tabName, contentContainer) {
+            window.handleAdminMediaPick = null;
+            window.selectImage = selectImage;
             // Filter out any PHP code that might have leaked through
             html = html.replace(/<\?php[\s\S]*?\?>/gi, '');
             html = html.replace(/Fatal error:.*/gi, '');

@@ -370,8 +370,8 @@ try {
                 );
             }
             
-            // Handle points
-            $points = $input['points'] ?? [];
+            // Handle points. A missing list means this save did not edit the points.
+            $points = $input['points'] ?? $input['why_choose_points'] ?? null;
             if (is_array($points) && !empty($points)) {
                 // Get max order index
                 $maxOrder = $db->fetchOne("SELECT MAX(order_index) as max_order FROM why_choose_points WHERE is_active = 1");
@@ -426,8 +426,7 @@ try {
                     // If no existing points were updated, deactivate all existing
                     $db->update("UPDATE why_choose_points SET is_active = 0 WHERE is_active = 1");
                 }
-            } elseif (empty($points)) {
-                // If points array is empty, deactivate all existing points
+            } elseif (is_array($points)) {
                 $db->update("UPDATE why_choose_points SET is_active = 0 WHERE is_active = 1");
             }
             
@@ -551,7 +550,31 @@ try {
             $item = $db->fetchOne("SELECT * FROM core_values_items WHERE id = ? AND is_active = 1", [$id]);
             echo json_encode(['success' => true, 'data' => $item]);
         } else {
-            echo json_encode(['success' => false, 'error' => 'Invalid request']);
+            $readOne = function ($sql) use ($db) {
+                try {
+                    return $db->fetchOne($sql) ?: new stdClass();
+                } catch (Exception $e) {
+                    return new stdClass();
+                }
+            };
+            $readAll = function ($sql) use ($db) {
+                try {
+                    $rows = $db->fetchAll($sql);
+                    return is_array($rows) ? $rows : [];
+                } catch (Exception $e) {
+                    return [];
+                }
+            };
+            echo json_encode([
+                'success' => true,
+                'academics' => $readOne("SELECT * FROM academics_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"),
+                'visionMission' => $readOne("SELECT * FROM vision_mission_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"),
+                'whyChoose' => $readOne("SELECT * FROM why_choose_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"),
+                'customSection' => $readOne("SELECT * FROM custom_section_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"),
+                'coreValues' => $readAll("SELECT * FROM core_values_items WHERE is_active = 1 ORDER BY order_index ASC, id ASC"),
+                'whyChoosePoints' => $readAll("SELECT * FROM why_choose_points WHERE is_active = 1 ORDER BY order_index ASC, id ASC"),
+                'threeColumns' => $readAll("SELECT * FROM three_column_sections WHERE is_active = 1 ORDER BY order_index ASC, id ASC")
+            ]);
         }
         
     } elseif ($method === 'DELETE') {

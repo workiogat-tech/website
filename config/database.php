@@ -249,6 +249,8 @@ class Database {
         // Existing databases already have hero_content, so the full schema
         // file is skipped. These columns were added after that table existed.
         $this->ensureHeroColumns();
+        $this->ensureAboutColumns();
+        $this->ensureImageUrlColumns();
         $ready = true;
     }
 
@@ -305,7 +307,7 @@ class Database {
                 continue;
             }
             try {
-                $this->conn->exec("ALTER TABLE hero_content ALTER COLUMN {$wideColumn} TYPE TEXT");
+                $this->conn->exec("ALTER TABLE hero_content ALTER COLUMN {$wideColumn} TYPE TEXT USING {$wideColumn}::text");
             } catch (PDOException $e) {
                 error_log("Hero column {$wideColumn} was not widened: " . $e->getMessage());
             }
@@ -320,6 +322,84 @@ class Database {
             }
         } catch (PDOException $e) {
             error_log('Hero text backfill skipped: ' . $e->getMessage());
+        }
+    }
+
+    private function ensureAboutColumns(): void {
+        $table = $this->conn->query("SELECT to_regclass('public.about_content')")->fetchColumn();
+        if (!$table) {
+            return;
+        }
+
+        $columns = [
+            'image' => 'TEXT',
+            'hero_image' => 'TEXT',
+            'about_image_2' => 'TEXT',
+            'hero_caption' => 'VARCHAR(200)',
+            'mission_title' => 'VARCHAR(200)',
+            'mission_content' => 'TEXT',
+            'mission_paragraph2' => 'TEXT',
+            'core_values' => 'TEXT',
+            'statistics' => 'TEXT',
+        ];
+
+        $meta = $this->conn->query(
+            "SELECT column_name, data_type FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'about_content'"
+        )->fetchAll();
+        $have = [];
+        $types = [];
+        foreach ($meta as $row) {
+            $name = strtolower($row['column_name'] ?? '');
+            if ($name === '') {
+                continue;
+            }
+            $have[] = $name;
+            $types[$name] = strtolower($row['data_type'] ?? '');
+        }
+
+        foreach ($columns as $name => $type) {
+            if (!in_array($name, $have, true)) {
+                try {
+                    $this->conn->exec("ALTER TABLE about_content ADD COLUMN IF NOT EXISTS {$name} {$type}");
+                } catch (PDOException $e) {
+                    error_log("About column {$name} was not added: " . $e->getMessage());
+                }
+                continue;
+            }
+            if ($type === 'TEXT' && isset($types[$name]) && $types[$name] !== 'text') {
+                try {
+                    $this->conn->exec("ALTER TABLE about_content ALTER COLUMN {$name} TYPE TEXT");
+                } catch (PDOException $e) {
+                    error_log("About column {$name} was not widened: " . $e->getMessage());
+                }
+            }
+        }
+    }
+
+    private function ensureImageUrlColumns(): void {
+        $rows = $this->conn->query(
+            "SELECT table_name, column_name
+             FROM information_schema.columns
+             WHERE table_schema = 'public'
+               AND data_type <> 'text'
+               AND (
+                 column_name IN ('image', 'photo', 'logo', 'slides', 'additional_slides', 'file_path', 'file_url')
+                 OR column_name LIKE '%\\_image'
+                 OR column_name LIKE '%\\_photo'
+                 OR column_name LIKE '%\\_logo'
+               )"
+        )->fetchAll();
+        foreach ($rows as $row) {
+            $table = strtolower($row['table_name'] ?? '');
+            $column = strtolower($row['column_name'] ?? '');
+            if (!preg_match('/^[a-z0-9_]+$/', $table) || !preg_match('/^[a-z0-9_]+$/', $column)) {
+                continue;
+            }
+            try {
+                $this->conn->exec("ALTER TABLE {$table} ALTER COLUMN {$column} TYPE TEXT USING {$column}::text");
+            } catch (PDOException $e) {
+                error_log("Image column {$table}.{$column} was not widened: " . $e->getMessage());
+            }
         }
     }
 

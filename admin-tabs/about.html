@@ -332,28 +332,9 @@ let whyChoosePoints = [];
 
 async function loadAboutData() {
     try {
-        // Try ClientStorage first
-        let aboutDataFromStorage = null;
-        if (typeof ClientStorage !== 'undefined') {
-            aboutDataFromStorage = await ClientStorage.about.get();
-        }
-        
-        // Also try MediaStorage for compatibility
-        let aboutDataFromMedia = {};
-        if (typeof window.MediaStorage !== 'undefined' && window.MediaStorage.loadSettings) {
-            aboutDataFromMedia = window.MediaStorage.loadSettings('about') || {};
-        }
-        
-        // Merge both sources, MediaStorage takes precedence if it has data
-        aboutData = {
-            ...aboutDataFromStorage,
-            ...aboutDataFromMedia
-        };
-        
-        // If no data found, use defaults
-        if (!aboutData || Object.keys(aboutData).length === 0) {
-            aboutData = await ClientStorage.about.get();
-        }
+        const response = await fetch('/api/content/about.php', { credentials: 'same-origin', cache: 'no-store' });
+        const payload = response.ok ? await response.json() : {};
+        aboutData = (payload && !payload.error && !Array.isArray(payload)) ? payload : {};
             
             document.getElementById('about_hero_caption').value = aboutData.hero_caption || 'Know Us Better';
             document.getElementById('about_title').value = aboutData.title || 'About SJS Academy';
@@ -391,19 +372,14 @@ async function loadAboutData() {
             statisticIndex = statistics.length;
             displayStatistics(statistics);
             
-            // Load why choose points
-            try {
-                const whyChooseResponse = await fetch('api/content/homepage-sections.php?section=why-choose');
-                if (whyChooseResponse.ok) {
-                    const whyChooseResult = await whyChooseResponse.json();
-                    if (whyChooseResult.success && whyChooseResult.whyChoosePoints) {
-                        whyChoosePoints = whyChooseResult.whyChoosePoints;
-                        whyChoosePointIndex = whyChoosePoints.length;
-                        displayWhyChoosePoints(whyChoosePoints);
-                    }
-                }
-            } catch (e) {
-                console.error('Error loading why choose points:', e);
+            let loadedPoints = aboutData.why_choose_points;
+            if (typeof loadedPoints === 'string') {
+                try { loadedPoints = JSON.parse(loadedPoints); } catch (e) { loadedPoints = []; }
+            }
+            if (Array.isArray(loadedPoints)) {
+                whyChoosePoints = loadedPoints;
+                whyChoosePointIndex = whyChoosePoints.length;
+                displayWhyChoosePoints(whyChoosePoints);
             }
     } catch (error) {
         console.error('Error loading about data:', error);
@@ -510,7 +486,8 @@ function displayWhyChoosePoints(points) {
 
 function updateImagePreview(url, previewId) {
     const preview = document.getElementById(previewId);
-    if (url && url.trim()) {
+    if (!preview) return;
+    if (url && String(url).trim() && String(url).indexOf('data:') !== 0) {
         preview.innerHTML = `<img src="${url}" alt="Image preview" style="width: 300px; height: 200px; object-fit: cover; border-radius: 8px; border: 2px solid #e5e7eb;" onerror="this.style.display='none'">`;
     } else {
         preview.innerHTML = '';

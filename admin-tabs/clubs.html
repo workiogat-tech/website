@@ -290,33 +290,27 @@
             openMediaLibrary(inputId);
         }
 
-        // Override selectImage to handle club images
-        const originalSelectImage = window.selectImage;
-        window.selectImage = function(imageUrl) {
-            if (window.currentClubImageInput) {
-                const input = window.currentClubImageInput;
-                input.value = imageUrl;
-                
-                // Update or create image preview
-                const container = input.parentElement;
-                const previewId = input.id.replace('club_image_', 'club_image_preview_');
-                let previewDiv = document.getElementById(previewId);
-                
-                if (!previewDiv) {
-                    previewDiv = document.createElement('div');
-                    previewDiv.id = previewId;
-                    container.parentElement.insertBefore(previewDiv, container);
-                }
-                
-                previewDiv.innerHTML = `<img src="${imageUrl}" alt="Club image" style="width: 96px; height: 96px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.onerror=null; this.style.display='none';">`;
-                previewDiv.style.display = 'block';
-                
-                window.currentClubImageInput = null;
-                updateClubsJson();
-                closeMediaLibrary();
-            } else {
-                originalSelectImage(imageUrl);
+        window.handleAdminMediaPick = function(fieldId, imageUrl) {
+            const input = window.currentClubImageInput || document.getElementById(fieldId);
+            if (!input || !input.id || input.id.indexOf('club_image_') !== 0) return false;
+            input.value = imageUrl;
+            const previewId = input.id.replace('club_image_', 'club_image_preview_');
+            let previewDiv = document.getElementById(previewId);
+            if (!previewDiv) {
+                previewDiv = document.createElement('div');
+                previewDiv.id = previewId;
+                input.parentElement.parentElement.insertBefore(previewDiv, input.parentElement);
             }
+            previewDiv.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = 'Club image';
+            img.style.cssText = 'width:96px;height:96px;object-fit:cover;border-radius:8px;border:2px solid #e0e0e0;';
+            previewDiv.appendChild(img);
+            previewDiv.style.display = 'block';
+            window.currentClubImageInput = null;
+            updateClubsJson();
+            return true;
         };
 
         // Initialize function

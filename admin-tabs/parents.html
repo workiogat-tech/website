@@ -42,6 +42,12 @@
                 </div>
             </div>
             
+            <div class="form-group">
+                <label class="form-label">Additional Slide Images</label>
+                <button type="button" onclick="openMediaLibrary('parents_slides')" class="btn btn-primary" style="margin-bottom: 15px;">➕ Add Slide Image</button>
+                <div id="parentsSlidesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;"></div>
+            </div>
+
             <!-- Hidden field for resource_detail_sections -->
             <input type="hidden" name="resource_detail_sections" id="resourceSectionsJson" value='[]'>
             <input type="hidden" name="additional_slides" id="additional_slides_json" value='[]'>
@@ -51,6 +57,47 @@
     </div>
 
     <script>
+        var parentsSlides = [];
+
+        window.handleAdminMediaPick = function(fieldId, imageUrl) {
+            if (fieldId !== 'parents_slides') return false;
+            if (parentsSlides.indexOf(imageUrl) === -1) parentsSlides.push(imageUrl);
+            renderParentsSlides();
+            return true;
+        };
+
+        function renderParentsSlides() {
+            const hidden = document.getElementById('additional_slides_json');
+            const container = document.getElementById('parentsSlidesContainer');
+            if (hidden) hidden.value = JSON.stringify(parentsSlides);
+            if (!container) return;
+            if (!parentsSlides.length) {
+                container.innerHTML = '<div style="color:#999;">No slide images added yet.</div>';
+                return;
+            }
+            container.innerHTML = '';
+            parentsSlides.forEach(function (slide, index) {
+                const card = document.createElement('div');
+                card.style.cssText = 'border:2px solid #e5e7eb;border-radius:8px;padding:10px;';
+                const img = document.createElement('img');
+                img.src = slide;
+                img.alt = 'Slide image';
+                img.style.cssText = 'width:100%;height:100px;object-fit:cover;border-radius:4px;display:block;margin-bottom:8px;';
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.textContent = 'Remove';
+                button.className = 'btn';
+                button.style.cssText = 'width:100%;background:#dc2626;color:white;';
+                button.onclick = function () {
+                    parentsSlides.splice(index, 1);
+                    renderParentsSlides();
+                };
+                card.appendChild(img);
+                card.appendChild(button);
+                container.appendChild(card);
+            });
+        }
+
         // Load existing parents data
         async function loadParentsData() {
             try {
@@ -77,7 +124,8 @@
                     // Load additional slides
                     if (data.additional_slides) {
                         const slides = typeof data.additional_slides === 'string' ? JSON.parse(data.additional_slides) : data.additional_slides;
-                        document.getElementById('additional_slides_json').value = JSON.stringify(slides);
+                        parentsSlides = Array.isArray(slides) ? slides.filter(function (slide) { return typeof slide === 'string' && slide; }) : [];
+                        renderParentsSlides();
                     }
                 }
             } catch (error) {

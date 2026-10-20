@@ -362,6 +362,25 @@ function displayWhyChoosePoints() {
     `).join('');
 }
 
+function escapeAdminText(value) {
+    return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+}
+
+function readThreeColumnEditors() {
+    const cards = document.querySelectorAll('.three-column-editor');
+    if (!cards.length) return threeColumns.slice();
+    return Array.from(cards).map(function (card, index) {
+        const id = card.getAttribute('data-id');
+        return {
+            id: id ? Number(id) : null,
+            title: card.querySelector('.three-col-title').value,
+            description: card.querySelector('.three-col-description').value,
+            image: card.querySelector('.three-col-image').value,
+            order_index: index
+        };
+    });
+}
+
 function displayThreeColumns() {
     const list = document.getElementById('threeColumnsList');
     if (threeColumns.length === 0) {
@@ -372,21 +391,51 @@ function displayThreeColumns() {
         `;
         return;
     }
-    
-    list.innerHTML = threeColumns.map(col => `
-        <div style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <h4 style="margin: 0; font-size: 18px; color: #111827;">${col.title || ''}</h4>
-                    <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">${(col.description || '').substring(0, 100)}...</p>
-                </div>
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-sm" onclick="editThreeColumn(${col.id})" style="padding: 6px 12px; font-size: 12px;">✏️ Edit</button>
-                    <button class="btn btn-sm" onclick="deleteThreeColumn(${col.id})" style="padding: 6px 12px; font-size: 12px; background: #ef4444; color: white;">🗑️ Delete</button>
+
+    list.innerHTML = threeColumns.map(function (col, index) {
+        return `
+        <div class="three-column-editor" data-id="${col.id || ''}" style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+            <div class="form-group">
+                <label class="form-label">Title</label>
+                <input type="text" class="form-input three-col-title" value="${escapeAdminText(col.title)}">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea class="form-input three-col-description" rows="3">${escapeAdminText(col.description)}</textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image</label>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div id="three_col_preview_${index}" style="flex-shrink: 0;"></div>
+                    <input type="text" class="form-input three-col-image" id="three_col_image_${index}" value="${escapeAdminText(col.image)}" readonly>
+                    <button type="button" class="btn btn-primary" onclick="openMediaLibrary('three_col_image_${index}')">🖼️ Select</button>
                 </div>
             </div>
-        </div>
-    `).join('');
+            ${col.id ? `<button type="button" class="btn" onclick="deleteThreeColumn(${col.id})" style="background:#ef4444;color:white;">🗑️ Delete</button>` : ''}
+        </div>`;
+    }).join('') + '<button type="button" class="btn btn-primary" onclick="saveThreeColumns()">💾 Save Columns</button>';
+}
+
+async function saveThreeColumns() {
+    const sections = readThreeColumnEditors().filter(function (section) { return section.title.trim() !== ''; });
+    if (!sections.length) {
+        showToast('Add a title before saving a column.', 'error');
+        return;
+    }
+    try {
+        const response = await fetch('api/content/homepage-sections.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ section_type: 'three-columns', sections: sections })
+        });
+        const result = await response.json();
+        if (!response.ok || result.error) throw new Error(result.error || 'The column images were not saved.');
+        showToast(result.message || 'Columns saved.', 'success');
+        await loadHomepageSections();
+    } catch (error) {
+        showToast(error.message || 'The column images were not saved.', 'error');
+    }
 }
 
 function updateWhyChooseImagePreview(url) {
@@ -517,11 +566,9 @@ function removeWhyChoosePoint(pointId) {
 }
 
 function showAddThreeColumnModal() {
-    showToast('Add column functionality - use the API to add', 'info');
-}
-
-function editThreeColumn(id) {
-    showToast('Edit column functionality - use the API to update', 'info');
+    threeColumns = readThreeColumnEditors();
+    threeColumns.push({ id: '', title: '', description: '', image: '', order_index: threeColumns.length });
+    displayThreeColumns();
 }
 
 function deleteThreeColumn(id) {

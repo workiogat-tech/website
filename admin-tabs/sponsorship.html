@@ -206,31 +206,13 @@ let levelIndex = 0;
 let stepIndex = 0;
 let storyIndex = 0;
 
-// Handle media library selection for slides
-const originalSelectImage = window.selectImage;
-window.selectImage = function(imageUrl) {
-    if (currentImageField === 'sponsorship_slides') {
-        if (!sponsorshipSlides.includes(imageUrl)) {
-            sponsorshipSlides.push(imageUrl);
-        }
-        updateSponsorshipSlides();
-        if (typeof closeMediaLibrary === 'function') {
-            closeMediaLibrary();
-        }
-    } else {
-        if (originalSelectImage) {
-            originalSelectImage(imageUrl);
-        } else {
-            const field = document.getElementById(currentImageField);
-            if (field) {
-                field.value = imageUrl;
-                field.dispatchEvent(new Event('change'));
-            }
-            if (typeof closeMediaLibrary === 'function') {
-                closeMediaLibrary();
-            }
-        }
+window.handleAdminMediaPick = function(fieldId, imageUrl) {
+    if (fieldId !== 'sponsorship_slides') return false;
+    if (sponsorshipSlides.indexOf(imageUrl) === -1) {
+        sponsorshipSlides.push(imageUrl);
     }
+    updateSponsorshipSlides();
+    return true;
 };
 
 (async function() {
