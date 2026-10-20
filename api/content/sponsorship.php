@@ -218,18 +218,17 @@ if ($method === 'GET') {
 
 // Clean output buffer and send response
 $output = ob_get_clean();
-if (!empty($output) && trim($output) !== '') {
-    // If there's unexpected output, log it and return error
+$trimmed = trim($output);
+if ($trimmed === '') {
+    // Response was already sent.
+} elseif ($trimmed[0] === '{' || $trimmed[0] === '[') {
+    echo $output;
+} else {
     error_log("Unexpected output in sponsorship.php: " . substr($output, 0, 200));
     if (!headers_sent()) {
         http_response_code(500);
         header('Content-Type: application/json');
-        echo json_encode(['error' => 'Server returned invalid response. Check error logs.']);
     }
-} else {
-    // No unexpected output, response was already sent
-    if (ob_get_level() > 0) {
-        ob_end_flush();
-    }
+    echo json_encode(['error' => 'Server returned invalid response. Check error logs.']);
 }
 ?>
