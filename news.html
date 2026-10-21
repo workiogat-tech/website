@@ -21,7 +21,7 @@
     })();
     </script>
     <title>News - Excellence Academy</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=20261021c">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -52,8 +52,8 @@
     
     <div id="footer-placeholder"></div>
     
-    <script src="js/static-pages.js"></script>
-    <script src="js/page-data-loader.js"></script>
+    <script src="js/static-pages.js?v=20261021c"></script>
+    <script src="js/page-data-loader.js?v=20261021"></script>
     <script>
         (async function() {
             const data = await PageDataLoader.loadNewsData();
@@ -87,7 +87,7 @@
                     const publishedDate = item.published_at || item.created_at || '';
                     const dateFormatted = publishedDate ? new Date(publishedDate).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric'}) : '';
                     newsHtml += `
-                        <div style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s, box-shadow 0.3s;" 
+                        <div class="content-reveal-card" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" 
                              onmouseover="this.style.transform='translateY(-5px)'; this.style.boxShadow='0 8px 12px rgba(0,0,0,0.15)'" 
                              onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)'">
                             ${itemImage ? `
@@ -124,6 +124,6 @@
             return div.innerHTML;
         }
     </script>
-<script src="js/main.js"></script>
+<script src="js/main.js?v=20261021d"></script>
 </body>
 </html>

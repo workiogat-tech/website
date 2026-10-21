@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=20261021c">
     <style>
         /* Admin panel styles */
         html, body {
@@ -142,13 +142,31 @@
                 background: #fff;
                 transform: translateX(-105%);
                 transition: transform 0.3s ease;
-                z-index: 200;
+                z-index: 4000;
                 box-shadow: none;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
             }
             
             .admin-sidebar.active {
                 transform: translateX(0);
                 box-shadow: 8px 0 30px rgba(0,0,0,0.25);
+            }
+
+            .admin-sidebar #nav-tabs {
+                flex: 1 1 auto;
+                min-height: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 8px 10px 20px !important;
+            }
+
+            .admin-sidebar .nav-tab {
+                min-height: 48px;
+                width: 100%;
+                box-sizing: border-box;
+                touch-action: manipulation;
             }
 
             .admin-sidebar .sidebar-header {
@@ -211,7 +229,7 @@
                 position: fixed;
                 top: 10px;
                 left: 10px;
-                z-index: 210;
+                z-index: 4010;
                 width: 44px;
                 height: 44px;
                 background: linear-gradient(135deg, #800020, #6B0000);
@@ -229,7 +247,7 @@
                 position: fixed;
                 inset: 0;
                 background: rgba(0,0,0,0.5);
-                z-index: 99;
+                z-index: 3990;
             }
             
             .sidebar-overlay.active {

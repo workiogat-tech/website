@@ -73,44 +73,35 @@ window.initHeaderChrome = function() {
     const searchForm = document.getElementById('searchForm');
     const searchResults = document.getElementById('searchResults');
 
-    if (mobileMenuToggle && mainNav && !mobileMenuToggle.dataset.chromeBound) {
-        mobileMenuToggle.dataset.chromeBound = '1';
-        mobileMenuToggle.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            setMobileMenuOpen(!mainNav.classList.contains('active'));
-        });
+    if (!window.__mobileNavDelegated) {
+        window.__mobileNavDelegated = true;
+        document.addEventListener('click', function(e) {
+            const toggle = e.target.closest('#mobileMenuToggle');
+            if (toggle) {
+                e.preventDefault();
+                e.stopPropagation();
+                const nav = document.getElementById('mainNav');
+                if (nav) setMobileMenuOpen(!nav.classList.contains('active'));
+                return;
+            }
 
-        mainNav.querySelectorAll('a.nav-link').forEach(link => {
-            link.addEventListener('click', function() {
-                if (!this.classList.contains('dropdown-trigger')) {
-                    setTimeout(() => setMobileMenuOpen(false), 200);
-                }
-            });
-        });
+            const trigger = e.target.closest('.mobile-nav .dropdown-trigger, .mobile-nav .nav-dropdown > a');
+            const dropdown = trigger ? trigger.closest('.nav-dropdown') : null;
+            if (trigger && dropdown && dropdown.querySelector('.dropdown-menu')) {
+                e.preventDefault();
+                e.stopPropagation();
+                const willOpen = !dropdown.classList.contains('active');
+                document.querySelectorAll('.mobile-nav .nav-dropdown.active').forEach(otherDropdown => {
+                    otherDropdown.classList.remove('active');
+                });
+                if (willOpen) dropdown.classList.add('active');
+                return;
+            }
 
-        mainNav.querySelectorAll('.dropdown-menu a').forEach(link => {
-            link.addEventListener('click', function() {
-                setTimeout(() => setMobileMenuOpen(false), 200);
-            });
-        });
+            const item = e.target.closest('.mobile-nav a');
+            if (item) setTimeout(() => setMobileMenuOpen(false), 180);
+        }, true);
     }
-
-    document.querySelectorAll('.mobile-nav .dropdown-trigger').forEach(trigger => {
-        if (trigger.dataset.chromeBound) return;
-        trigger.dataset.chromeBound = '1';
-        trigger.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const dropdown = this.closest('.nav-dropdown');
-            if (!dropdown) return;
-            const willOpen = !dropdown.classList.contains('active');
-            document.querySelectorAll('.mobile-nav .nav-dropdown').forEach(otherDropdown => {
-                otherDropdown.classList.remove('active');
-            });
-            if (willOpen) dropdown.classList.add('active');
-        });
-    });
 
     document.querySelectorAll('.top-nav-dropdown > .top-nav-link').forEach(link => {
         if (link.dataset.chromeBound) return;
@@ -242,38 +233,107 @@ window.initHeaderChrome();
 
 window.refreshScrollReveal = function () {
     document.documentElement.classList.add('js-reveal');
-    const pieceSelector = '.three-column-item, .news-card, .academics-text, .admissions-banner-content, .card, .teacher-card, .facility-card, .event-card, .testimonial-card, .value-card, .school-life-card, .sport-card, .gallery-item';
+    const heroSelector = '.hero-section, #home, .page-hero-section, .page-hero, .admission-hero-section';
+    const pieceSelector = [
+        '.three-column-item', '.news-card', '.academics-text', '.admissions-banner-content', '.card',
+        '.teacher-card', '.facility-card', '.facility-main-card', '.facility-feature-card', '.event-card',
+        '.testimonial-card', '.testimonial-card-slide', '.value-card', '.school-life-card', '.sport-card',
+        '.gallery-item', '.about-combined-column', '.point-item', '.curriculum-program-card',
+        '.curriculum-benefit-card', '.about-achievement-item', '.section-header',
+        '.school-bg-history-section', '.school-bg-journey-section', '.why-choose-image',
+        '.sponsorship-level-card', '.sponsorship-step', '.success-story-card', '.sponsorship-cta-section',
+        '.giveback-accordion-item', '.need-card', '.contact-card', '.admission-section',
+        '.admission-sidebar-box', '.admission-contact-box', '.admission-events-box', '.activity-card',
+        '.resource-card', '.resource-detail-section', '.person-card', '.club-item', '.content-reveal-card'
+    ].join(', ');
     const nodes = [];
-    document.querySelectorAll('main section').forEach(function (section) {
-        if (section.classList.contains('hero-section') || section.id === 'home' || section.classList.contains('page-hero-section')) return;
-        const pieces = section.querySelectorAll(pieceSelector);
-        if (pieces.length) {
-            pieces.forEach(function (piece, index) { nodes.push([piece, index]); });
-        } else {
-            nodes.push([section, 0]);
+
+    function pushUnique(list, el) {
+        if (!el || el.nodeType !== 1) return;
+        if (el.closest(heroSelector + ', .gallery-lightbox, #imageModal')) return;
+        for (let i = 0; i < list.length; i++) {
+            if (list[i] === el) return;
         }
+        list.push(el);
+    }
+
+    document.querySelectorAll('main > section').forEach(function (section) {
+        if (section.matches(heroSelector)) return;
+        const found = [];
+        section.querySelectorAll(pieceSelector).forEach(function (piece) {
+            pushUnique(found, piece);
+        });
+        section.querySelectorAll('[class]').forEach(function (el) {
+            const isCard = Array.prototype.some.call(el.classList, function (name) {
+                return /(^|-)card$/.test(name);
+            });
+            if (isCard) pushUnique(found, el);
+        });
+        section.querySelectorAll('div').forEach(function (parent) {
+            if (parent.children.length < 1) return;
+            if (found.some(function (piece) { return piece === parent; })) return;
+            const inlineGrid = /display\s*:\s*grid/i.test(parent.getAttribute('style') || '');
+            const gridClass = typeof parent.className === 'string' && Array.prototype.some.call(parent.classList, function (name) {
+                return /grid/i.test(name);
+            });
+            if (!inlineGrid && !gridClass) return;
+            Array.prototype.forEach.call(parent.children, function (child) {
+                if (!child.tagName || child.tagName === 'SCRIPT' || child.tagName === 'STYLE') return;
+                if (found.some(function (piece) { return piece.contains(child) || child.contains(piece); })) return;
+                pushUnique(found, child);
+            });
+        });
+        const root = section.querySelector(':scope > .container') || section;
+        Array.prototype.forEach.call(root.children, function (child) {
+            if (!child.tagName || child.tagName === 'SCRIPT' || child.tagName === 'STYLE') return;
+            if (found.some(function (piece) { return piece === child || child.contains(piece) || piece.contains(child); })) return;
+            const text = (child.textContent || '').replace(/\s+/g, ' ').trim();
+            if (text.length < 12 && !child.querySelector('img, form, video, iframe')) return;
+            pushUnique(found, child);
+        });
+        if (!found.length) pushUnique(found, root);
+        found.forEach(function (el, index) { nodes.push([el, index]); });
     });
     if (!window.__revealObserver) {
         window.__revealObserver = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
                 if (!entry.isIntersecting) return;
                 entry.target.classList.add('is-visible');
+                entry.target.dataset.revealed = '1';
                 window.__revealObserver.unobserve(entry.target);
             });
-        }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+        }, { threshold: 0.05, rootMargin: '0px 0px -24px 0px' });
+        const main = document.querySelector('main');
+        if (main && window.MutationObserver) {
+            let timer = 0;
+            new MutationObserver(function () {
+                clearTimeout(timer);
+                timer = setTimeout(window.refreshScrollReveal, 60);
+            }).observe(main, { childList: true, subtree: true });
+        }
     }
     nodes.forEach(function (pair) {
         const el = pair[0];
         const index = pair[1];
-        if (el.classList.contains('reveal-on-scroll')) return;
-        el.classList.add('reveal-on-scroll');
-        el.style.transitionDelay = Math.min(index, 3) * 90 + 'ms';
+        if (!el || el.dataset.revealed === '1') return;
+        if (!el.classList.contains('reveal-on-scroll')) {
+            el.classList.add('reveal-on-scroll');
+            el.style.transitionDelay = Math.min(index, 3) * 45 + 'ms';
+        }
         const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
+        const alreadyOnScreen = rect.height > 0 && rect.top < window.innerHeight * 0.72 && rect.bottom > 40;
+        if (alreadyOnScreen) {
             el.classList.add('is-visible');
+            el.dataset.revealed = '1';
+            window.__revealObserver.unobserve(el);
         } else {
             window.__revealObserver.observe(el);
         }
+    });
+    document.querySelectorAll('main img').forEach(function (img) {
+        if (img.closest('.hero-section, .page-hero-section, .page-hero, .admission-hero-section, #home')) return;
+        if (!img.getAttribute('loading')) img.setAttribute('loading', 'lazy');
+        img.setAttribute('decoding', 'async');
     });
 };
 

@@ -13,7 +13,7 @@ const HomepageLoader = {
         try {
             let fresh = window.__heroFast ? await window.__heroFast : null;
             if (!fresh || (!fresh.slides && !fresh.background_image)) {
-                const response = await fetch('/api/public/hero-slides.php');
+                const response = await fetch('/api/public/hero-slides.php', { cache: 'no-store' });
                 fresh = response.ok ? await response.json() : null;
             }
             if (fresh && ((fresh.slides && fresh.slides.length) || fresh.background_image)) {
@@ -35,7 +35,7 @@ const HomepageLoader = {
     fetchHomepage() {
         if (!this._homepagePromise) {
             const early = window.__pageData;
-            this._homepagePromise = early || fetch('/api/public/homepage-data.php')
+            this._homepagePromise = early || fetch('/api/public/homepage-data.php', { cache: 'no-store' })
                 .then(response => response.ok ? response.json() : null)
                 .catch(() => null);
         }
@@ -43,12 +43,12 @@ const HomepageLoader = {
     },
 
     heroDisplayUrl(url) {
-        if (!url || url.indexOf('/storage/v1/object/public/') === -1) return url;
-        try {
-            if (localStorage.getItem('sjs_img_resize') === '0') return url;
-        } catch (error) {}
-        const resized = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
-        return resized + (resized.indexOf('?') === -1 ? '?' : '&') + 'width=1600&quality=60';
+        if (!url) return url;
+        const value = String(url).trim();
+        if (!value || value.indexOf('data:') === 0 || /^https?:/i.test(value) || value.charAt(0) === '/') {
+            return value;
+        }
+        return '/' + value.replace(/^\.?\//, '');
     },
 
     preloadPhotos(urls) {
@@ -123,7 +123,11 @@ const HomepageLoader = {
             && Number(saved.image_scale || 1) === Number(fresh.image_scale || 1)
             && Number(saved.slide_interval_ms || 5000) === Number(fresh.slide_interval_ms || 5000)
             && (saved.background_size || 'contain') === (fresh.background_size || 'contain')
-            && (saved.slide_mode || 'marquee') === (fresh.slide_mode || 'marquee');
+            && (saved.background_position || 'center') === (fresh.background_position || 'center')
+            && (saved.slide_direction || 'left') === (fresh.slide_direction || 'left')
+            && (saved.slide_mode || 'marquee') === (fresh.slide_mode || 'marquee')
+            && (saved.headline || '') === (fresh.headline || '')
+            && (saved.subheadline || '') === (fresh.subheadline || '');
     },
 
     applyPhotoFit(img, fit) {
@@ -135,7 +139,7 @@ const HomepageLoader = {
             left: 'left center',
             right: 'right center'
         }[fit.position] || 'center center';
-        const objectFit = fit.size === 'cover' ? 'cover' : (fit.size === 'auto' ? 'scale-down' : 'contain');
+        const objectFit = fit.size === 'contain' ? 'contain' : 'cover';
         const scale = fit.scale > 0 ? fit.scale : 1;
         img.style.objectFit = objectFit;
         img.style.objectPosition = position;
@@ -256,8 +260,9 @@ const HomepageLoader = {
                 heroSection.appendChild(sliderContainer);
             }
             
-            // Initialize slider animation
+            // Initialize slider animation after layout so each photo gets the real hero width
             this.initSliderAnimation(sliderContainer);
+            requestAnimationFrame(() => this.initSliderAnimation(sliderContainer));
         } else {
             // No slides, use background image if available
             if (data.background_image) {
@@ -285,12 +290,13 @@ const HomepageLoader = {
                 const totalSlides = slideItems.length || 1;
                 const uniqueCount = Math.max(1, Math.round(totalSlides / 3));
                 const secondsPerPass = (uniqueCount * slideInterval) / 1000;
-                marquee.style.width = (totalSlides * 100) + '%';
+                const frame = Math.max(container.clientWidth || 0, container.parentElement ? container.parentElement.clientWidth : 0, 1);
+                marquee.style.width = (totalSlides * frame) + 'px';
                 marquee.style.animation = (slideDirection === 'right' ? 'heroMarqueeRight' : 'heroMarquee')
                     + ' ' + secondsPerPass + 's linear infinite';
                 slideItems.forEach(item => {
-                    item.style.flex = '0 0 ' + (100 / totalSlides) + '%';
-                    item.style.width = (100 / totalSlides) + '%';
+                    item.style.flex = '0 0 ' + frame + 'px';
+                    item.style.width = frame + 'px';
                 });
             }
         } else {
@@ -382,10 +388,7 @@ const HomepageLoader = {
             const image = section.image || '';
             
             // Normalize image URL
-            let imageUrl = image;
-            if (imageUrl && !imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-                imageUrl = '/uploads/' + imageUrl.replace(/^.*[\\\/]/, '');
-            }
+            const imageUrl = image ? this.heroDisplayUrl(image) : '';
             
             const sectionHTML = `
                 <div class="three-column-item">
@@ -396,7 +399,7 @@ const HomepageLoader = {
                         ${imageUrl ? 
                             `<img src="${this.escapeHtml(imageUrl)}" 
                                   alt="${this.escapeHtml(title)}" 
-                                  fetchpriority="high"
+                                  loading="lazy"
                                   decoding="async"
                                   onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'three-column-placeholder\\'><span>🖼️</span><p>Image not found</p></div>';"
                                   style="width: 100%; height: 200px; object-fit: cover;">` :
@@ -431,6 +434,17 @@ const HomepageLoader = {
             this.loadThreeColumnSections()
         ]);
         
+        if (!this._resizeBound) {
+            this._resizeBound = true;
+            let resizeTimer = 0;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    document.querySelectorAll('.hero-slides-container').forEach(el => this.initSliderAnimation(el));
+                }, 120);
+            });
+        }
+
         // Listen for storage changes to update immediately
         window.addEventListener('storage', () => {
             this.loadBranding();

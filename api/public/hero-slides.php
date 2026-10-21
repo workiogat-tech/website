@@ -4,7 +4,7 @@
  * The full homepage request is much slower, so the pictures start from here.
  */
 header('Content-Type: application/json; charset=utf-8');
-header('Cache-Control: public, max-age=120');
+header('Cache-Control: no-store, no-cache, must-revalidate');
 
 ini_set('display_errors', 0);
 error_reporting(E_ALL);

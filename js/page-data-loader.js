@@ -67,6 +67,10 @@ const PageDataLoader = {
 
     paintHero(url) {
         if (!url || String(url).indexOf('data:') === 0) return;
+        url = String(url).trim();
+        if (!/^https?:/i.test(url) && url.charAt(0) !== '/') {
+            url = '/' + url.replace(/^\.?\//, '');
+        }
         this.preload(url);
         const hero = document.getElementById('page-hero');
         const bg = hero && hero.querySelector('.page-hero-background');

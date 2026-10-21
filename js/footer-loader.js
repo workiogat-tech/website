@@ -48,25 +48,22 @@ const FooterLoader = {
                             <h2 class="footer-school-name">${this.escapeHtml(schoolName)}</h2>
                         </div>
                         <div class="footer-grid">
-                            <div class="footer-column">
+                            <div class="footer-column footer-info">
                                 <h3>Information</h3>
+                                <p class="footer-name">${this.escapeHtml(schoolName)}</p>
                                 <ul class="footer-links">
-                                    <li><strong>${this.escapeHtml(schoolName)}</strong></li>
-                                    <li><span style="margin-right: 8px;">📍</span>${this.escapeHtml(address)}</li>
-                                    <li><span style="margin-right: 8px;">📞</span>${this.escapeHtml(phone)}</li>
-                                    <li><span style="margin-right: 8px;">📧</span>${this.escapeHtml(email)}</li>
+                                    <li>${this.escapeHtml(address)}</li>
+                                    <li><a href="tel:${this.escapeHtml(phone)}">${this.escapeHtml(phone)}</a></li>
+                                    <li><a href="mailto:${this.escapeHtml(email)}">${this.escapeHtml(email)}</a></li>
                                 </ul>
                             </div>
                             <div class="footer-column">
-                                <h4>Hours of Operation</h4>
-                                <div style="margin-bottom: 20px;">
-                                    <p style="font-weight: 600; margin-bottom: 8px; color: var(--white);">Students:</p>
-                                    <ul class="footer-links" style="margin-left: 0;">
-                                        <li>Monday - Friday: 7:00 AM – 5:00 PM</li>
-                                        <li>Saturday: 8:00 AM – 1:00 PM</li>
-                                        <li>Sunday: Closed</li>
-                                    </ul>
-                                </div>
+                                <h4>Hours</h4>
+                                <ul class="footer-links footer-hours">
+                                    <li><span>Mon–Fri</span> 7 AM – 5 PM</li>
+                                    <li><span>Saturday</span> 8 AM – 1 PM</li>
+                                    <li><span>Sunday</span> Closed</li>
+                                </ul>
                             </div>
                             <div class="footer-column">
                                 <h4>Quick Links</h4>
@@ -103,13 +100,21 @@ const FooterLoader = {
                                 <h2 class="footer-school-name">Excellence Academy</h2>
                             </div>
                             <div class="footer-grid">
-                                <div class="footer-column">
+                                <div class="footer-column footer-info">
                                     <h3>Information</h3>
+                                    <p class="footer-name">Excellence Academy</p>
                                     <ul class="footer-links">
-                                        <li><strong>Excellence Academy</strong></li>
-                                        <li><span style="margin-right: 8px;">📍</span>123 Education Street</li>
-                                        <li><span style="margin-right: 8px;">📞</span>0703574113</li>
-                                        <li><span style="margin-right: 8px;">📧</span>info@sjs.com</li>
+                                        <li>123 Education Street</li>
+                                        <li><a href="tel:0703574113">0703574113</a></li>
+                                        <li><a href="mailto:info@sjs.com">info@sjs.com</a></li>
+                                    </ul>
+                                </div>
+                                <div class="footer-column">
+                                    <h4>Hours</h4>
+                                    <ul class="footer-links footer-hours">
+                                        <li><span>Mon–Fri</span> 7 AM – 5 PM</li>
+                                        <li><span>Saturday</span> 8 AM – 1 PM</li>
+                                        <li><span>Sunday</span> Closed</li>
                                     </ul>
                                 </div>
                                 <div class="footer-column">

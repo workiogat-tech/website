@@ -7,10 +7,9 @@
     (function(){
       function showUrl(url){
         if(!url)return url;
-        try{if(localStorage.getItem('sjs_img_resize')==='0')return url;}catch(e){}
-        if(url.indexOf('/storage/v1/object/public/')===-1)return url;
-        var next=url.replace('/storage/v1/object/public/','/storage/v1/render/image/public/');
-        return next+(next.indexOf('?')===-1?'?':'&')+'width=1600&quality=60';
+        var value=String(url).trim();
+        if(!value||value.indexOf('data:')===0||/^https?:/i.test(value)||value.charAt(0)==='/')return value;
+        return '/'+value.replace(/^\.?\//,'');
       }
       function preload(urls){
         var seen={};
@@ -28,16 +27,16 @@
         var saved=JSON.parse(localStorage.getItem('sjs_hero_cache')||'null');
         if(saved&&saved.slides)preload(saved.slides);
       }catch(e){}
-      window.__heroFast=fetch('/api/public/hero-slides.php').then(function(r){return r.ok?r.json():null;}).then(function(data){
+      window.__heroFast=fetch('/api/public/hero-slides.php',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(data){
         if(data&&data.slides)preload(data.slides);
         return data;
       }).catch(function(){return null;});
       window.__pagePath='homepage-data.php';
-      window.__pageData=fetch('/api/public/homepage-data.php').then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
+      window.__pageData=fetch('/api/public/homepage-data.php',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});
     })();
     </script>
     <title>Excellence Academy - Home</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=20261021c">
     <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
 </head>
 <body>
@@ -218,10 +217,10 @@
     
     <div id="footer-placeholder"></div>
     
-    <script src="js/homepage-loader.js"></script>
+    <script src="js/homepage-loader.js?v=20261021"></script>
     <script src="js/client-storage.js"></script>
-    <script src="js/static-pages.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/static-pages.js?v=20261021c"></script>
+    <script src="js/main.js?v=20261021d"></script>
     <script src="js/festive-animations.js"></script>
 </body>
 </html>

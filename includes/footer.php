@@ -30,65 +30,26 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 $isHomepage = ($currentPage === 'index.php' || $currentPage === 'index.html' || $currentPage === '');
 ?>
 <footer class="site-footer">
-    <div class="snowflakes-footer"></div>
     <div class="footer-content">
         <div class="container">
-            <div class="footer-branding">
-                <h2 class="footer-school-name"><?php echo htmlspecialchars($schoolName); ?></h2>
-            </div>
             <div class="footer-grid">
-                <!-- Information Column -->
-                <div class="footer-column">
+                <div class="footer-column footer-info">
                     <h3>Information</h3>
+                    <p class="footer-name"><?php echo htmlspecialchars($schoolName); ?></p>
                     <ul class="footer-links">
-                        <li><strong><?php echo htmlspecialchars($schoolName); ?></strong></li>
-                        <li>
-                            <span style="margin-right: 8px;">📍</span>
-                            <?php echo htmlspecialchars($address); ?>
-                        </li>
-                        <li>
-                            <span style="margin-right: 8px;">📞</span>
-                            <?php echo htmlspecialchars($phone); ?>
-                        </li>
-                        <li>
-                            <span style="margin-right: 8px;">📧</span>
-                            <?php echo htmlspecialchars($email); ?>
-                        </li>
+                        <li><?php echo htmlspecialchars($address); ?></li>
+                        <li><a href="tel:<?php echo htmlspecialchars($phone); ?>"><?php echo htmlspecialchars($phone); ?></a></li>
+                        <li><a href="mailto:<?php echo htmlspecialchars($email); ?>"><?php echo htmlspecialchars($email); ?></a></li>
                     </ul>
                 </div>
-                
-                <!-- Hours of Operation Column -->
                 <div class="footer-column">
-                    <h4>Hours of Operation</h4>
-                    <div style="margin-bottom: 20px;">
-                        <p style="font-weight: 600; margin-bottom: 8px; color: var(--white);">Students:</p>
-                        <ul class="footer-links" style="margin-left: 0;">
-                            <li>Monday - Friday: 7:00 AM – 5:00 PM</li>
-                            <li>Saturday: 8:00 AM – 1:00 PM</li>
-                            <li>Sunday: Closed</li>
-                            <li>Visitation Days: 12:00 PM to 5:00 PM</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p style="font-weight: 600; margin-bottom: 8px; color: var(--white);">Staff:</p>
-                        <ul class="footer-links" style="margin-left: 0;">
-                            <li>Monday - Friday: 8:00 AM – 5:00 PM</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- More to Discover Column -->
-                <div class="footer-column">
-                    <h4>More to Discover</h4>
-                    <ul class="footer-links">
-                        <li><a href="school-background.php">School Background</a></li>
-                        <li><a href="curriculum.php">Curriculum</a></li>
-                        <li><a href="facilities.php">School Facilities</a></li>
-                        <li><a href="sponsorship.php">Support Our Work</a></li>
+                    <h4>Hours</h4>
+                    <ul class="footer-links footer-hours">
+                        <li><span>Mon–Fri</span> 7 AM – 5 PM</li>
+                        <li><span>Saturday</span> 8 AM – 1 PM</li>
+                        <li><span>Sunday</span> Closed</li>
                     </ul>
                 </div>
-                
-                <!-- Quick Links Column -->
                 <div class="footer-column">
                     <h4>Quick Links</h4>
                     <ul class="footer-links">
@@ -98,30 +59,11 @@ $isHomepage = ($currentPage === 'index.php' || $currentPage === 'index.html' || 
                         <li><a href="events.php">Events</a></li>
                     </ul>
                 </div>
-                
-                <!-- Social Media Column -->
-                <div class="footer-column">
-                    <h4>Social Media</h4>
-                    <ul class="footer-links">
-                        <?php 
-                        $youtubeLink = '';
-                        if (!empty($socialMedia)) {
-                            foreach ($socialMedia as $social) {
-                                if (stripos($social['platform'], 'youtube') !== false || stripos($social['url'], 'youtube') !== false) {
-                                    $youtubeLink = $social['url'];
-                                    break;
-                                }
-                            }
-                        }
-                        if (!empty($youtubeLink)): ?>
-                            <li><a href="<?php echo htmlspecialchars($youtubeLink); ?>" target="_blank" rel="noopener noreferrer">YouTube</a></li>
-                        <?php else: ?>
-                            <li><a href="#" target="_blank" rel="noopener noreferrer">YouTube</a></li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
             </div>
         </div>
+    </div>
+    <div class="footer-bottom">
+        <div class="container">&copy; <?php echo htmlspecialchars($schoolName); ?>. All rights reserved.</div>
     </div>
 </footer>
 

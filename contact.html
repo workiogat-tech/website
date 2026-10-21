@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Us</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/style.css?v=20261021c">
 </head>
 <body>
     <div id="header-placeholder"></div>
@@ -15,8 +15,8 @@
     
     <div id="footer-placeholder"></div>
     
-    <script src="js/static-pages.js"></script>
-    <script src="js/main.js"></script>
+    <script src="js/static-pages.js?v=20261021c"></script>
+    <script src="js/main.js?v=20261021d"></script>
     <script>
         async function loadContactPage() {
             try {
@@ -45,7 +45,7 @@
                 </section>
                 <section class="section-padding">
                     <div class="container">
-                        <div style="max-width: 800px; margin: 0 auto;">
+                        <div class="content-reveal-card" style="max-width: 800px; margin: 0 auto;">
                             <h2>Get in Touch</h2>
                             ${address ? `<p><strong>Address:</strong> ${escapeHtml(address)}</p>` : ''}
                             ${phone ? `<p><strong>Phone:</strong> <a href="tel:${escapeHtml(phone)}">${escapeHtml(phone)}</a></p>` : ''}

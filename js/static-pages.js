@@ -181,15 +181,20 @@ const StaticPages = {
         `;
     },
 
+    pageUrl(url) {
+        if (!url) return '#';
+        return String(url).replace(/\.php(?=($|\?|#))/i, '.html');
+    },
+
     renderNav(items, isMobile) {
         return items.map(item => {
             if (item.children && item.children.length > 0) {
                 const childHtml = item.children.map(child => 
-                    `<a href="${child.url}">${child.label}</a>`
+                    `<a href="${this.pageUrl(child.url)}">${child.label}</a>`
                 ).join('');
                 return `
                     <div class="${isMobile ? 'nav-dropdown' : 'top-nav-dropdown'}">
-                        <a href="${item.url}" class="${isMobile ? 'nav-link dropdown-trigger' : 'top-nav-link'}">
+                        <a href="${this.pageUrl(item.url)}" class="${isMobile ? 'nav-link dropdown-trigger' : 'top-nav-link'}" ${isMobile ? 'role="button"' : ''}>
                             ${item.label}
                             <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="6 9 12 15 18 9"></polyline>
@@ -201,7 +206,7 @@ const StaticPages = {
                     </div>
                 `;
             } else {
-                return `<a href="${item.url}" class="${isMobile ? 'nav-link' : 'top-nav-link'}">${item.label}</a>`;
+                return `<a href="${this.pageUrl(item.url)}" class="${isMobile ? 'nav-link' : 'top-nav-link'}">${item.label}</a>`;
             }
         }).join('');
     },
@@ -211,46 +216,52 @@ const StaticPages = {
         const branding = this.branding;
         const contact = this.contactInfo;
         
+        const links = (this.quickLinks && this.quickLinks.length) ? this.quickLinks : [
+            { label: 'About Us', url: 'about.html' },
+            { label: 'Contact', url: 'contact.html' },
+            { label: 'Clubs', url: 'clubs.html' },
+            { label: 'Events', url: 'events.html' }
+        ];
+        const linkHtml = links.map(link => {
+            if (typeof link === 'string') return `<li><a href="#">${link}</a></li>`;
+            const label = link.label || link.title || link.name || 'Link';
+            const url = this.pageUrl(link.url || link.href || '#');
+            return `<li><a href="${url}">${label}</a></li>`;
+        }).join('');
+
         return `
             <footer class="site-footer">
-                <div class="snowflakes-footer"></div>
                 <div class="footer-content">
                     <div class="container">
-                        <div class="footer-branding">
-                            <h2 class="footer-school-name">${branding.school_name}</h2>
-                        </div>
                         <div class="footer-grid">
-                            <div class="footer-column">
+                            <div class="footer-column footer-info">
                                 <h3>Information</h3>
+                                <p class="footer-name">${branding.school_name}</p>
                                 <ul class="footer-links">
-                                    <li><strong>${branding.school_name}</strong></li>
-                                    <li><span style="margin-right: 8px;">📍</span>${contact.address}</li>
-                                    <li><span style="margin-right: 8px;">📞</span>${contact.phone}</li>
-                                    <li><span style="margin-right: 8px;">📧</span>${contact.email}</li>
+                                    <li>${contact.address}</li>
+                                    <li><a href="tel:${contact.phone}">${contact.phone}</a></li>
+                                    <li><a href="mailto:${contact.email}">${contact.email}</a></li>
                                 </ul>
                             </div>
                             <div class="footer-column">
-                                <h4>Hours of Operation</h4>
-                                <div style="margin-bottom: 20px;">
-                                    <p style="font-weight: 600; margin-bottom: 8px; color: var(--white);">Students:</p>
-                                    <ul class="footer-links" style="margin-left: 0;">
-                                        <li>Monday - Friday: 7:00 AM – 5:00 PM</li>
-                                        <li>Saturday: 8:00 AM – 1:00 PM</li>
-                                        <li>Sunday: Closed</li>
-                                    </ul>
-                                </div>
+                                <h4>Hours</h4>
+                                <ul class="footer-links footer-hours">
+                                    <li><span class="hours-day">Mon–Fri</span><span class="hours-time">7 AM – 5 PM</span></li>
+                                    <li><span class="hours-day">Saturday</span><span class="hours-time">8 AM – 1 PM</span></li>
+                                    <li><span class="hours-day">Sunday</span><span class="hours-time">Closed</span></li>
+                                </ul>
                             </div>
                             <div class="footer-column">
                                 <h4>Quick Links</h4>
                                 <ul class="footer-links">
-                                    <li><a href="about.html">About Us</a></li>
-                                    <li><a href="contact.html">Contact</a></li>
-                                    <li><a href="clubs.html">Clubs</a></li>
-                                    <li><a href="events.html">Events</a></li>
+                                    ${linkHtml}
                                 </ul>
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="footer-bottom">
+                    <div class="container">&copy; ${branding.school_name}. All rights reserved.</div>
                 </div>
             </footer>
             <button id="backToTop" class="back-to-top" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: #800020; color: white; border: none; cursor: pointer; align-items: center; justify-content: center;">
@@ -318,11 +329,48 @@ const StaticPages = {
         }
     },
     
+    async loadFromServer() {
+        try {
+            const [headerRes, footerRes] = await Promise.all([
+                fetch('/api/public/header-data.php', { cache: 'no-store' }),
+                fetch('/api/public/footer-data.php', { cache: 'no-store' })
+            ]);
+            const header = headerRes.ok ? await headerRes.json() : null;
+            const footer = footerRes.ok ? await footerRes.json() : null;
+            if (header && header.success && header.data) {
+                if (header.data.branding) this.branding = this.mergeFilled(this.branding, header.data.branding);
+                if (header.data.contactInfo) this.contactInfo = this.mergeFilled(this.contactInfo, header.data.contactInfo);
+                const items = header.data.navigation || [];
+                const children = header.data.navigationChildren || {};
+                if (items.length) {
+                    this.navigation = items.map(item => ({
+                        label: item.label,
+                        url: this.pageUrl(item.url),
+                        children: (children[item.id] || children[String(item.id)] || []).map(child => ({
+                            label: child.label,
+                            url: this.pageUrl(child.url)
+                        }))
+                    }));
+                }
+            }
+            if (footer && footer.success && footer.data) {
+                if (footer.data.branding) this.branding = this.mergeFilled(this.branding, footer.data.branding);
+                if (footer.data.contactInfo) this.contactInfo = this.mergeFilled(this.contactInfo, footer.data.contactInfo);
+                if (Array.isArray(footer.data.quickLinks) && footer.data.quickLinks.length) {
+                    this.quickLinks = footer.data.quickLinks;
+                }
+            }
+        } catch (error) {
+            console.warn('Using saved site details:', error);
+        }
+    },
+
     // Initialize page
     async init() {
-        // Load branding and contact from localStorage first
+        // Load branding and contact from localStorage first, then the saved admin data
         await this.loadBranding();
         await this.loadContact();
+        await this.loadFromServer();
         
         // Load header and footer
         const headerPlaceholder = document.getElementById('header-placeholder');

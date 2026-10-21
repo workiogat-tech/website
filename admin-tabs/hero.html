@@ -566,6 +566,13 @@ function updateSliderPreview() {
         previewContainer.innerHTML = '<div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #9ca3af; font-size: 14px;">Add slide images to see preview</div>';
         return;
     }
+
+    if ((previewContainer.clientWidth || 0) < 40 && !previewContainer.dataset.measured) {
+        previewContainer.dataset.measured = '1';
+        requestAnimationFrame(updateSliderPreview);
+        return;
+    }
+    previewContainer.dataset.measured = '';
     
     const copies = 3;
     const duplicatedSlides = [];
@@ -579,7 +586,7 @@ function updateSliderPreview() {
     const backgroundSize = document.getElementById('background_size')?.value || 'contain';
     const backgroundPosition = document.getElementById('background_position')?.value || 'center';
     const imageScale = parseFloat(document.getElementById('image_scale')?.value || 1) || 1;
-    const photoFit = backgroundSize === 'cover' ? 'cover' : (backgroundSize === 'auto' ? 'scale-down' : 'contain');
+    const photoFit = backgroundSize === 'contain' ? 'contain' : 'cover';
     const photoOrigin = { center: 'center center', top: 'center top', bottom: 'center bottom', left: 'left center', right: 'right center' }[backgroundPosition] || 'center center';
 
     if (window.heroPreviewFadeTimer) {
@@ -590,24 +597,25 @@ function updateSliderPreview() {
     if (slideMode === 'marquee') {
         const marqueeDuration = (slideInterval / 1000) * uniqueSlides.length;
         
+        const frame = Math.max(previewContainer.clientWidth || previewContainer.parentElement?.clientWidth || 0, 1);
         const marquee = document.createElement('div');
         marquee.style.cssText = `
             display: flex;
             height: 100%;
-            width: ${duplicatedSlides.length * 100}%;
+            width: ${duplicatedSlides.length * frame}px;
             animation: ${slideDirection === 'right' ? 'previewMarqueeRight' : 'previewMarquee'} ${marqueeDuration}s linear infinite;
             will-change: transform;
         `;
         
         duplicatedSlides.forEach((slide) => {
             const slideDiv = document.createElement('div');
-            const slideWidthPercent = (100 / duplicatedSlides.length);
             slideDiv.style.cssText = `
-                flex: 0 0 ${slideWidthPercent}%;
-                width: ${slideWidthPercent}%;
+                flex: 0 0 ${frame}px;
+                width: ${frame}px;
                 height: 100%;
                 position: relative;
                 overflow: hidden;
+                background: #1a1a1a;
             `;
             const img = document.createElement('img');
             img.src = slide;
