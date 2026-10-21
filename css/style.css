@@ -81,6 +81,32 @@ body {
     animation: fadeIn 0.6s ease-out;
 }
 
+/* Sections below the hero rise into place as they enter the screen. */
+.hero-overlay .container {
+    animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.js-reveal .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.js-reveal .reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-overlay .container,
+    .js-reveal .reveal-on-scroll {
+        animation: none;
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}
+
 /* Pulse animation for icons */
 @keyframes pulse {
     0%, 100% {
@@ -921,8 +947,9 @@ body {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
+    transform-origin: center center;
 }
 
 .hero-slides-marquee .hero-slide-item {
@@ -6511,7 +6538,7 @@ svg {
 
     .header-content {
         height: 64px;
-        padding: 0 16px;
+        padding: 0 20px;
     }
 
     .header-actions {
@@ -6526,7 +6553,79 @@ svg {
         width: 44px;
         height: 44px;
         padding: 0;
+        margin: 0;
         flex-shrink: 0;
+        background: transparent;
+        transform: none;
+    }
+
+    .search-button:hover,
+    .mobile-menu-toggle:hover,
+    .mobile-menu-toggle.active {
+        background: #f4e8eb;
+        transform: none;
+    }
+
+    .mobile-menu-toggle .menu-icon,
+    .mobile-menu-toggle .close-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        line-height: 0;
+    }
+
+    .mobile-nav.active {
+        padding: 0;
+        border-top: 0;
+        box-shadow: 0 18px 30px rgba(0, 0, 0, 0.16);
+    }
+
+    .mobile-nav > .nav-dropdown,
+    .mobile-nav > .nav-link,
+    .mobile-nav .nav-dropdown {
+        width: 100%;
+        margin: 0;
+    }
+
+    .mobile-nav .nav-link {
+        min-height: 56px;
+        height: 56px;
+        padding: 0 20px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 1;
+        text-align: left;
+    }
+
+    .mobile-nav .nav-link svg.icon-chevron {
+        width: 18px;
+        height: 18px;
+        margin-left: auto;
+    }
+
+    .mobile-nav .dropdown-menu {
+        position: relative;
+        left: auto;
+        top: auto;
+        min-width: 0;
+        box-shadow: none;
+        border-radius: 0;
+        background: rgba(0, 0, 0, 0.16);
+    }
+
+    .mobile-nav .dropdown-menu a {
+        min-height: 48px;
+        padding: 0 20px 0 36px;
+        display: flex;
+        align-items: center;
+        margin: 0;
+        line-height: 1.3;
     }
 
     .logo-placeholder {

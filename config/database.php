@@ -302,6 +302,14 @@ class Database {
             }
         }
 
+        if (isset($types['image_scale']) && in_array($types['image_scale'], ['integer', 'smallint', 'bigint'], true)) {
+            try {
+                $this->conn->exec('ALTER TABLE hero_content ALTER COLUMN image_scale TYPE NUMERIC(4,2) USING image_scale::numeric');
+            } catch (PDOException $e) {
+                error_log('Hero image_scale was not widened: ' . $e->getMessage());
+            }
+        }
+
         foreach (['background_image', 'slides'] as $wideColumn) {
             if (!isset($types[$wideColumn]) || $types[$wideColumn] === 'text') {
                 continue;

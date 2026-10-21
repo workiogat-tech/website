@@ -575,13 +575,20 @@ function updateSliderPreview() {
     
     const slideMode = document.getElementById('slide_mode')?.value || 'marquee';
     const slideDirection = document.getElementById('slide_direction')?.value || 'left';
-    const slideInterval = parseInt(document.getElementById('slide_interval_ms')?.value || 5000);
+    const slideInterval = Math.max(1000, parseInt(document.getElementById('slide_interval_ms')?.value || 5000, 10) || 5000);
     const backgroundSize = document.getElementById('background_size')?.value || 'contain';
     const backgroundPosition = document.getElementById('background_position')?.value || 'center';
-    const imageScale = parseFloat(document.getElementById('image_scale')?.value || 1);
+    const imageScale = parseFloat(document.getElementById('image_scale')?.value || 1) || 1;
+    const photoFit = backgroundSize === 'cover' ? 'cover' : (backgroundSize === 'auto' ? 'scale-down' : 'contain');
+    const photoOrigin = { center: 'center center', top: 'center top', bottom: 'center bottom', left: 'left center', right: 'right center' }[backgroundPosition] || 'center center';
+
+    if (window.heroPreviewFadeTimer) {
+        clearInterval(window.heroPreviewFadeTimer);
+        window.heroPreviewFadeTimer = null;
+    }
     
     if (slideMode === 'marquee') {
-        const marqueeDuration = Math.max(20, (slideInterval / 1000) * uniqueSlides.length * copies);
+        const marqueeDuration = (slideInterval / 1000) * uniqueSlides.length;
         
         const marquee = document.createElement('div');
         marquee.style.cssText = `
@@ -596,14 +603,26 @@ function updateSliderPreview() {
             const slideDiv = document.createElement('div');
             const slideWidthPercent = (100 / duplicatedSlides.length);
             slideDiv.style.cssText = `
-                flex-shrink: 0;
+                flex: 0 0 ${slideWidthPercent}%;
                 width: ${slideWidthPercent}%;
                 height: 100%;
-                background-image: url('${slide}');
-                background-size: ${imageScale !== 1 ? `${imageScale * 100}%` : backgroundSize};
-                background-position: ${backgroundPosition};
-                background-repeat: no-repeat;
+                position: relative;
+                overflow: hidden;
             `;
+            const img = document.createElement('img');
+            img.src = slide;
+            img.alt = '';
+            img.style.cssText = `
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: ${photoFit};
+                object-position: ${photoOrigin};
+                transform: scale(${imageScale});
+                transform-origin: ${photoOrigin};
+            `;
+            slideDiv.appendChild(img);
             marquee.appendChild(slideDiv);
         });
         
@@ -632,19 +651,30 @@ function updateSliderPreview() {
             slideDiv.style.cssText = `
                 position: absolute;
                 inset: 0;
-                background-image: url('${slide}');
-                background-size: ${imageScale !== 1 ? `${imageScale * 100}%` : backgroundSize};
-                background-position: ${backgroundPosition};
-                background-repeat: no-repeat;
+                overflow: hidden;
                 opacity: ${index === 0 ? '1' : '0'};
                 transition: opacity 0.7s ease-in-out;
             `;
+            const img = document.createElement('img');
+            img.src = slide;
+            img.alt = '';
+            img.style.cssText = `
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: ${photoFit};
+                object-position: ${photoOrigin};
+                transform: scale(${imageScale});
+                transform-origin: ${photoOrigin};
+            `;
+            slideDiv.appendChild(img);
             previewContainer.appendChild(slideDiv);
         });
         
         let currentFadeIndex = 0;
-        setInterval(() => {
-            const fadeSlides = previewContainer.querySelectorAll('div');
+        window.heroPreviewFadeTimer = setInterval(() => {
+            const fadeSlides = previewContainer.querySelectorAll(':scope > div');
             if (fadeSlides.length > 1) {
                 fadeSlides[currentFadeIndex].style.opacity = '0';
                 currentFadeIndex = (currentFadeIndex + 1) % fadeSlides.length;

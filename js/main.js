@@ -58,8 +58,8 @@ function setMobileMenuOpen(isOpen) {
     mobileMenuToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     const menuIcon = mobileMenuToggle.querySelector('.menu-icon');
     const closeIcon = mobileMenuToggle.querySelector('.close-icon');
-    if (menuIcon) menuIcon.style.display = isOpen ? 'none' : 'block';
-    if (closeIcon) closeIcon.style.display = isOpen ? 'block' : 'none';
+    if (menuIcon) menuIcon.style.display = isOpen ? 'none' : 'flex';
+    if (closeIcon) closeIcon.style.display = isOpen ? 'flex' : 'none';
     document.body.classList.toggle('mobile-menu-open', isOpen);
 }
 
@@ -240,30 +240,49 @@ window.initHeaderChrome = function() {
 
 window.initHeaderChrome();
 
+window.refreshScrollReveal = function () {
+    document.documentElement.classList.add('js-reveal');
+    const pieceSelector = '.three-column-item, .news-card, .academics-text, .admissions-banner-content, .card, .teacher-card, .facility-card, .event-card, .testimonial-card, .value-card, .school-life-card, .sport-card, .gallery-item';
+    const nodes = [];
+    document.querySelectorAll('main section').forEach(function (section) {
+        if (section.classList.contains('hero-section') || section.id === 'home' || section.classList.contains('page-hero-section')) return;
+        const pieces = section.querySelectorAll(pieceSelector);
+        if (pieces.length) {
+            pieces.forEach(function (piece, index) { nodes.push([piece, index]); });
+        } else {
+            nodes.push([section, 0]);
+        }
+    });
+    if (!window.__revealObserver) {
+        window.__revealObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-visible');
+                window.__revealObserver.unobserve(entry.target);
+            });
+        }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+    }
+    nodes.forEach(function (pair) {
+        const el = pair[0];
+        const index = pair[1];
+        if (el.classList.contains('reveal-on-scroll')) return;
+        el.classList.add('reveal-on-scroll');
+        el.style.transitionDelay = Math.min(index, 3) * 90 + 'ms';
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
+            el.classList.add('is-visible');
+        } else {
+            window.__revealObserver.observe(el);
+        }
+    });
+};
+
 // Mobile Menu Toggle and Search
 document.addEventListener('DOMContentLoaded', function() {
     window.initHeaderChrome();
 
-    // Add fade-in animation to elements
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
-    const observer = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('fade-in');
-                observer.unobserve(entry.target);
-            }
-        });
-    }, observerOptions);
-    
-    // Observe all cards and sections
-    document.querySelectorAll('.card, .stat-card, .school-life-card, .sport-card, .value-card, .news-card, .facility-card, .teacher-card, .event-card, .testimonial-card').forEach(el => {
-        observer.observe(el);
-    });
-    
+    window.refreshScrollReveal();
+
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
@@ -298,28 +317,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-    
-    // Add smooth animations on scroll
-    const animatedElements = document.querySelectorAll('.school-life-card, .sport-card, .value-card, .news-card, .facility-card, .teacher-card, .event-card, .testimonial-card, .stat-card');
-    animatedElements.forEach(el => {
-        el.classList.add('animate-on-scroll');
-    });
-    
-    const animationObserver = new IntersectionObserver(function(entries) {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('animated');
-                animationObserver.unobserve(entry.target);
-            }
-        });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
-    
-    animatedElements.forEach(el => {
-        animationObserver.observe(el);
-    });
     
     // Smooth page transitions
     document.querySelectorAll('a[href$=".php"]').forEach(link => {

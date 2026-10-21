@@ -85,8 +85,8 @@ const HeaderLoader = {
                                     </svg>
                                 </button>
                                 <button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false">
-                                    <span class="menu-icon">☰</span>
-                                    <span class="close-icon" style="display: none;">✕</span>
+                                    <span class="menu-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span>
+                                    <span class="close-icon" style="display: none;" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="6" x2="18" y2="18"></line><line x1="18" y1="6" x2="6" y2="18"></line></svg></span>
                                 </button>
                             </div>
                         </div>

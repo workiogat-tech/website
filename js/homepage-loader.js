@@ -6,20 +6,26 @@ const HomepageLoader = {
     async loadHeroContent() {
         const heroSection = document.getElementById('heroSection');
         if (!heroSection) return;
-        
+
+        const cached = this.readHeroCache();
+        if (cached) this.renderHero(cached);
+
         try {
-            const result = await this.fetchHomepage();
-            if (result && result.success && result.data && result.data.heroContent) {
-                this.renderHero(result.data.heroContent);
+            let fresh = window.__heroFast ? await window.__heroFast : null;
+            if (!fresh || (!fresh.slides && !fresh.background_image)) {
+                const response = await fetch('/api/public/hero-slides.php');
+                fresh = response.ok ? await response.json() : null;
+            }
+            if (fresh && ((fresh.slides && fresh.slides.length) || fresh.background_image)) {
+                if (!this.sameHero(cached, fresh)) this.renderHero(fresh);
+                this.writeHeroCache(fresh);
                 return;
             }
 
-            if (typeof window.ClientStorage !== 'undefined') {
-                const heroData = await window.ClientStorage.hero.get();
-                const hasImage = heroData && (heroData.background_image || (heroData.slides && heroData.slides.length));
-                if (hasImage) {
-                    this.renderHero(heroData);
-                }
+            const result = await this.fetchHomepage();
+            if (result && result.success && result.data && result.data.heroContent) {
+                this.renderHero(result.data.heroContent);
+                this.writeHeroCache(result.data.heroContent);
             }
         } catch (error) {
             console.error('Error loading hero content:', error);
@@ -36,26 +42,105 @@ const HomepageLoader = {
         return this._homepagePromise;
     },
 
+    heroDisplayUrl(url) {
+        if (!url || url.indexOf('/storage/v1/object/public/') === -1) return url;
+        try {
+            if (localStorage.getItem('sjs_img_resize') === '0') return url;
+        } catch (error) {}
+        const resized = url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/');
+        return resized + (resized.indexOf('?') === -1 ? '?' : '&') + 'width=1600&quality=60';
+    },
+
     preloadPhotos(urls) {
+        const seen = {};
         (urls || []).forEach((url, index) => {
-            if (!url || String(url).indexOf('data:') === 0) return;
+            const src = this.heroDisplayUrl(url);
+            if (!src || seen[src] || String(src).indexOf('data:') === 0 || index > 2) return;
+            seen[src] = true;
             const link = document.createElement('link');
             link.rel = 'preload';
             link.as = 'image';
-            link.href = url;
+            link.href = src;
             if (index === 0) link.setAttribute('fetchpriority', 'high');
             document.head.appendChild(link);
         });
     },
 
-    photoElement(url, eager) {
+    photoElement(url, eager, fit) {
         const img = document.createElement('img');
         img.className = 'hero-slide-photo';
         img.alt = '';
         img.decoding = 'async';
-        img.fetchPriority = eager ? 'high' : 'low';
-        img.src = url;
+        img.fetchPriority = eager ? 'high' : 'auto';
+        img.dataset.full = url;
+        img.src = this.heroDisplayUrl(url);
+        img.onerror = function () {
+            const full = img.dataset.full;
+            if (full && img.src !== full) {
+                try { localStorage.setItem('sjs_img_resize', '0'); } catch (error) {}
+                img.onerror = null;
+                img.src = full;
+            }
+        };
+        this.applyPhotoFit(img, fit);
         return img;
+    },
+
+    readHeroCache() {
+        try {
+            const saved = JSON.parse(localStorage.getItem('sjs_hero_cache') || 'null');
+            return saved && Array.isArray(saved.slides) ? saved : null;
+        } catch (error) {
+            return null;
+        }
+    },
+
+    writeHeroCache(data) {
+        try {
+            localStorage.setItem('sjs_hero_cache', JSON.stringify({
+                slides: data.slides || [],
+                background_image: data.background_image || '',
+                slide_mode: data.slide_mode || 'marquee',
+                slide_direction: data.slide_direction || 'left',
+                slide_interval_ms: data.slide_interval_ms || 5000,
+                background_size: data.background_size || 'contain',
+                background_position: data.background_position || 'center',
+                image_scale: data.image_scale || 1,
+                headline: data.headline || '',
+                subheadline: data.subheadline || '',
+                description: data.description || '',
+                headline_color: data.headline_color || '',
+                subheadline_color: data.subheadline_color || ''
+            }));
+        } catch (error) {}
+    },
+
+    sameHero(saved, fresh) {
+        if (!saved || !fresh) return false;
+        const savedSlides = (saved.slides || []).join('|');
+        const freshSlides = (fresh.slides || []).join('|');
+        return savedSlides === freshSlides
+            && Number(saved.image_scale || 1) === Number(fresh.image_scale || 1)
+            && Number(saved.slide_interval_ms || 5000) === Number(fresh.slide_interval_ms || 5000)
+            && (saved.background_size || 'contain') === (fresh.background_size || 'contain')
+            && (saved.slide_mode || 'marquee') === (fresh.slide_mode || 'marquee');
+    },
+
+    applyPhotoFit(img, fit) {
+        if (!img || !fit) return;
+        const position = {
+            center: 'center center',
+            top: 'center top',
+            bottom: 'center bottom',
+            left: 'left center',
+            right: 'right center'
+        }[fit.position] || 'center center';
+        const objectFit = fit.size === 'cover' ? 'cover' : (fit.size === 'auto' ? 'scale-down' : 'contain');
+        const scale = fit.scale > 0 ? fit.scale : 1;
+        img.style.objectFit = objectFit;
+        img.style.objectPosition = position;
+        img.style.transform = 'scale(' + scale + ')';
+        img.style.transformOrigin = position;
     },
     
     renderHero(data) {
@@ -108,10 +193,12 @@ const HomepageLoader = {
         
         const slideMode = data.slide_mode || 'marquee';
         const slideDirection = data.slide_direction || 'left';
-        const slideInterval = parseInt(data.slide_interval_ms || 5000);
-        const backgroundSize = data.background_size || 'contain';
-        const backgroundPosition = data.background_position || 'center';
-        const imageScale = parseFloat(data.image_scale || 1) || 1;
+        const slideInterval = Math.max(1000, parseInt(data.slide_interval_ms || 5000, 10) || 5000);
+        const photoFit = {
+            size: data.background_size || 'contain',
+            position: data.background_position || 'center',
+            scale: parseFloat(data.image_scale || 1) || 1
+        };
         this.preloadPhotos(heroSlides);
         
         // Remove existing slider
@@ -127,9 +214,9 @@ const HomepageLoader = {
             sliderContainer.setAttribute('data-mode', slideMode);
             sliderContainer.setAttribute('data-direction', slideDirection);
             sliderContainer.setAttribute('data-interval', slideInterval);
-            sliderContainer.setAttribute('data-background-size', backgroundSize);
-            sliderContainer.setAttribute('data-background-position', backgroundPosition);
-            sliderContainer.setAttribute('data-image-scale', imageScale);
+            sliderContainer.setAttribute('data-background-size', photoFit.size);
+            sliderContainer.setAttribute('data-background-position', photoFit.position);
+            sliderContainer.setAttribute('data-image-scale', photoFit.scale);
             
             if (slideMode === 'marquee') {
                 // Create 3 copies for seamless loop
@@ -144,7 +231,7 @@ const HomepageLoader = {
                 duplicatedSlides.forEach((slide, index) => {
                     const slideItem = document.createElement('div');
                     slideItem.className = 'hero-slide-item';
-                    slideItem.appendChild(this.photoElement(slide, index < uniqueSlides.length));
+                    slideItem.appendChild(this.photoElement(slide, index < uniqueSlides.length, photoFit));
                     marqueeDiv.appendChild(slideItem);
                 });
                 sliderContainer.appendChild(marqueeDiv);
@@ -155,7 +242,7 @@ const HomepageLoader = {
                 heroSlides.forEach((slide, index) => {
                     const slideItem = document.createElement('div');
                     slideItem.className = `hero-slide-item fade-slide ${index === 0 ? 'active' : ''}`;
-                    slideItem.appendChild(this.photoElement(slide, index === 0));
+                    slideItem.appendChild(this.photoElement(slide, index === 0, photoFit));
                     fadeDiv.appendChild(slideItem);
                 });
                 sliderContainer.appendChild(fadeDiv);
@@ -175,8 +262,8 @@ const HomepageLoader = {
             // No slides, use background image if available
             if (data.background_image) {
                 heroSection.style.backgroundImage = `url('${data.background_image.replace(/'/g, "\\'")}')`;
-                heroSection.style.backgroundSize = backgroundSize;
-                heroSection.style.backgroundPosition = backgroundPosition;
+                heroSection.style.backgroundSize = photoFit.size === 'auto' ? 'auto' : photoFit.size;
+                heroSection.style.backgroundPosition = photoFit.position;
             }
         }
     },
@@ -186,30 +273,31 @@ const HomepageLoader = {
         const slideDirection = container.dataset.direction || 'left';
         const slideInterval = parseInt(container.dataset.interval || 5000);
         
+        if (this._fadeTimer) {
+            clearInterval(this._fadeTimer);
+            this._fadeTimer = null;
+        }
+
         if (slideMode === 'marquee') {
-            // Marquee animation is handled by CSS
             const marquee = container.querySelector('.hero-slides-marquee');
             if (marquee) {
-                const direction = slideDirection === 'right' ? 'reverse' : 'normal';
-                marquee.style.animationDirection = direction;
-                // Calculate duration: total slides (3 copies) * interval per slide
                 const slideItems = marquee.querySelectorAll('.hero-slide-item');
-                const totalSlides = slideItems.length;
-                const totalDuration = (totalSlides * slideInterval) / 1000; // Convert to seconds
-                marquee.style.animationDuration = `${totalDuration}s`;
-                
-                // Set width for marquee container based on slide count
-                const slideWidth = 100 / totalSlides;
+                const totalSlides = slideItems.length || 1;
+                const uniqueCount = Math.max(1, Math.round(totalSlides / 3));
+                const secondsPerPass = (uniqueCount * slideInterval) / 1000;
+                marquee.style.width = (totalSlides * 100) + '%';
+                marquee.style.animation = (slideDirection === 'right' ? 'heroMarqueeRight' : 'heroMarquee')
+                    + ' ' + secondsPerPass + 's linear infinite';
                 slideItems.forEach(item => {
-                    item.style.width = `${slideWidth}%`;
+                    item.style.flex = '0 0 ' + (100 / totalSlides) + '%';
+                    item.style.width = (100 / totalSlides) + '%';
                 });
             }
         } else {
-            // Fade mode - cycle through slides
             const slides = container.querySelectorAll('.fade-slide');
             if (slides.length > 1) {
                 let currentIndex = 0;
-                setInterval(() => {
+                this._fadeTimer = setInterval(() => {
                     slides[currentIndex].classList.remove('active');
                     currentIndex = (currentIndex + 1) % slides.length;
                     slides[currentIndex].classList.add('active');
@@ -326,6 +414,7 @@ const HomepageLoader = {
             
             grid.innerHTML += sectionHTML;
         });
+        if (typeof window.refreshScrollReveal === 'function') window.refreshScrollReveal();
     },
     
     escapeHtml(text) {
