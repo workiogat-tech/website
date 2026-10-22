@@ -143,7 +143,7 @@ const HomepageLoader = {
         const scale = fit.scale > 0 ? fit.scale : 1;
         img.style.objectFit = objectFit;
         img.style.objectPosition = position;
-        img.style.transform = 'scale(' + scale + ')';
+        img.style.transform = Math.abs(scale - 1) < 0.01 ? '' : 'scale(' + scale + ')';
         img.style.transformOrigin = position;
     },
     
@@ -298,18 +298,24 @@ const HomepageLoader = {
                     return;
                 }
                 container.dataset.layoutTries = '0';
-                const distance = uniqueCount * frame;
+                const roundedFrame = Math.round(frame);
+                const previousFrame = Number(container.dataset.frameWidth || 0);
+                if (marquee._slideMove && Math.abs(previousFrame - roundedFrame) < 16) {
+                    return;
+                }
+                container.dataset.frameWidth = String(roundedFrame);
+                const distance = uniqueCount * roundedFrame;
                 const duration = Math.max(800, uniqueCount * slideInterval);
                 marquee.style.display = 'flex';
-                marquee.style.width = (totalSlides * frame) + 'px';
+                marquee.style.width = (totalSlides * roundedFrame) + 'px';
                 marquee.style.animation = 'none';
                 slideItems.forEach(item => {
                     item.style.position = 'relative';
                     item.style.left = 'auto';
                     item.style.right = 'auto';
-                    item.style.flex = '0 0 ' + frame + 'px';
-                    item.style.width = frame + 'px';
-                    item.style.minWidth = frame + 'px';
+                    item.style.flex = '0 0 ' + roundedFrame + 'px';
+                    item.style.width = roundedFrame + 'px';
+                    item.style.minWidth = roundedFrame + 'px';
                 });
                 if (marquee._slideMove) {
                     marquee._slideMove.cancel();
