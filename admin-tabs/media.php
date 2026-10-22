@@ -4,6 +4,11 @@
  */
 $selectedSection = $_GET['section'] ?? null;
 
+if (!function_exists('syncSavedImagesIntoMedia')) {
+    require_once __DIR__ . '/../includes/storage.php';
+}
+syncSavedImagesIntoMedia($db);
+
 // POST requests are now handled in admin.php before HTML output
 
 // Get all media sections

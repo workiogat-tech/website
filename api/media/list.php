@@ -30,6 +30,7 @@ $db = getDB();
 
 try {
     ensureImageColumns($db);
+    syncSavedImagesIntoMedia($db);
     $media = $db->fetchAll("SELECT m.*, ms.name as section_name, ms.color as section_color 
                            FROM media m 
                            LEFT JOIN media_sections ms ON m.section_id = ms.id 

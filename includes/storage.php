@@ -160,6 +160,106 @@ function ensureImageColumns($db): void {
     }
 }
 
+function savedWebsiteImageUrls($db): array {
+    $urls = [];
+    $add = function ($url) use (&$urls) {
+        $url = trim((string) $url);
+        if ($url === '' || stripos($url, 'data:') === 0) {
+            return;
+        }
+        if (!preg_match('#^(https?:)?//#i', $url) && strpos($url, '/') !== 0) {
+            return;
+        }
+        if (!in_array($url, $urls, true)) {
+            $urls[] = $url;
+        }
+    };
+
+    try {
+        $rows = $db->fetchAll("SELECT background_image, slides FROM hero_content");
+    } catch (Exception $e) {
+        return [];
+    }
+
+    foreach ($rows as $row) {
+        $add($row['background_image'] ?? '');
+        $raw = $row['slides'] ?? '';
+        if (is_array($raw)) {
+            $list = $raw;
+        } elseif (is_string($raw) && trim($raw) !== '') {
+            $decoded = json_decode($raw, true);
+            if (is_string($decoded)) {
+                $decoded = json_decode($decoded, true);
+            }
+            $list = is_array($decoded) ? $decoded : [$raw];
+        } else {
+            $list = [];
+        }
+        foreach ($list as $slide) {
+            if (is_string($slide)) {
+                $add($slide);
+            } elseif (is_array($slide)) {
+                foreach (['url', 'image', 'src', 'file_path', 'file_url'] as $key) {
+                    if (!empty($slide[$key]) && is_string($slide[$key])) {
+                        $add($slide[$key]);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    return $urls;
+}
+
+function syncSavedImagesIntoMedia($db): void {
+    ensureImageColumns($db);
+    try {
+        $rows = $db->fetchAll("SELECT filename, file_path FROM media");
+    } catch (Exception $e) {
+        return;
+    }
+
+    $existing = [];
+    foreach ($rows as $row) {
+        foreach ([$row['file_path'] ?? '', $row['filename'] ?? ''] as $value) {
+            $value = (string) $value;
+            if ($value === '') {
+                continue;
+            }
+            $existing[$value] = true;
+            $existing[basename(parse_url($value, PHP_URL_PATH) ?: $value)] = true;
+        }
+    }
+
+    $mimeByExt = [
+        'jpg' => 'image/jpeg',
+        'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        'gif' => 'image/gif',
+        'webp' => 'image/webp',
+    ];
+
+    foreach (savedWebsiteImageUrls($db) as $url) {
+        $base = basename(parse_url($url, PHP_URL_PATH) ?: $url);
+        if ($base === '' || $base === '/' || isset($existing[$url]) || isset($existing[$base])) {
+            continue;
+        }
+        $ext = strtolower(pathinfo($base, PATHINFO_EXTENSION));
+        try {
+            $db->insert(
+                "INSERT INTO media (section_id, filename, original_name, file_path, file_size, file_type, created_at)
+                 VALUES (?, ?, ?, ?, ?, ?, NOW())",
+                [null, $base, $base, $url, 0, $mimeByExt[$ext] ?? 'image/jpeg']
+            );
+            $existing[$url] = true;
+            $existing[$base] = true;
+        } catch (Exception $e) {
+            error_log('Could not record saved image ' . $base . ': ' . $e->getMessage());
+        }
+    }
+}
+
 function storeUploadedFile(string $tmpPath, string $filename, string $mime): string {
     if (supabaseStorageConfigured()) {
         $bucket = appEnv('SUPABASE_STORAGE_BUCKET', 'uploads');

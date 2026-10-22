@@ -155,20 +155,28 @@
             </div>
             
             <!-- Slide Settings -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px;">
-                <div class="form-group">
-                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Slide Interval (milliseconds)</label>
-                    <input type="number" 
-                           name="slide_interval_ms" 
-                           id="slide_interval_ms"
-                           class="form-input" 
-                           style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;"
-                           value="5000"
-                           min="1000" 
-                           step="500"
-                           onchange="updateSliderPreview()"
-                           oninput="updateSliderPreview()">
+            <div style="margin-bottom: 24px;">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 12px;">
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin: 0;">Slide Speed</label>
+                        <span id="slideSpeedValue" style="background: #111827; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 700;">79</span>
+                    </div>
+                    <input type="range"
+                           id="slide_speed"
+                           min="0"
+                           max="100"
+                           step="1"
+                           value="79"
+                           style="width: 100%; height: 10px; accent-color: #111827; cursor: pointer;"
+                           oninput="setSlideAccelerator(this.value)">
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #6b7280;">
+                        <span>0 Slow</span>
+                        <span>100 Fast</span>
+                    </div>
+                    <p style="font-size: 12px; color: #6b7280; margin: 8px 0 0 0;">Like a car accelerator. A higher number makes the photos move faster.</p>
+                    <input type="hidden" name="slide_interval_ms" id="slide_interval_ms" value="5000">
                 </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
                 
                 <div class="form-group">
                     <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Slide Direction</label>
@@ -192,6 +200,7 @@
                         <option value="marquee" selected>Continuous (Marquee)</option>
                         <option value="fade">Fade</option>
                     </select>
+                </div>
                 </div>
             </div>
             
@@ -316,6 +325,50 @@ if (typeof window.heroData === 'undefined') {
 var heroSlides = window.heroSlides;
 var heroData = window.heroData;
 
+function intervalToSlideSpeed(ms) {
+    var slow = 20000;
+    var fast = 1000;
+    var interval = parseInt(ms, 10);
+    if (!isFinite(interval)) interval = 5000;
+    if (interval < fast) interval = fast;
+    if (interval > slow) interval = slow;
+    return Math.round((slow - interval) / (slow - fast) * 100);
+}
+
+function slideSpeedToInterval(speed) {
+    var slow = 20000;
+    var fast = 1000;
+    var value = parseInt(speed, 10);
+    if (!isFinite(value)) value = 0;
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+    return Math.round(slow - (value / 100) * (slow - fast));
+}
+
+function showSavedSlideSpeed(ms) {
+    var speed = intervalToSlideSpeed(ms);
+    var slider = document.getElementById('slide_speed');
+    var badge = document.getElementById('slideSpeedValue');
+    var hidden = document.getElementById('slide_interval_ms');
+    if (slider) slider.value = String(speed);
+    if (badge) badge.textContent = String(speed);
+    if (hidden) hidden.value = String(parseInt(ms, 10) || slideSpeedToInterval(speed));
+}
+
+function setSlideAccelerator(speed) {
+    var value = parseInt(speed, 10);
+    if (!isFinite(value)) value = 0;
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+    var slider = document.getElementById('slide_speed');
+    var badge = document.getElementById('slideSpeedValue');
+    var hidden = document.getElementById('slide_interval_ms');
+    if (slider) slider.value = String(value);
+    if (badge) badge.textContent = String(value);
+    if (hidden) hidden.value = String(slideSpeedToInterval(value));
+    if (typeof updateSliderPreview === 'function') updateSliderPreview();
+}
+
 (async function() {
     await loadHeroData();
 })();
@@ -408,7 +461,7 @@ async function loadHeroData() {
             document.getElementById('subheadline_color_picker').value = subHeadlineColor;
             document.getElementById('subheadline_color_text').value = subHeadlineColor;
             
-            document.getElementById('slide_interval_ms').value = heroData.slide_interval_ms || 5000;
+            showSavedSlideSpeed(heroData.slide_interval_ms || 5000);
             document.getElementById('slide_direction').value = heroData.slide_direction || 'left';
             document.getElementById('slide_mode').value = heroData.slide_mode || 'marquee';
             document.getElementById('background_size').value = heroData.background_size || 'contain';

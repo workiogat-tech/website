@@ -29,6 +29,14 @@ if (!empty($hero['slides'])) {
 $headlineColor = $hero['headline_color'] ?? $hero['headlineColor'] ?? '#ffffff';
 $subHeadlineColor = $hero['subheadline_color'] ?? $hero['subHeadlineColor'] ?? '#ffffff';
 $descriptionColor = $hero['description_color'] ?? $hero['descriptionColor'] ?? '#ffffff';
+$slideIntervalMs = (int) ($hero['slide_interval_ms'] ?? 5000);
+if ($slideIntervalMs < 1000) {
+    $slideIntervalMs = 5000;
+}
+$slideSpeedSlow = 20000;
+$slideSpeedFast = 1000;
+$slideIntervalClamped = max($slideSpeedFast, min($slideSpeedSlow, $slideIntervalMs));
+$slideSpeed = (int) round(($slideSpeedSlow - $slideIntervalClamped) / ($slideSpeedSlow - $slideSpeedFast) * 100);
 ?>
 <div class="content-card" style="padding: 0;">
     <div style="padding: 30px;">
@@ -249,17 +257,28 @@ $descriptionColor = $hero['description_color'] ?? $hero['descriptionColor'] ?? '
             </div>
             
             <!-- Slide Settings -->
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px;">
-                <div class="form-group">
-                    <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Slide Interval (milliseconds)</label>
-                    <input type="number" 
-                           name="slide_interval_ms" 
-                           class="form-input" 
-                           style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;"
-                           value="<?php echo htmlspecialchars($hero['slide_interval_ms'] ?? 5000); ?>"
-                           min="1000" 
-                           step="500">
+            <div style="margin-bottom: 24px;">
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; gap: 12px;">
+                        <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin: 0;">Slide Speed</label>
+                        <span id="slideSpeedValue" style="background: #111827; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 700;"><?php echo (int) $slideSpeed; ?></span>
+                    </div>
+                    <input type="range"
+                           id="slide_speed"
+                           min="0"
+                           max="100"
+                           step="1"
+                           value="<?php echo (int) $slideSpeed; ?>"
+                           style="width: 100%; height: 10px; accent-color: #111827; cursor: pointer;"
+                           oninput="setSlideAccelerator(this.value)">
+                    <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: #6b7280;">
+                        <span>0 Slow</span>
+                        <span>100 Fast</span>
+                    </div>
+                    <p style="font-size: 12px; color: #6b7280; margin: 8px 0 0 0;">Like a car accelerator. A higher number makes the photos move faster.</p>
+                    <input type="hidden" name="slide_interval_ms" id="slide_interval_ms" value="<?php echo (int) $slideIntervalMs; ?>">
                 </div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
                 
                 <div class="form-group">
                     <label style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Slide Direction</label>
@@ -279,6 +298,7 @@ $descriptionColor = $hero['description_color'] ?? $hero['descriptionColor'] ?? '
                         <option value="marquee" <?php echo ($hero['slide_mode'] ?? 'marquee') === 'marquee' ? 'selected' : ''; ?>>Continuous (M</option>
                         <option value="fade" <?php echo ($hero['slide_mode'] ?? 'marquee') === 'fade' ? 'selected' : ''; ?>>Fade</option>
                     </select>
+                </div>
                 </div>
             </div>
             
@@ -388,6 +408,40 @@ $descriptionColor = $hero['description_color'] ?? $hero['descriptionColor'] ?? '
 </div>
 
 <script>
+function intervalToSlideSpeed(ms) {
+    var slow = 20000;
+    var fast = 1000;
+    var interval = parseInt(ms, 10);
+    if (!isFinite(interval)) interval = 5000;
+    if (interval < fast) interval = fast;
+    if (interval > slow) interval = slow;
+    return Math.round((slow - interval) / (slow - fast) * 100);
+}
+
+function slideSpeedToInterval(speed) {
+    var slow = 20000;
+    var fast = 1000;
+    var value = parseInt(speed, 10);
+    if (!isFinite(value)) value = 0;
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+    return Math.round(slow - (value / 100) * (slow - fast));
+}
+
+function setSlideAccelerator(speed) {
+    var value = parseInt(speed, 10);
+    if (!isFinite(value)) value = 0;
+    if (value < 0) value = 0;
+    if (value > 100) value = 100;
+    var slider = document.getElementById('slide_speed');
+    var badge = document.getElementById('slideSpeedValue');
+    var hidden = document.getElementById('slide_interval_ms');
+    if (slider) slider.value = String(value);
+    if (badge) badge.textContent = String(value);
+    if (hidden) hidden.value = String(slideSpeedToInterval(value));
+    if (typeof updateSliderPreview === 'function') updateSliderPreview();
+}
+
 let heroSlides = <?php echo json_encode($slides ?? []); ?>;
 if (!Array.isArray(heroSlides)) {
     heroSlides = [];
