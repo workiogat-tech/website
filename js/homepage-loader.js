@@ -376,7 +376,9 @@ const HomepageLoader = {
     
     renderThreeColumnSections(sections) {
         const grid = document.querySelector('.three-column-grid');
+        const sectionWrap = document.getElementById('home-columns');
         if (!grid || !sections || sections.length === 0) return;
+        if (sectionWrap) sectionWrap.hidden = false;
         
         // Clear existing content
         grid.innerHTML = '';

@@ -959,6 +959,32 @@ body {
     transform-origin: center center;
 }
 
+.embedded-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.embedded-photo-grid .embedded-photo {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    border-radius: 12px;
+    display: block;
+}
+
+.school-bg-history-image .embedded-photo,
+.school-bg-journey-image .embedded-photo,
+.why-choose-image .embedded-photo {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    object-fit: cover;
+    display: block;
+    border-radius: 12px;
+}
+
 .hero-slides-marquee .hero-slide-item {
     position: relative;
     height: 100%;

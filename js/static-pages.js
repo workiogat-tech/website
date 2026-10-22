@@ -6,16 +6,16 @@
 const StaticPages = {
     // Default branding data
     branding: {
-        school_name: 'Excellence Academy',
+        school_name: '',
         logo: '',
         favicon: ''
     },
     
-    // Default contact info
+    // Contact details come from the saved site record. Nothing is invented here.
     contactInfo: {
-        email: 'info@sjs.com',
-        phone: '0703574113',
-        address: '123 Education Street, Learning City'
+        email: '',
+        phone: '',
+        address: ''
     },
     
     // Default navigation - EXACT match to original header.php
@@ -94,7 +94,7 @@ const StaticPages = {
                     <div class="container">
                         <div class="header-top-content">
                             <div class="contact-info">
-                                <a href="mailto:${contact.email}" class="contact-item">
+                                ${contact.email ? `<a href="mailto:${contact.email}" class="contact-item">
                                     <span class="contact-icon">
                                         <svg class="icon-mail" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
                                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -102,15 +102,15 @@ const StaticPages = {
                                         </svg>
                                     </span>
                                     <span>${contact.email}</span>
-                                </a>
-                                <a href="tel:${contact.phone}" class="contact-item">
+                                </a>` : ''}
+                                ${contact.phone ? `<a href="tel:${contact.phone}" class="contact-item">
                                     <span class="contact-icon">
                                         <svg class="icon-phone" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2">
                                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                                         </svg>
                                     </span>
                                     <span>${contact.phone}</span>
-                                </a>
+                                </a>` : ''}
                             </div>
                             <nav class="top-nav-desktop">
                                 ${this.renderNav(this.navigation, false)}
@@ -125,7 +125,7 @@ const StaticPages = {
                                 <a href="index.html" class="logo-link">
                                     ${branding.logo ? 
                                         `<img src="${branding.logo}" alt="${branding.school_name}" class="logo-image">` : 
-                                        `<div class="logo-placeholder"><span>${branding.school_name.charAt(0)}</span></div>`
+                                        (branding.school_name ? `<div class="logo-placeholder"><span>${branding.school_name.charAt(0)}</span></div>` : '')
                                     }
                                 </a>
                             </div>
@@ -236,11 +236,11 @@ const StaticPages = {
                         <div class="footer-grid">
                             <div class="footer-column footer-info">
                                 <h3>Information</h3>
-                                <p class="footer-name">${branding.school_name}</p>
+                                ${branding.school_name ? `<p class="footer-name">${branding.school_name}</p>` : ''}
                                 <ul class="footer-links">
-                                    <li>${contact.address}</li>
-                                    <li><a href="tel:${contact.phone}">${contact.phone}</a></li>
-                                    <li><a href="mailto:${contact.email}">${contact.email}</a></li>
+                                    ${contact.address ? `<li>${contact.address}</li>` : ''}
+                                    ${contact.phone ? `<li><a href="tel:${contact.phone}">${contact.phone}</a></li>` : ''}
+                                    ${contact.email ? `<li><a href="mailto:${contact.email}">${contact.email}</a></li>` : ''}
                                 </ul>
                             </div>
                             <div class="footer-column">
@@ -261,7 +261,7 @@ const StaticPages = {
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <div class="container">&copy; ${branding.school_name}. All rights reserved.</div>
+                    <div class="container">${branding.school_name ? `&copy; ${branding.school_name}. All rights reserved.` : ''}</div>
                 </div>
             </footer>
             <button id="backToTop" class="back-to-top" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: #800020; color: white; border: none; cursor: pointer; align-items: center; justify-content: center;">
@@ -367,15 +367,23 @@ const StaticPages = {
 
     // Initialize page
     async init() {
+        const headerPlaceholder = document.getElementById('header-placeholder');
+        const footerPlaceholder = document.getElementById('footer-placeholder');
+        const existingLogo = document.querySelector('.logo-image');
+        const keptLogo = existingLogo ? existingLogo.getAttribute('src') : '';
+        if (keptLogo) {
+            this.branding.logo = keptLogo;
+        }
+
         // Load branding and contact from localStorage first, then the saved admin data
         await this.loadBranding();
         await this.loadContact();
         await this.loadFromServer();
+        if (!this.branding.logo && keptLogo) {
+            this.branding.logo = keptLogo;
+        }
         
         // Load header and footer
-        const headerPlaceholder = document.getElementById('header-placeholder');
-        const footerPlaceholder = document.getElementById('footer-placeholder');
-        
         if (headerPlaceholder) {
             headerPlaceholder.innerHTML = this.renderHeader();
             this.initHeader();

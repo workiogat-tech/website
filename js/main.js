@@ -513,14 +513,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Auto-open newsletter modal after 3 seconds (only once per session)
-    if (!sessionStorage.getItem('newsletterShown')) {
-        setTimeout(() => {
-            openNewsletterModal();
-            sessionStorage.setItem('newsletterShown', 'true');
-        }, 3000);
-    }
-    
     // Give Back Accordion (only for .accordion-item, not .giveback-accordion-item)
     document.querySelectorAll('.accordion-item .accordion-header').forEach(header => {
         // Skip if it's part of giveback accordion
