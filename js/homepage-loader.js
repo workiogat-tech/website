@@ -291,7 +291,7 @@ const HomepageLoader = {
                 const frame = container.clientWidth || (container.parentElement ? container.parentElement.clientWidth : 0);
                 if (frame < 40) {
                     const tries = Number(container.dataset.layoutTries || 0);
-                    if (tries < 12) {
+                    if (tries < 30) {
                         container.dataset.layoutTries = String(tries + 1);
                         requestAnimationFrame(() => this.initSliderAnimation(container));
                     }
@@ -300,36 +300,21 @@ const HomepageLoader = {
                 container.dataset.layoutTries = '0';
                 const roundedFrame = Math.round(frame);
                 const previousFrame = Number(container.dataset.frameWidth || 0);
-                if (marquee._slideMove && Math.abs(previousFrame - roundedFrame) < 16) {
+                if (container.classList.contains('is-measured') && Math.abs(previousFrame - roundedFrame) < 8) {
                     return;
                 }
                 container.dataset.frameWidth = String(roundedFrame);
-                const distance = uniqueCount * roundedFrame;
                 const duration = Math.max(800, uniqueCount * slideInterval);
-                marquee.style.display = 'flex';
-                marquee.style.width = (totalSlides * roundedFrame) + 'px';
-                marquee.style.animation = 'none';
-                slideItems.forEach(item => {
-                    item.style.position = 'relative';
-                    item.style.left = 'auto';
-                    item.style.right = 'auto';
-                    item.style.flex = '0 0 ' + roundedFrame + 'px';
-                    item.style.width = roundedFrame + 'px';
-                    item.style.minWidth = roundedFrame + 'px';
-                });
+                container.style.setProperty('--hero-frame', roundedFrame + 'px');
+                container.style.setProperty('--hero-count', String(totalSlides));
+                if (!container.classList.contains('is-measured')) {
+                    container.style.setProperty('--hero-duration', duration + 'ms');
+                    container.classList.add('is-measured');
+                }
                 if (marquee._slideMove) {
                     marquee._slideMove.cancel();
+                    marquee._slideMove = null;
                 }
-                const start = slideDirection === 'right' ? -distance : 0;
-                const end = slideDirection === 'right' ? 0 : -distance;
-                marquee._slideMove = marquee.animate([
-                    { transform: 'translate3d(' + start + 'px,0,0)' },
-                    { transform: 'translate3d(' + end + 'px,0,0)' }
-                ], {
-                    duration: duration,
-                    iterations: Infinity,
-                    easing: 'linear'
-                });
             }
         } else {
             const slides = container.querySelectorAll('.fade-slide');

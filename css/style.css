@@ -881,7 +881,7 @@ body {
     min-height: 100%;
     max-height: 100%;
     z-index: 1;
-    overflow: hidden; /* Keep hidden, but background-size: contain will show full images */
+    overflow: hidden !important;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -890,28 +890,40 @@ body {
 
 .hero-slides-marquee {
     display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch !important;
     height: 100%;
-    animation: none;
+    width: calc(var(--hero-count, 3) * var(--hero-frame, 100%));
     margin: 0 !important;
     padding: 0 !important;
     position: relative;
-    /* Width will be set dynamically by JavaScript based on slide count */
-    /* Ensure no gaps between slides - images must be attached to each other - matching React version */
     gap: 0 !important;
     box-sizing: border-box !important;
-    align-items: stretch !important;
-    /* Remove any spacing that could create gaps */
     border-spacing: 0 !important;
     border-collapse: collapse;
-    font-size: 0 !important; /* Remove font-size spacing */
-    line-height: 0 !important; /* Remove line-height spacing */
-    letter-spacing: 0 !important; /* Remove letter-spacing */
-    word-spacing: 0 !important; /* Remove word-spacing */
+    font-size: 0 !important;
+    line-height: 0 !important;
+    letter-spacing: 0 !important;
+    word-spacing: 0 !important;
     background: transparent !important;
     background-color: transparent !important;
     border: 0 !important;
     outline: 0 !important;
-    flex-wrap: nowrap !important;
+    animation-name: heroMarquee;
+    animation-duration: var(--hero-duration, 15s);
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+    animation-play-state: paused;
+    will-change: transform;
+}
+
+.hero-slides-container[data-direction="right"] .hero-slides-marquee {
+    animation-name: heroMarqueeRight;
+}
+
+.hero-slides-container.is-measured .hero-slides-marquee {
+    animation-play-state: running;
 }
 
 .hero-slides-fade {
@@ -931,13 +943,20 @@ body {
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
+    position: relative;
+    opacity: 1;
+    object-fit: cover !important;
+}
+
+.hero-slides-fade .hero-slide-item {
     position: absolute;
     top: 0;
-    left: 0;
-    bottom: 0;
     right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     opacity: 0;
-    object-fit: cover !important;
 }
 
 .hero-slide-item.fade-slide.active {
@@ -984,41 +1003,35 @@ body {
 }
 
 .hero-slides-marquee .hero-slide-item {
-    position: relative;
-    height: 100%;
+    position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    float: none !important;
+    clear: none !important;
+    flex: 0 0 var(--hero-frame, 100%) !important;
+    width: var(--hero-frame, 100%) !important;
+    min-width: var(--hero-frame, 100%) !important;
+    max-width: var(--hero-frame, 100%) !important;
+    height: 100% !important;
     min-height: 100%;
     max-height: 100%;
-    opacity: 1 !important; /* Make marquee slides visible */
+    opacity: 1 !important;
     flex-shrink: 0 !important;
     flex-grow: 0 !important;
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
-    overflow: hidden; /* Keep hidden, background-size: contain will show full images */
+    overflow: hidden;
     box-sizing: border-box !important;
-    /* Width will be set dynamically by JavaScript based on total slide count */
-    /* Ensure images are attached to each other with no gaps - matching React version */
     outline: none !important;
-    display: block !important; /* Parent flex makes it a flex item */
-    line-height: 0 !important; /* Remove line-height spacing */
-    font-size: 0 !important; /* Remove font-size spacing */
+    display: block !important;
+    line-height: 0 !important;
+    font-size: 0 !important;
     background-color: transparent !important;
-    gap: 0 !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    border-left: 0 !important;
-    border-right: 0 !important;
-    border-top: 0 !important;
-    border-bottom: 0 !important;
-    float: none !important;
-    clear: none !important;
-    /* Ensure no spacing between slides */
+    transform: none !important;
     vertical-align: top !important;
 }
 
@@ -1045,19 +1058,19 @@ body {
 
 @keyframes heroMarquee {
     0% {
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
     }
     100% {
-        transform: translateX(-33.333%); /* Move exactly one copy (3 copies total, so -33.333% = one complete set) */
+        transform: translate3d(calc(-100% / 3), 0, 0);
     }
 }
 
 @keyframes heroMarqueeRight {
     0% {
-        transform: translateX(-33.333%); /* Start from -33.333% position (2nd copy) */
+        transform: translate3d(calc(-100% / 3), 0, 0);
     }
     100% {
-        transform: translateX(0); /* Move back to start (which is identical to 2nd copy start) */
+        transform: translate3d(0, 0, 0);
     }
 }
 
@@ -6948,6 +6961,11 @@ svg {
 
 .hero-slides-marquee .hero-slide-item {
     position: relative !important;
+    inset: auto !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
     opacity: 1 !important;
     overflow: hidden;
     background: #4a0014;
