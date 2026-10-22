@@ -8,9 +8,30 @@ $_GET['__path'] = 'public/page';
 ini_set('display_errors', '0');
 error_reporting(E_ALL);
 
+$requested = str_replace('\\', '/', (string) ($_GET['page'] ?? 'index.html'));
+$requested = ltrim($requested, '/');
+if ($requested === '' || strpos($requested, '..') !== false) {
+    http_response_code(404);
+    echo 'Not found';
+    exit;
+}
+
+if (preg_match('#^admin-tabs/[a-z0-9-]+\.html$#', $requested)) {
+    $adminPath = __DIR__ . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $requested);
+    if (!is_file($adminPath)) {
+        http_response_code(404);
+        echo 'Not found';
+        exit;
+    }
+    header('Content-Type: text/html; charset=utf-8');
+    header('Cache-Control: no-cache');
+    readfile($adminPath);
+    exit;
+}
+
 require_once __DIR__ . '/config/config.php';
 
-$page = basename((string) ($_GET['page'] ?? 'index.html'));
+$page = basename($requested);
 if (!preg_match('/^[a-z0-9-]+\.html$/', $page)) {
     http_response_code(404);
     echo 'Not found';

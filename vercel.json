@@ -8,7 +8,7 @@
     "api/render.php": {
       "runtime": "vercel-php@0.7.4",
       "maxDuration": 30,
-      "includeFiles": "{*.html,render.php,config/**,includes/**}"
+      "includeFiles": "{*.html,render.php,config/**,includes/**,admin-tabs/**}"
     }
   },
   "routes": [
@@ -44,6 +44,10 @@
       "headers": {
         "Cache-Control": "public, max-age=3600"
       }
+    },
+    {
+      "src": "/admin-tabs/(.*)",
+      "dest": "/admin-tabs/$1"
     },
     {
       "src": "/(.*\\.html)",
