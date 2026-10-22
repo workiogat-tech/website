@@ -33,8 +33,8 @@ $slideIntervalMs = (int) ($hero['slide_interval_ms'] ?? 5000);
 if ($slideIntervalMs < 250) {
     $slideIntervalMs = 5000;
 }
-$slideSeconds = max(0.4, min(16.4, $slideIntervalMs / 1000));
-$slideSpeed = (int) round(max(0, min(100, (1 - sqrt(($slideSeconds - 0.4) / 16)) * 100)));
+$slideSeconds = max(1.2, min(15.2, $slideIntervalMs / 1000));
+$slideSpeed = (int) round(max(0, min(100, (1 - sqrt(($slideSeconds - 1.2) / 14)) * 100)));
 ?>
 <div class="content-card" style="padding: 0;">
     <div style="padding: 30px;">
@@ -409,9 +409,9 @@ $slideSpeed = (int) round(max(0, min(100, (1 - sqrt(($slideSeconds - 0.4) / 16))
 function intervalToSlideSpeed(ms) {
     var seconds = parseInt(ms, 10);
     seconds = (isFinite(seconds) ? seconds : 5000) / 1000;
-    if (seconds < 0.4) seconds = 0.4;
-    if (seconds > 16.4) seconds = 16.4;
-    var speed = (1 - Math.sqrt((seconds - 0.4) / 16)) * 100;
+    if (seconds < 1.2) seconds = 1.2;
+    if (seconds > 15.2) seconds = 15.2;
+    var speed = (1 - Math.sqrt((seconds - 1.2) / 14)) * 100;
     return Math.round(Math.max(0, Math.min(100, speed)));
 }
 
@@ -420,7 +420,7 @@ function slideSpeedToInterval(speed) {
     if (!isFinite(value)) value = 0;
     if (value < 0) value = 0;
     if (value > 100) value = 100;
-    var seconds = 0.4 + 16 * Math.pow(1 - (value / 100), 2);
+    var seconds = 1.2 + 14 * Math.pow(1 - (value / 100), 2);
     return Math.max(250, Math.round(seconds * 1000));
 }
 

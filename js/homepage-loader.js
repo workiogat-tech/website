@@ -262,7 +262,6 @@ const HomepageLoader = {
             
             // Initialize slider animation after layout so each photo gets the real hero width
             this.initSliderAnimation(sliderContainer);
-            requestAnimationFrame(() => this.initSliderAnimation(sliderContainer));
         } else {
             // No slides, use background image if available
             if (data.background_image) {
@@ -289,14 +288,41 @@ const HomepageLoader = {
                 const slideItems = marquee.querySelectorAll('.hero-slide-item');
                 const totalSlides = slideItems.length || 1;
                 const uniqueCount = Math.max(1, Math.round(totalSlides / 3));
-                const secondsPerPass = (uniqueCount * slideInterval) / 1000;
-                const frame = Math.max(container.clientWidth || 0, container.parentElement ? container.parentElement.clientWidth : 0, 1);
+                const frame = container.clientWidth || (container.parentElement ? container.parentElement.clientWidth : 0);
+                if (frame < 40) {
+                    const tries = Number(container.dataset.layoutTries || 0);
+                    if (tries < 12) {
+                        container.dataset.layoutTries = String(tries + 1);
+                        requestAnimationFrame(() => this.initSliderAnimation(container));
+                    }
+                    return;
+                }
+                container.dataset.layoutTries = '0';
+                const distance = uniqueCount * frame;
+                const duration = Math.max(800, uniqueCount * slideInterval);
+                marquee.style.display = 'flex';
                 marquee.style.width = (totalSlides * frame) + 'px';
-                marquee.style.animation = (slideDirection === 'right' ? 'heroMarqueeRight' : 'heroMarquee')
-                    + ' ' + secondsPerPass + 's linear infinite';
+                marquee.style.animation = 'none';
                 slideItems.forEach(item => {
+                    item.style.position = 'relative';
+                    item.style.left = 'auto';
+                    item.style.right = 'auto';
                     item.style.flex = '0 0 ' + frame + 'px';
                     item.style.width = frame + 'px';
+                    item.style.minWidth = frame + 'px';
+                });
+                if (marquee._slideMove) {
+                    marquee._slideMove.cancel();
+                }
+                const start = slideDirection === 'right' ? -distance : 0;
+                const end = slideDirection === 'right' ? 0 : -distance;
+                marquee._slideMove = marquee.animate([
+                    { transform: 'translate3d(' + start + 'px,0,0)' },
+                    { transform: 'translate3d(' + end + 'px,0,0)' }
+                ], {
+                    duration: duration,
+                    iterations: Infinity,
+                    easing: 'linear'
                 });
             }
         } else {

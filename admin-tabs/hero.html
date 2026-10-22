@@ -328,9 +328,9 @@ var heroData = window.heroData;
 function intervalToSlideSpeed(ms) {
     var seconds = parseInt(ms, 10);
     seconds = (isFinite(seconds) ? seconds : 5000) / 1000;
-    if (seconds < 0.4) seconds = 0.4;
-    if (seconds > 16.4) seconds = 16.4;
-    var speed = (1 - Math.sqrt((seconds - 0.4) / 16)) * 100;
+    if (seconds < 1.2) seconds = 1.2;
+    if (seconds > 15.2) seconds = 15.2;
+    var speed = (1 - Math.sqrt((seconds - 1.2) / 14)) * 100;
     return Math.round(Math.max(0, Math.min(100, speed)));
 }
 
@@ -339,7 +339,7 @@ function slideSpeedToInterval(speed) {
     if (!isFinite(value)) value = 0;
     if (value < 0) value = 0;
     if (value > 100) value = 100;
-    var seconds = 0.4 + 16 * Math.pow(1 - (value / 100), 2);
+    var seconds = 1.2 + 14 * Math.pow(1 - (value / 100), 2);
     return Math.max(250, Math.round(seconds * 1000));
 }
 

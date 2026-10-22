@@ -891,8 +891,7 @@ body {
 .hero-slides-marquee {
     display: flex !important;
     height: 100%;
-    /* animation duration will be set dynamically by JavaScript */
-    animation: heroMarquee linear infinite;
+    animation: none;
     will-change: transform;
     margin: 0 !important;
     padding: 0 !important;
