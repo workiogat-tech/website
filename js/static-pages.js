@@ -365,6 +365,27 @@ const StaticPages = {
         }
     },
 
+    showHeader(headerPlaceholder) {
+        if (!headerPlaceholder) return;
+        const next = this.renderHeader();
+        if (next.indexOf('top-nav-link') === -1) return;
+        const current = headerPlaceholder.querySelector('.top-nav-desktop');
+        const currentText = current ? current.textContent.replace(/\s+/g, ' ').trim() : '';
+        const holder = document.createElement('div');
+        holder.innerHTML = next;
+        const nextNav = holder.querySelector('.top-nav-desktop');
+        const nextText = nextNav ? nextNav.textContent.replace(/\s+/g, ' ').trim() : '';
+        const currentLogo = headerPlaceholder.querySelector('.logo-image');
+        const nextLogo = holder.querySelector('.logo-image');
+        const sameLogo = (currentLogo ? currentLogo.getAttribute('src') : '') === (nextLogo ? nextLogo.getAttribute('src') : '');
+        if (currentText && currentText === nextText && sameLogo) {
+            this.initHeader();
+            return;
+        }
+        headerPlaceholder.innerHTML = next;
+        this.initHeader();
+    },
+
     // Initialize page
     async init() {
         const headerPlaceholder = document.getElementById('header-placeholder');
@@ -375,6 +396,9 @@ const StaticPages = {
             this.branding.logo = keptLogo;
         }
 
+        // Paint the menu before any network request so a reload cannot leave the bar empty.
+        this.showHeader(headerPlaceholder);
+
         // Load branding and contact from localStorage first, then the saved admin data
         await this.loadBranding();
         await this.loadContact();
@@ -383,11 +407,8 @@ const StaticPages = {
             this.branding.logo = keptLogo;
         }
         
-        // Load header and footer
-        if (headerPlaceholder) {
-            headerPlaceholder.innerHTML = this.renderHeader();
-            this.initHeader();
-        }
+        // Refresh the header once saved details arrive. An empty response keeps the menu already on screen.
+        this.showHeader(headerPlaceholder);
         
         if (footerPlaceholder) {
             footerPlaceholder.innerHTML = this.renderFooter();
@@ -400,8 +421,7 @@ const StaticPages = {
                 await this.loadBranding();
                 // Re-render header and footer with updated branding
                 if (headerPlaceholder) {
-                    headerPlaceholder.innerHTML = this.renderHeader();
-                    this.initHeader();
+                    this.showHeader(headerPlaceholder);
                 }
                 if (footerPlaceholder) {
                     footerPlaceholder.innerHTML = this.renderFooter();
@@ -415,8 +435,7 @@ const StaticPages = {
             if (event.key === 'sjs_branding' || event.key === 'admin_settings_branding') {
                 await this.loadBranding();
                 if (headerPlaceholder) {
-                    headerPlaceholder.innerHTML = this.renderHeader();
-                    this.initHeader();
+                    this.showHeader(headerPlaceholder);
                 }
                 if (footerPlaceholder) {
                     footerPlaceholder.innerHTML = this.renderFooter();

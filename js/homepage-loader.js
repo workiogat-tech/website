@@ -252,6 +252,10 @@ const HomepageLoader = {
                 sliderContainer.appendChild(fadeDiv);
             }
             
+            heroSection.querySelectorAll('.hero-immediate-photo').forEach(function (photo) {
+                photo.remove();
+            });
+
             // Insert slider before overlay
             const overlay = heroSection.querySelector('.hero-overlay');
             if (overlay) {
@@ -285,36 +289,13 @@ const HomepageLoader = {
         if (slideMode === 'marquee') {
             const marquee = container.querySelector('.hero-slides-marquee');
             if (marquee) {
-                const slideItems = marquee.querySelectorAll('.hero-slide-item');
-                const totalSlides = slideItems.length || 1;
+                const totalSlides = marquee.querySelectorAll('.hero-slide-item').length || 3;
                 const uniqueCount = Math.max(1, Math.round(totalSlides / 3));
-                const frame = container.clientWidth || (container.parentElement ? container.parentElement.clientWidth : 0);
-                if (frame < 40) {
-                    const tries = Number(container.dataset.layoutTries || 0);
-                    if (tries < 30) {
-                        container.dataset.layoutTries = String(tries + 1);
-                        requestAnimationFrame(() => this.initSliderAnimation(container));
-                    }
-                    return;
-                }
-                container.dataset.layoutTries = '0';
-                const roundedFrame = Math.round(frame);
-                const previousFrame = Number(container.dataset.frameWidth || 0);
-                if (container.classList.contains('is-measured') && Math.abs(previousFrame - roundedFrame) < 8) {
-                    return;
-                }
-                container.dataset.frameWidth = String(roundedFrame);
-                const duration = Math.max(800, uniqueCount * slideInterval);
-                container.style.setProperty('--hero-frame', roundedFrame + 'px');
+                const duration = Math.max(0.8, (uniqueCount * slideInterval) / 1000);
+                const name = slideDirection === 'right' ? 'heroMarqueeRight' : 'heroMarquee';
                 container.style.setProperty('--hero-count', String(totalSlides));
-                if (!container.classList.contains('is-measured')) {
-                    container.style.setProperty('--hero-duration', duration + 'ms');
-                    container.classList.add('is-measured');
-                }
-                if (marquee._slideMove) {
-                    marquee._slideMove.cancel();
-                    marquee._slideMove = null;
-                }
+                container.style.setProperty('--hero-duration', duration + 's');
+                marquee.style.animation = name + ' ' + duration + 's linear infinite';
             }
         } else {
             const slides = container.querySelectorAll('.fade-slide');

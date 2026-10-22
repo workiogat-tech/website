@@ -252,16 +252,46 @@ function photoTag($url, $class, $eager, $style = '') {
     return '<img class="' . h($class) . '" src="' . h($url) . '" alt=""' . $extra . ' decoding="async"' . $styleAttr . '>';
 }
 
+function navChevron() {
+    return '<svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+}
+
+function stableNav($mobile) {
+    $drop = $mobile ? 'nav-dropdown' : 'top-nav-dropdown';
+    $link = $mobile ? 'nav-link dropdown-trigger' : 'top-nav-link';
+    $menu = $mobile ? 'dropdown-menu' : 'top-dropdown-menu';
+    $chevron = navChevron();
+    return '<a href="index.html" class="' . ($mobile ? 'nav-link' : 'top-nav-link') . '">Home</a>'
+        . '<div class="' . $drop . '"><a href="#" class="' . $link . '">Who We Are ' . $chevron . '</a><div class="' . $menu . '">'
+        . '<a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a>'
+        . '</div></div>'
+        . '<div class="' . $drop . '"><a href="#" class="' . $link . '">School Life ' . $chevron . '</a><div class="' . $menu . '">'
+        . '<a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a>'
+        . '</div></div>'
+        . '<div class="' . $drop . '"><a href="#" class="' . $link . '">Support Our Work ' . $chevron . '</a><div class="' . $menu . '">'
+        . '<a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a>'
+        . '</div></div>'
+        . '<a href="contact.html" class="' . ($mobile ? 'nav-link' : 'top-nav-link') . '">Contact</a>';
+}
+
 function injectHeader($html, $logo, $schoolName) {
     $mark = $logo !== ''
         ? photoTag($logo, 'logo-image', true)
         : '<div class="logo-placeholder"><span>' . h(substr($schoolName, 0, 1) ?: 'S') . '</span></div>';
-    $header = '<header class="site-header" id="mainHeader"><div class="header-main"><div class="container"><div class="header-content">'
+    if (strpos($html, 'top-nav-desktop') !== false) {
+        if ($logo !== '') {
+            $html = preg_replace('/<div class="logo-placeholder"><span>[^<]*<\/span><\/div>/', $mark, $html, 1);
+        }
+        return $html;
+    }
+    $header = '<header class="site-header" id="mainHeader"><div class="header-top"><div class="container"><div class="header-top-content"><div class="contact-info"></div><nav class="top-nav-desktop">'
+        . stableNav(false)
+        . '</nav></div></div></div><div class="header-main"><div class="container"><div class="header-content">'
         . '<div class="logo"><a href="index.html" class="logo-link">' . $mark . '</a></div>'
         . '<div class="header-actions">'
         . '<button type="button" class="search-button" id="searchButton" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></button>'
         . '<button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false"><span class="menu-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button>'
-        . '</div></div><nav class="main-nav mobile-nav" id="mainNav"></nav></div></div></header>';
+        . '</div></div><nav class="main-nav mobile-nav" id="mainNav">' . stableNav(true) . '</nav></div></div></header>';
     $updated = preg_replace('/<div id="header-placeholder">\s*<\/div>/', '<div id="header-placeholder">' . $header . '</div>', $html, 1, $count);
     return $count ? $updated : $html;
 }

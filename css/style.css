@@ -894,7 +894,7 @@ body {
     flex-wrap: nowrap !important;
     align-items: stretch !important;
     height: 100%;
-    width: calc(var(--hero-count, 3) * var(--hero-frame, 100%));
+    width: calc(var(--hero-count, 3) * 100%);
     margin: 0 !important;
     padding: 0 !important;
     position: relative;
@@ -910,11 +910,7 @@ body {
     background-color: transparent !important;
     border: 0 !important;
     outline: 0 !important;
-    animation-name: heroMarquee;
-    animation-duration: var(--hero-duration, 15s);
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
-    animation-play-state: paused;
+    animation: heroMarquee var(--hero-duration, 12s) linear infinite;
     will-change: transform;
 }
 
@@ -922,8 +918,8 @@ body {
     animation-name: heroMarqueeRight;
 }
 
-.hero-slides-container.is-measured .hero-slides-marquee {
-    animation-play-state: running;
+.hero-content:has(.hero-slides-container) > .hero-immediate-photo {
+    display: none !important;
 }
 
 .hero-slides-fade {
@@ -1011,10 +1007,10 @@ body {
     left: auto !important;
     float: none !important;
     clear: none !important;
-    flex: 0 0 var(--hero-frame, 100%) !important;
-    width: var(--hero-frame, 100%) !important;
-    min-width: var(--hero-frame, 100%) !important;
-    max-width: var(--hero-frame, 100%) !important;
+    flex: 0 0 calc(100% / var(--hero-count, 3)) !important;
+    width: calc(100% / var(--hero-count, 3)) !important;
+    min-width: calc(100% / var(--hero-count, 3)) !important;
+    max-width: none !important;
     height: 100% !important;
     min-height: 100%;
     max-height: 100%;
@@ -1058,19 +1054,19 @@ body {
 
 @keyframes heroMarquee {
     0% {
-        transform: translate3d(0, 0, 0);
+        transform: translateX(0);
     }
     100% {
-        transform: translate3d(calc(-100% / 3), 0, 0);
+        transform: translateX(-33.333%);
     }
 }
 
 @keyframes heroMarqueeRight {
     0% {
-        transform: translate3d(calc(-100% / 3), 0, 0);
+        transform: translateX(-33.333%);
     }
     100% {
-        transform: translate3d(0, 0, 0);
+        transform: translateX(0);
     }
 }
 
@@ -6535,7 +6531,11 @@ svg {
 /* Mobile layout: header, hero, and stacked sections */
 @media (max-width: 1023px) {
     body {
-        padding-top: 128px;
+        padding-top: 80px;
+    }
+
+    .header-top {
+        display: none !important;
     }
 
     .site-header,
@@ -6627,16 +6627,20 @@ svg {
     }
 
     .mobile-nav > .nav-dropdown,
-    .mobile-nav > .nav-link,
     .mobile-nav .nav-dropdown {
-        width: 100%;
+        width: auto;
         margin: 0;
     }
 
+    .mobile-nav > .nav-link {
+        margin-left: 12px;
+        margin-right: 12px;
+    }
+
     .mobile-nav .nav-link {
-        min-height: 56px;
-        height: 56px;
-        padding: 0 20px;
+        min-height: 42px;
+        height: auto;
+        padding: 0 12px;
         display: flex;
         align-items: center;
         justify-content: flex-start;
@@ -6807,7 +6811,7 @@ svg {
 
 @media (max-width: 480px) {
     body {
-        padding-top: 128px;
+        padding-top: 80px;
     }
 
     .contact-item {
@@ -7005,12 +7009,12 @@ svg {
         right: 0;
         bottom: 0;
         left: auto;
-        width: min(300px, 84vw) !important;
+        width: min(220px, 68vw) !important;
         height: 100vh;
         height: 100dvh;
         max-height: none !important;
         margin: 0;
-        padding: 78px 0 20px !important;
+        padding: 72px 8px 16px !important;
         overflow-x: hidden !important;
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
@@ -7032,7 +7036,13 @@ svg {
     .mobile-nav .nav-link,
     .mobile-nav .dropdown-menu a {
         height: auto !important;
-        min-height: 48px !important;
+        width: auto !important;
+        min-height: 40px !important;
+        margin-left: 8px;
+        margin-right: 8px;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        border-radius: 8px;
         pointer-events: auto !important;
     }
 
@@ -7090,5 +7100,19 @@ svg {
 
     .site-footer .footer-hours {
         max-width: 280px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .header-top {
+        display: block !important;
+        visibility: visible !important;
+        background: var(--primary-color, #800020) !important;
+    }
+
+    .top-nav-desktop {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
     }
 }
