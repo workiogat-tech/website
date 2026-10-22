@@ -30,13 +30,11 @@ $headlineColor = $hero['headline_color'] ?? $hero['headlineColor'] ?? '#ffffff';
 $subHeadlineColor = $hero['subheadline_color'] ?? $hero['subHeadlineColor'] ?? '#ffffff';
 $descriptionColor = $hero['description_color'] ?? $hero['descriptionColor'] ?? '#ffffff';
 $slideIntervalMs = (int) ($hero['slide_interval_ms'] ?? 5000);
-if ($slideIntervalMs < 1000) {
+if ($slideIntervalMs < 250) {
     $slideIntervalMs = 5000;
 }
-$slideSpeedSlow = 20000;
-$slideSpeedFast = 1000;
-$slideIntervalClamped = max($slideSpeedFast, min($slideSpeedSlow, $slideIntervalMs));
-$slideSpeed = (int) round(($slideSpeedSlow - $slideIntervalClamped) / ($slideSpeedSlow - $slideSpeedFast) * 100);
+$slideSeconds = max(0.4, min(16.4, $slideIntervalMs / 1000));
+$slideSpeed = (int) round(max(0, min(100, (1 - sqrt(($slideSeconds - 0.4) / 16)) * 100)));
 ?>
 <div class="content-card" style="padding: 0;">
     <div style="padding: 30px;">
@@ -275,7 +273,7 @@ $slideSpeed = (int) round(($slideSpeedSlow - $slideIntervalClamped) / ($slideSpe
                         <span>0 Slow</span>
                         <span>100 Fast</span>
                     </div>
-                    <p style="font-size: 12px; color: #6b7280; margin: 8px 0 0 0;">Like a car accelerator. A higher number makes the photos move faster.</p>
+                    <p id="slideSpeedHint" style="font-size: 12px; color: #6b7280; margin: 8px 0 0 0;">0 is slow. 100 is full speed.</p>
                     <input type="hidden" name="slide_interval_ms" id="slide_interval_ms" value="<?php echo (int) $slideIntervalMs; ?>">
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
@@ -409,23 +407,30 @@ $slideSpeed = (int) round(($slideSpeedSlow - $slideIntervalClamped) / ($slideSpe
 
 <script>
 function intervalToSlideSpeed(ms) {
-    var slow = 20000;
-    var fast = 1000;
-    var interval = parseInt(ms, 10);
-    if (!isFinite(interval)) interval = 5000;
-    if (interval < fast) interval = fast;
-    if (interval > slow) interval = slow;
-    return Math.round((slow - interval) / (slow - fast) * 100);
+    var seconds = parseInt(ms, 10);
+    seconds = (isFinite(seconds) ? seconds : 5000) / 1000;
+    if (seconds < 0.4) seconds = 0.4;
+    if (seconds > 16.4) seconds = 16.4;
+    var speed = (1 - Math.sqrt((seconds - 0.4) / 16)) * 100;
+    return Math.round(Math.max(0, Math.min(100, speed)));
 }
 
 function slideSpeedToInterval(speed) {
-    var slow = 20000;
-    var fast = 1000;
     var value = parseInt(speed, 10);
     if (!isFinite(value)) value = 0;
     if (value < 0) value = 0;
     if (value > 100) value = 100;
-    return Math.round(slow - (value / 100) * (slow - fast));
+    var seconds = 0.4 + 16 * Math.pow(1 - (value / 100), 2);
+    return Math.max(250, Math.round(seconds * 1000));
+}
+
+function describeSlideSpeed(speed) {
+    var value = parseInt(speed, 10) || 0;
+    if (value >= 90) return 'Full speed';
+    if (value >= 70) return 'Fast';
+    if (value >= 40) return 'Medium';
+    if (value >= 15) return 'Slow';
+    return 'Very slow';
 }
 
 function setSlideAccelerator(speed) {
@@ -439,6 +444,8 @@ function setSlideAccelerator(speed) {
     if (slider) slider.value = String(value);
     if (badge) badge.textContent = String(value);
     if (hidden) hidden.value = String(slideSpeedToInterval(value));
+    var hint = document.getElementById('slideSpeedHint');
+    if (hint) hint.textContent = describeSlideSpeed(value) + '. A higher number makes the photos move faster.';
     if (typeof updateSliderPreview === 'function') updateSliderPreview();
 }
 
@@ -640,7 +647,7 @@ function updateSliderPreview() {
     
     if (slideMode === 'marquee') {
         // Calculate duration (matching React version)
-        const marqueeDuration = Math.max(20, (slideInterval / 1000) * uniqueSlides.length * copies);
+        const marqueeDuration = Math.max(0.4, (slideInterval / 1000) * uniqueSlides.length);
         
         // Create marquee slider
         const marquee = document.createElement('div');

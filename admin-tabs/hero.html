@@ -173,7 +173,7 @@
                         <span>0 Slow</span>
                         <span>100 Fast</span>
                     </div>
-                    <p style="font-size: 12px; color: #6b7280; margin: 8px 0 0 0;">Like a car accelerator. A higher number makes the photos move faster.</p>
+                    <p id="slideSpeedHint" style="font-size: 12px; color: #6b7280; margin: 8px 0 0 0;">0 is slow. 100 is full speed.</p>
                     <input type="hidden" name="slide_interval_ms" id="slide_interval_ms" value="5000">
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
@@ -326,23 +326,30 @@ var heroSlides = window.heroSlides;
 var heroData = window.heroData;
 
 function intervalToSlideSpeed(ms) {
-    var slow = 20000;
-    var fast = 1000;
-    var interval = parseInt(ms, 10);
-    if (!isFinite(interval)) interval = 5000;
-    if (interval < fast) interval = fast;
-    if (interval > slow) interval = slow;
-    return Math.round((slow - interval) / (slow - fast) * 100);
+    var seconds = parseInt(ms, 10);
+    seconds = (isFinite(seconds) ? seconds : 5000) / 1000;
+    if (seconds < 0.4) seconds = 0.4;
+    if (seconds > 16.4) seconds = 16.4;
+    var speed = (1 - Math.sqrt((seconds - 0.4) / 16)) * 100;
+    return Math.round(Math.max(0, Math.min(100, speed)));
 }
 
 function slideSpeedToInterval(speed) {
-    var slow = 20000;
-    var fast = 1000;
     var value = parseInt(speed, 10);
     if (!isFinite(value)) value = 0;
     if (value < 0) value = 0;
     if (value > 100) value = 100;
-    return Math.round(slow - (value / 100) * (slow - fast));
+    var seconds = 0.4 + 16 * Math.pow(1 - (value / 100), 2);
+    return Math.max(250, Math.round(seconds * 1000));
+}
+
+function describeSlideSpeed(speed) {
+    var value = parseInt(speed, 10) || 0;
+    if (value >= 90) return 'Full speed';
+    if (value >= 70) return 'Fast';
+    if (value >= 40) return 'Medium';
+    if (value >= 15) return 'Slow';
+    return 'Very slow';
 }
 
 function showSavedSlideSpeed(ms) {
@@ -353,6 +360,8 @@ function showSavedSlideSpeed(ms) {
     if (slider) slider.value = String(speed);
     if (badge) badge.textContent = String(speed);
     if (hidden) hidden.value = String(parseInt(ms, 10) || slideSpeedToInterval(speed));
+    var hint = document.getElementById('slideSpeedHint');
+    if (hint) hint.textContent = describeSlideSpeed(speed) + '. A higher number makes the photos move faster.';
 }
 
 function setSlideAccelerator(speed) {
@@ -366,6 +375,8 @@ function setSlideAccelerator(speed) {
     if (slider) slider.value = String(value);
     if (badge) badge.textContent = String(value);
     if (hidden) hidden.value = String(slideSpeedToInterval(value));
+    var hint = document.getElementById('slideSpeedHint');
+    if (hint) hint.textContent = describeSlideSpeed(value) + '. A higher number makes the photos move faster.';
     if (typeof updateSliderPreview === 'function') updateSliderPreview();
 }
 
@@ -635,7 +646,7 @@ function updateSliderPreview() {
     
     const slideMode = document.getElementById('slide_mode')?.value || 'marquee';
     const slideDirection = document.getElementById('slide_direction')?.value || 'left';
-    const slideInterval = Math.max(1000, parseInt(document.getElementById('slide_interval_ms')?.value || 5000, 10) || 5000);
+    const slideInterval = Math.max(250, parseInt(document.getElementById('slide_interval_ms')?.value || 5000, 10) || 5000);
     const backgroundSize = document.getElementById('background_size')?.value || 'contain';
     const backgroundPosition = document.getElementById('background_position')?.value || 'center';
     const imageScale = parseFloat(document.getElementById('image_scale')?.value || 1) || 1;

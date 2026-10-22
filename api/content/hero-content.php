@@ -433,7 +433,12 @@ if ($method === 'GET') {
         }
         if (array_key_exists('slide_interval_ms', $input) && in_array('slide_interval_ms', $existingColumns, true)) {
             $interval = (int) $input['slide_interval_ms'];
-            $data['slide_interval_ms'] = $interval >= 1000 ? $interval : 5000;
+            if ($interval < 250) {
+                $interval = 5000;
+            } elseif ($interval > 20000) {
+                $interval = 20000;
+            }
+            $data['slide_interval_ms'] = $interval;
         }
         if (array_key_exists('image_scale', $input) && in_array('image_scale', $existingColumns, true)) {
             $scale = (float) $input['image_scale'];

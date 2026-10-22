@@ -197,7 +197,7 @@ const HomepageLoader = {
         
         const slideMode = data.slide_mode || 'marquee';
         const slideDirection = data.slide_direction || 'left';
-        const slideInterval = Math.max(1000, parseInt(data.slide_interval_ms || 5000, 10) || 5000);
+        const slideInterval = Math.min(20000, Math.max(250, parseInt(data.slide_interval_ms || 5000, 10) || 5000));
         const photoFit = {
             size: data.background_size || 'contain',
             position: data.background_position || 'center',
