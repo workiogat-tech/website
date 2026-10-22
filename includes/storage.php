@@ -260,6 +260,142 @@ function syncSavedImagesIntoMedia($db): void {
     }
 }
 
+function imageFileName(string $url): string {
+    $url = trim($url);
+    if ($url === '') {
+        return '';
+    }
+    $path = parse_url($url, PHP_URL_PATH);
+    $name = rawurldecode(basename(str_replace('\\', '/', $path ?: $url)));
+    if ($name === '' || $name === '.' || $name === '..') {
+        return '';
+    }
+    return strtolower($name);
+}
+
+function sameImage(string $left, string $right): bool {
+    $left = trim($left);
+    $right = trim($right);
+    if ($left === '' || $right === '') {
+        return false;
+    }
+    if ($left === $right) {
+        return true;
+    }
+    $leftName = imageFileName($left);
+    $rightName = imageFileName($right);
+    return $leftName !== '' && $leftName === $rightName;
+}
+
+function deleteStoredFile(string $fileUrl): void {
+    $fileUrl = trim($fileUrl);
+    if ($fileUrl === '') {
+        return;
+    }
+
+    $path = str_replace('\\', '/', parse_url($fileUrl, PHP_URL_PATH) ?: $fileUrl);
+    if (supabaseStorageConfigured() && preg_match('#/storage/v1/object/public/([^/]+)/(.+)$#', $path, $matches)) {
+        $bucket = rawurldecode($matches[1]);
+        $object = rawurldecode($matches[2]);
+        $encoded = rawurlencode($bucket);
+        foreach (explode('/', $object) as $segment) {
+            if ($segment !== '') {
+                $encoded .= '/' . rawurlencode($segment);
+            }
+        }
+        [$status] = supabaseHttp('DELETE', '/storage/v1/object/' . $encoded);
+        if ($status >= 300 && $status !== 404) {
+            throw new Exception('The picture could not be removed from storage.');
+        }
+    } elseif (supabaseStorageConfigured()) {
+        $name = imageFileName($fileUrl);
+        if ($name !== '') {
+            $bucket = appEnv('SUPABASE_STORAGE_BUCKET', 'uploads');
+            [$status] = supabaseHttp(
+                'DELETE',
+                '/storage/v1/object/' . rawurlencode($bucket) . '/' . rawurlencode($name)
+            );
+            if ($status >= 300 && $status !== 404) {
+                throw new Exception('The picture could not be removed from storage.');
+            }
+        }
+    }
+
+    $name = imageFileName($fileUrl);
+    if ($name === '') {
+        return;
+    }
+    $uploadDir = defined('UPLOAD_PATH') ? UPLOAD_PATH : (dirname(__DIR__) . '/uploads/');
+    $local = rtrim($uploadDir, '/\\') . DIRECTORY_SEPARATOR . $name;
+    if (is_file($local)) {
+        @unlink($local);
+    }
+}
+
+function removeSavedImage($db, string $url): void {
+    $url = trim($url);
+    if ($url === '') {
+        return;
+    }
+
+    try {
+        $rows = $db->fetchAll("SELECT id, background_image, slides FROM hero_content");
+    } catch (Exception $e) {
+        return;
+    }
+
+    foreach ($rows as $row) {
+        $background = (string) ($row['background_image'] ?? '');
+        $nextBackground = sameImage($background, $url) ? '' : $background;
+        $raw = $row['slides'] ?? '';
+        if (is_array($raw)) {
+            $list = $raw;
+        } elseif (is_string($raw) && trim($raw) !== '') {
+            $decoded = json_decode($raw, true);
+            if (is_string($decoded)) {
+                $decoded = json_decode($decoded, true);
+            }
+            $list = is_array($decoded) ? $decoded : [$raw];
+        } else {
+            $list = [];
+        }
+
+        $kept = [];
+        foreach ($list as $slide) {
+            $slideUrl = '';
+            if (is_string($slide)) {
+                $slideUrl = $slide;
+            } elseif (is_array($slide)) {
+                foreach (['url', 'image', 'src', 'file_path', 'file_url'] as $key) {
+                    if (!empty($slide[$key]) && is_string($slide[$key])) {
+                        $slideUrl = $slide[$key];
+                        break;
+                    }
+                }
+            }
+            if ($slideUrl === '' || sameImage($slideUrl, $url)) {
+                continue;
+            }
+            $kept[] = $slideUrl;
+        }
+
+        $previous = [];
+        foreach ($list as $slide) {
+            if (is_string($slide)) {
+                $previous[] = $slide;
+            }
+        }
+        if ($nextBackground === $background && $kept === array_values($previous) && count($kept) === count($list)) {
+            continue;
+        }
+
+        $db->update(
+            "UPDATE hero_content SET slides = ?, background_image = ? WHERE id = ?",
+            [json_encode(array_values($kept)), $nextBackground, $row['id']]
+        );
+    }
+}
+
 function storeUploadedFile(string $tmpPath, string $filename, string $mime): string {
     if (supabaseStorageConfigured()) {
         $bucket = appEnv('SUPABASE_STORAGE_BUCKET', 'uploads');

@@ -648,14 +648,32 @@ async function handleFileUpload() {
     }
 }
 
-function deleteMedia(id) {
+async function deleteMedia(id) {
     if (!confirm('Are you sure you want to delete this file? This action cannot be undone.')) return;
-    
+
+    const item = (window.mediaItems || []).find(function (entry) { return entry.id == id; });
     try {
-        // NO PHP - use client-side storage only for images/media
+        const response = await fetch('/api/media/list.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'delete',
+                id: id,
+                file_url: item ? (item.file_url || item.file_path || '') : ''
+            })
+        });
+        if (loginRequired(response)) {
+            sendToLogin();
+            return;
+        }
+        const data = await response.json().catch(function () { return {}; });
+        if (!response.ok || !data.success) {
+            throw new Error(data.error || 'The picture could not be deleted.');
+        }
         MediaStorage.deleteMediaItem(id);
         showToast('File deleted successfully!', 'success');
-        loadMedia();
+        await loadMedia();
         updateMediaStats();
     } catch (error) {
         console.error('Delete error:', error);

@@ -7,28 +7,34 @@ const HomepageLoader = {
         const heroSection = document.getElementById('heroSection');
         if (!heroSection) return;
 
-        const cached = this.readHeroCache();
-        if (cached) this.renderHero(cached);
-
         try {
             let fresh = window.__heroFast ? await window.__heroFast : null;
-            if (!fresh || (!fresh.slides && !fresh.background_image)) {
+            if (!fresh || !Array.isArray(fresh.slides)) {
                 const response = await fetch('/api/public/hero-slides.php', { cache: 'no-store' });
                 fresh = response.ok ? await response.json() : null;
             }
-            if (fresh && ((fresh.slides && fresh.slides.length) || fresh.background_image)) {
-                if (!this.sameHero(cached, fresh)) this.renderHero(fresh);
+            if (fresh && Array.isArray(fresh.slides)) {
+                if (!fresh.slides.length) fresh.background_image = '';
+                this.renderHero(fresh);
                 this.writeHeroCache(fresh);
                 return;
             }
 
             const result = await this.fetchHomepage();
             if (result && result.success && result.data && result.data.heroContent) {
-                this.renderHero(result.data.heroContent);
-                this.writeHeroCache(result.data.heroContent);
+                const hero = result.data.heroContent;
+                if (Array.isArray(hero.slides) && !hero.slides.length) hero.background_image = '';
+                this.renderHero(hero);
+                this.writeHeroCache(hero);
+                return;
             }
         } catch (error) {
             console.error('Error loading hero content:', error);
+        }
+
+        const cached = this.readHeroCache();
+        if (cached && Array.isArray(cached.slides) && cached.slides.length) {
+            this.renderHero(cached);
         }
     },
 
@@ -183,7 +189,7 @@ const HomepageLoader = {
         if (slideList && !Array.isArray(slideList) && typeof slideList === 'object') {
             slideList = Object.values(slideList);
         }
-        if (Array.isArray(slideList) && slideList.length > 0) {
+        if (Array.isArray(slideList)) {
             heroSlides = slideList.map(function (slide) {
                 if (typeof slide === 'string') return slide.trim();
                 if (slide && typeof slide === 'object') {
@@ -205,13 +211,8 @@ const HomepageLoader = {
         };
         this.preloadPhotos(heroSlides);
         
-        // Remove existing slider
-        const existingSlider = heroSection.querySelector('.hero-slides-container');
-        if (existingSlider) {
-            existingSlider.remove();
-        }
-        
-        // Render slider if we have slides
+        this.clearHeroMedia(heroSection);
+
         if (heroSlides.length > 0) {
             const sliderContainer = document.createElement('div');
             sliderContainer.className = 'hero-slides-container';
@@ -266,14 +267,14 @@ const HomepageLoader = {
             
             // Initialize slider animation after layout so each photo gets the real hero width
             this.initSliderAnimation(sliderContainer);
-        } else {
-            // No slides, use background image if available
-            if (data.background_image) {
-                heroSection.style.backgroundImage = `url('${data.background_image.replace(/'/g, "\\'")}')`;
-                heroSection.style.backgroundSize = photoFit.size === 'auto' ? 'auto' : photoFit.size;
-                heroSection.style.backgroundPosition = photoFit.position;
-            }
         }
+    },
+
+    clearHeroMedia(heroSection) {
+        heroSection.querySelectorAll('.hero-slides-container, .hero-immediate-photo').forEach(function (node) {
+            node.remove();
+        });
+        heroSection.style.backgroundImage = 'none';
     },
     
     initSliderAnimation(container) {

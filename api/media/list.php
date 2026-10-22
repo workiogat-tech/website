@@ -28,6 +28,60 @@ if (!$auth->isLoggedIn() || !$auth->isAdmin()) {
 
 $db = getDB();
 
+$method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+if ($method === 'DELETE' || $method === 'POST') {
+    $body = json_decode(file_get_contents('php://input'), true);
+    if (!is_array($body)) {
+        $body = [];
+    }
+    if ($method === 'POST' && ($body['action'] ?? '') !== 'delete') {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Unknown media action.']);
+        ob_end_flush();
+        exit;
+    }
+
+    $id = $body['id'] ?? null;
+    $url = trim((string) ($body['file_url'] ?? $body['file_path'] ?? ''));
+    $row = null;
+    if ($id !== null && $id !== '' && is_numeric($id)) {
+        $row = $db->fetchOne("SELECT id, filename, file_path FROM media WHERE id = ?", [(int) $id]);
+    }
+    $target = $url;
+    if ($row) {
+        $target = $row['file_path'] ?: ($row['filename'] ?: $url);
+    }
+    if ($target === '') {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Choose a picture to delete.']);
+        ob_end_flush();
+        exit;
+    }
+
+    try {
+        removeSavedImage($db, $target);
+        $media = $db->fetchAll("SELECT id, filename, file_path FROM media");
+        foreach ($media as $item) {
+            $matchesId = $row && (string) $item['id'] === (string) $row['id'];
+            $matchesFile = sameImage((string) ($item['file_path'] ?? ''), $target)
+                || sameImage((string) ($item['filename'] ?? ''), $target);
+            if ($matchesId || $matchesFile) {
+                $db->delete("DELETE FROM media WHERE id = ?", [$item['id']]);
+            }
+        }
+        deleteStoredFile($target);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        ob_end_flush();
+        exit;
+    }
+
+    echo json_encode(['success' => true, 'message' => 'Picture deleted.']);
+    ob_end_flush();
+    exit;
+}
+
 try {
     ensureImageColumns($db);
     syncSavedImagesIntoMedia($db);

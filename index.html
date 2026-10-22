@@ -23,10 +23,7 @@
           document.head.appendChild(link);
         });
       }
-      try{
-        var saved=JSON.parse(localStorage.getItem('sjs_hero_cache')||'null');
-        if(saved&&saved.slides)preload(saved.slides);
-      }catch(e){}
+      try{ localStorage.removeItem('sjs_hero_cache'); }catch(e){}
       window.__heroFast=fetch('/api/public/hero-slides.php',{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(data){
         if(data&&data.slides)preload(data.slides);
         return data;
@@ -70,7 +67,7 @@
     
     <div id="footer-placeholder"></div>
     
-    <script src="js/homepage-loader.js?v=20261022h"></script>
+    <script src="js/homepage-loader.js?v=20261022j"></script>
     <script src="js/client-storage.js"></script>
     <script src="js/static-pages.js?v=20261022g"></script>
     <script src="js/main.js?v=20261022b"></script>

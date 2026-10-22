@@ -164,7 +164,12 @@ function heroUrlsFromRows($rows) {
         if (!is_array($row)) {
             continue;
         }
-        foreach (['hero_image', 'background_image', 'slides'] as $key) {
+        if (array_key_exists('slides', $row) && $row['slides'] !== null && $row['slides'] !== '') {
+            $slideUrls = [];
+            collectImageUrls($row['slides'], $slideUrls, 'slides');
+            return uniqueUrls($slideUrls);
+        }
+        foreach (['hero_image', 'background_image'] as $key) {
             if (!empty($row[$key])) {
                 collectImageUrls($row[$key], $preferred, $key);
             }
