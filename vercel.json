@@ -5,9 +5,10 @@
       "runtime": "vercel-php@0.7.4",
       "maxDuration": 30
     },
-    "render.php": {
+    "api/render.php": {
       "runtime": "vercel-php@0.7.4",
-      "maxDuration": 30
+      "maxDuration": 30,
+      "includeFiles": "{*.html,render.php,config/**,includes/**}"
     }
   },
   "routes": [
@@ -21,7 +22,7 @@
     },
     {
       "src": "/",
-      "dest": "/render.php?page=index.html"
+      "dest": "/api/render.php?page=index.html"
     },
     {
       "src": "/css/(.*)",
@@ -46,7 +47,7 @@
     },
     {
       "src": "/(.*\\.html)",
-      "dest": "/render.php?page=$1"
+      "dest": "/api/render.php?page=$1"
     },
     {
       "src": "/(.*\\.(css|js|json|ico|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|eot|otf))",
@@ -57,7 +58,7 @@
     },
     {
       "src": "/([^./]+)",
-      "dest": "/render.php?page=$1.html"
+      "dest": "/api/render.php?page=$1.html"
     }
   ]
 }
