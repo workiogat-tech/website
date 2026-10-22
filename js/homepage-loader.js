@@ -277,9 +277,77 @@ const HomepageLoader = {
         heroSection.style.backgroundImage = 'none';
     },
     
+    slideWidth(container, item) {
+        const frameW = Math.max(container.clientWidth || 0, 1);
+        const frameH = Math.max(container.clientHeight || 0, 1);
+        const fit = container.dataset.backgroundSize || 'contain';
+        const img = item.querySelector('img');
+        if (fit === 'contain' && img && img.naturalWidth > 0 && img.naturalHeight > 0) {
+            return Math.max(1, Math.round(frameH * img.naturalWidth / img.naturalHeight));
+        }
+        return frameW;
+    },
+
+    layoutMarquee(container, fromResize) {
+        const marquee = container.querySelector('.hero-slides-marquee');
+        if (!marquee) return;
+
+        const applyWidths = () => {
+            marquee.querySelectorAll('.hero-slide-item').forEach((item) => {
+                const width = this.slideWidth(container, item);
+                item.style.setProperty('--hero-slide-w', width + 'px');
+            });
+        };
+
+        const start = () => {
+            if ((container.clientWidth || 0) < 40) {
+                requestAnimationFrame(start);
+                return;
+            }
+            applyWidths();
+            if (marquee.classList.contains('is-moving')) return;
+            const totalSlides = marquee.querySelectorAll('.hero-slide-item').length || 3;
+            const uniqueCount = Math.max(1, Math.round(totalSlides / 3));
+            const slideInterval = parseInt(container.dataset.interval || '5000', 10) || 5000;
+            const duration = Math.max(0.8, (uniqueCount * slideInterval) / 1000);
+            container.style.setProperty('--hero-duration', duration + 's');
+            marquee.classList.add('is-moving');
+        };
+
+        if (fromResize) {
+            if ((container.clientWidth || 0) >= 40) applyWidths();
+            return;
+        }
+
+        const pending = Array.from(marquee.querySelectorAll('img')).filter((img) => !img.complete || !img.naturalWidth);
+        if (!pending.length) {
+            start();
+            return;
+        }
+
+        let left = pending.length;
+        let began = false;
+        const done = () => {
+            left -= 1;
+            if (left <= 0 && !began) {
+                began = true;
+                start();
+            }
+        };
+        pending.forEach((img) => {
+            img.addEventListener('load', done, { once: true });
+            img.addEventListener('error', done, { once: true });
+        });
+        setTimeout(() => {
+            if (!began) {
+                began = true;
+                start();
+            }
+        }, 800);
+    },
+
     initSliderAnimation(container) {
         const slideMode = container.dataset.mode || 'marquee';
-        const slideDirection = container.dataset.direction || 'left';
         const slideInterval = parseInt(container.dataset.interval || 5000);
         
         if (this._fadeTimer) {
@@ -288,16 +356,7 @@ const HomepageLoader = {
         }
 
         if (slideMode === 'marquee') {
-            const marquee = container.querySelector('.hero-slides-marquee');
-            if (marquee) {
-                const totalSlides = marquee.querySelectorAll('.hero-slide-item').length || 3;
-                const uniqueCount = Math.max(1, Math.round(totalSlides / 3));
-                const duration = Math.max(0.8, (uniqueCount * slideInterval) / 1000);
-                const name = slideDirection === 'right' ? 'heroMarqueeRight' : 'heroMarquee';
-                container.style.setProperty('--hero-count', String(totalSlides));
-                container.style.setProperty('--hero-duration', duration + 's');
-                marquee.style.animation = name + ' ' + duration + 's linear infinite';
-            }
+            this.layoutMarquee(container, false);
         } else {
             const slides = container.querySelectorAll('.fade-slide');
             if (slides.length > 1) {
@@ -441,7 +500,9 @@ const HomepageLoader = {
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(() => {
-                    document.querySelectorAll('.hero-slides-container').forEach(el => this.initSliderAnimation(el));
+                    document.querySelectorAll('.hero-slides-container').forEach((el) => {
+                        if ((el.dataset.mode || 'marquee') === 'marquee') this.layoutMarquee(el, true);
+                    });
                 }, 120);
             });
         }

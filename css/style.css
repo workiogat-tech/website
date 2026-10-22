@@ -894,14 +894,12 @@ body {
     flex-wrap: nowrap !important;
     align-items: stretch !important;
     height: 100%;
-    width: calc(var(--hero-count, 3) * 100%);
+    width: max-content;
     margin: 0 !important;
     padding: 0 !important;
     position: relative;
     gap: 0 !important;
     box-sizing: border-box !important;
-    border-spacing: 0 !important;
-    border-collapse: collapse;
     font-size: 0 !important;
     line-height: 0 !important;
     letter-spacing: 0 !important;
@@ -910,11 +908,15 @@ body {
     background-color: transparent !important;
     border: 0 !important;
     outline: 0 !important;
-    animation: heroMarquee var(--hero-duration, 12s) linear infinite;
+    animation: none;
     will-change: transform;
 }
 
-.hero-slides-container[data-direction="right"] .hero-slides-marquee {
+.hero-slides-marquee.is-moving {
+    animation: heroMarquee var(--hero-duration, 12s) linear infinite;
+}
+
+.hero-slides-container[data-direction="right"] .hero-slides-marquee.is-moving {
     animation-name: heroMarqueeRight;
 }
 
@@ -1007,10 +1009,10 @@ body {
     left: auto !important;
     float: none !important;
     clear: none !important;
-    flex: 0 0 calc(100% / var(--hero-count, 3)) !important;
-    width: calc(100% / var(--hero-count, 3)) !important;
-    min-width: calc(100% / var(--hero-count, 3)) !important;
-    max-width: none !important;
+    flex: 0 0 var(--hero-slide-w, 100vw) !important;
+    width: var(--hero-slide-w, 100vw) !important;
+    min-width: var(--hero-slide-w, 100vw) !important;
+    max-width: var(--hero-slide-w, 100vw) !important;
     height: 100% !important;
     min-height: 100%;
     max-height: 100%;
@@ -1026,7 +1028,7 @@ body {
     display: block !important;
     line-height: 0 !important;
     font-size: 0 !important;
-    background-color: transparent !important;
+    background-color: #1a1a1a !important;
     transform: none !important;
     vertical-align: top !important;
 }
@@ -1054,19 +1056,19 @@ body {
 
 @keyframes heroMarquee {
     0% {
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
     }
     100% {
-        transform: translateX(-33.333%);
+        transform: translate3d(calc(-100% / 3), 0, 0);
     }
 }
 
 @keyframes heroMarqueeRight {
     0% {
-        transform: translateX(-33.333%);
+        transform: translate3d(calc(-100% / 3), 0, 0);
     }
     100% {
-        transform: translateX(0);
+        transform: translate3d(0, 0, 0);
     }
 }
 
@@ -1102,6 +1104,12 @@ body {
     margin: 0;
     padding: 0 20px;
     max-width: 1200px;
+}
+
+.hero-section .hero-title,
+.hero-section .hero-subtitle,
+.hero-section .hero-description {
+    color: #ffffff;
 }
 
 .hero-title {
@@ -6972,7 +6980,7 @@ svg {
     left: auto !important;
     opacity: 1 !important;
     overflow: hidden;
-    background: #4a0014;
+    background: #1a1a1a;
 }
 
 .hero-slide-photo,
