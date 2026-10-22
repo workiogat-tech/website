@@ -144,6 +144,14 @@ ini_set('session.use_only_cookies', '1');
 ini_set('session.cookie_secure', $https ? '1' : '0');
 ini_set('session.cookie_samesite', 'Lax');
 ini_set('session.cookie_path', '/');
+ini_set('session.cookie_lifetime', '604800');
+session_set_cookie_params([
+    'lifetime' => 604800,
+    'path' => '/',
+    'secure' => $https,
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
 
 if (session_status() === PHP_SESSION_NONE) {
     $requestMethod = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');

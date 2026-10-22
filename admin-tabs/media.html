@@ -217,6 +217,10 @@ const MediaStorage = {
             body: JSON.stringify({ action: 'create_section', name: name, color: color || '#3B82F6' })
         });
         const data = await response.json().catch(() => ({}));
+        if (loginRequired(response)) {
+            sendToLogin();
+            return null;
+        }
         if (!response.ok || !data.success || !data.section) {
             throw new Error(data.error || 'The section could not be saved to the database.');
         }
@@ -306,9 +310,22 @@ function useItems(items) {
     mediaItems = items;
 }
 
+function sendToLogin() {
+    var next = 'admin.html' + (window.location.search || '');
+    window.location.replace('login.html?next=' + encodeURIComponent(next));
+}
+
+function loginRequired(response) {
+    return response && (response.status === 401 || response.status === 403);
+}
+
 (async function() {
     try {
         const response = await fetch('/api/media/sections.php', { credentials: 'same-origin', cache: 'no-store' });
+        if (loginRequired(response)) {
+            sendToLogin();
+            return;
+        }
         const data = await response.json();
         useSections(response.ok && Array.isArray(data.sections) ? data.sections : []);
     } catch (error) {
@@ -323,6 +340,10 @@ function useItems(items) {
 async function loadMediaSections() {
     try {
         const response = await fetch('/api/media/sections.php', { credentials: 'same-origin', cache: 'no-store' });
+        if (loginRequired(response)) {
+            sendToLogin();
+            return;
+        }
         const data = await response.json();
         useSections(response.ok && Array.isArray(data.sections) ? data.sections : []);
     } catch (error) {
@@ -335,6 +356,10 @@ async function loadMediaSections() {
 async function loadMedia() {
     try {
         const response = await fetch('/api/media/list.php', { credentials: 'same-origin', cache: 'no-store' });
+        if (loginRequired(response)) {
+            sendToLogin();
+            return;
+        }
         const data = await response.json();
         let allMedia = response.ok && Array.isArray(data.media) ? data.media : [];
         if (selectedSection) {
@@ -546,6 +571,7 @@ async function handleCreateSection(event) {
     try {
         // NO PHP - use client-side storage only for images/media
         const newSection = await MediaStorage.addSection(name, formData.get('color') || '#3B82F6');
+        if (!newSection) return;
         showToast('Section created successfully!', 'success');
         closeNewSectionModal();
         form.reset();

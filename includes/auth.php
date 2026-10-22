@@ -111,7 +111,8 @@ class Auth {
      * Check if user is admin
      */
     public function isAdmin() {
-        return $this->isLoggedIn() && ($_SESSION['role'] ?? '') === 'admin';
+        $role = strtolower(trim((string) ($_SESSION['role'] ?? '')));
+        return $this->isLoggedIn() && ($role === 'admin' || $role === 'administrator');
     }
     
     /**

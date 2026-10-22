@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
+    <script>
+        fetch('/api/auth/verify.php', { credentials: 'same-origin', cache: 'no-store' })
+            .then(function (response) { return response.ok ? response.json() : null; })
+            .then(function (data) {
+                if (!data || !data.valid) {
+                    var next = 'admin.html' + window.location.search;
+                    window.location.replace('login.html?next=' + encodeURIComponent(next));
+                }
+            })
+            .catch(function () {
+                window.location.replace('login.html?next=' + encodeURIComponent('admin.html' + window.location.search));
+            });
+    </script>
     <link rel="stylesheet" href="css/style.css?v=20261022a">
     <style>
         /* Admin panel styles */
@@ -338,7 +351,7 @@
             </nav>
             
             <div class="sidebar-footer" style="padding: 16px; border-top: 1px solid #e5e7eb;">
-                <a href="#" onclick="localStorage.clear(); window.location.href='index.html'; return false;" style="display: flex; align-items: center; gap: 8px; padding: 12px; color: #dc2626; text-decoration: none; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='#fee'" onmouseout="this.style.background='transparent'">
+                <a href="#" onclick="signOutAdmin(); return false;" style="display: flex; align-items: center; gap: 8px; padding: 12px; color: #dc2626; text-decoration: none; border-radius: 8px; transition: background 0.2s;" onmouseover="this.style.background='#fee'" onmouseout="this.style.background='transparent'">
                     <span>🚪</span>
                     <span>Sign Out</span>
                 </a>
@@ -398,6 +411,13 @@
     <script>
         // Old photos were saved inside the browser and filled its storage.
         // Reading that value back freezes the page, so delete it without reading it.
+        function signOutAdmin() {
+            fetch('/api/auth/logout.php', { method: 'POST', credentials: 'same-origin' })
+                .finally(function () {
+                    window.location.href = 'login.html';
+                });
+        }
+
         function purgeBrowserPhotos() {
             try {
                 if (localStorage.getItem('media_photos_cleared') === '1') return;
