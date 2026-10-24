@@ -41,7 +41,7 @@ const HomepageLoader = {
     fetchHomepage() {
         if (!this._homepagePromise) {
             const early = window.__pageData;
-            this._homepagePromise = early || fetch('/api/public/homepage-data.php', { cache: 'no-store' })
+            this._homepagePromise = early || fetch('/api/public/homepage-data.php?fresh=columns', { cache: 'no-store' })
                 .then(response => response.ok ? response.json() : null)
                 .catch(() => null);
         }
@@ -442,12 +442,10 @@ const HomepageLoader = {
         grid.innerHTML = '';
         
         // Render each section
-        sections.forEach((section, index) => {
-            const title = section.title || '';
-            const description = section.description || '';
-            const image = section.image || '';
-            
-            // Normalize image URL
+        sections.forEach((section) => {
+            const title = this.columnField(section, ['title']);
+            const description = this.columnField(section, ['description', 'content', 'body', 'text', 'column_text', 'details']);
+            const image = this.columnField(section, ['image', 'image_url', 'photo', 'file_url', 'file_path', 'picture']);
             const imageUrl = image ? this.heroDisplayUrl(image) : '';
             
             const sectionHTML = `
@@ -462,7 +460,7 @@ const HomepageLoader = {
                                   loading="lazy"
                                   decoding="async"
                                   onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'three-column-placeholder\\'><span>🖼️</span><p>Image not found</p></div>';"
-                                  style="width: 100%; height: 200px; object-fit: cover;">` :
+                                  style="width: 100%; height: 100%; object-fit: cover;">` :
                             `<div class="three-column-placeholder">
                                 <span>🖼️</span>
                                 <p>No image set</p>
@@ -478,6 +476,18 @@ const HomepageLoader = {
             grid.innerHTML += sectionHTML;
         });
         if (typeof window.refreshScrollReveal === 'function') window.refreshScrollReveal();
+    },
+
+    columnField(section, names) {
+        if (!section || typeof section !== 'object') return '';
+        const keys = Object.keys(section);
+        for (let i = 0; i < names.length; i++) {
+            const found = keys.find(function (key) { return key.toLowerCase() === names[i]; });
+            if (!found || section[found] == null) continue;
+            const value = String(section[found]).trim();
+            if (value && value.indexOf('data:') !== 0) return value;
+        }
+        return '';
     },
 
     filled(value) {

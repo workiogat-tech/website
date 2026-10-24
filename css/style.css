@@ -4233,8 +4233,9 @@ svg {
 .three-column-text p {
     font-size: 16px;
     line-height: 1.7;
-    color: var(--text-color);
+    color: #374151;
     margin: 0;
+    white-space: pre-wrap;
 }
 
 .sport-card {

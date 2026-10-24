@@ -6,7 +6,8 @@
 header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
-header('Cache-Control: public, max-age=60');
+header('Cache-Control: no-store, no-cache, must-revalidate');
+header('Pragma: no-cache');
 
 // Start output buffering
 ob_start();
@@ -119,14 +120,29 @@ try {
         $data['heroContent']['background_image'] = normalizeImageUrl($data['heroContent']['background_image']);
     }
     
-    // Normalize three-column section images
     if (!empty($data['threeColumnSections'])) {
         foreach ($data['threeColumnSections'] as &$section) {
+            if (empty($section['description'])) {
+                foreach (['content', 'body', 'text', 'column_text', 'details'] as $alias) {
+                    if (!empty($section[$alias]) && is_string($section[$alias])) {
+                        $section['description'] = $section[$alias];
+                        break;
+                    }
+                }
+            }
+            if (empty($section['image'])) {
+                foreach (['image_url', 'photo', 'file_url', 'file_path', 'picture'] as $alias) {
+                    if (!empty($section[$alias]) && is_string($section[$alias])) {
+                        $section['image'] = $section[$alias];
+                        break;
+                    }
+                }
+            }
             if (!empty($section['image'])) {
                 $section['image'] = normalizeImageUrl($section['image']);
             }
         }
-        unset($section); // Break reference
+        unset($section);
     }
 
     $readOne = function ($sql) use ($db) {

@@ -369,14 +369,46 @@ function readThreeColumnEditors() {
     const cards = document.querySelectorAll('.three-column-editor');
     if (!cards.length) return threeColumns.slice();
     return Array.from(cards).map(function (card, index) {
+        const titleInput = card.querySelector('.three-col-title');
+        const descriptionInput = card.querySelector('.three-col-description');
+        const imageInput = card.querySelector('.three-col-image');
+        if (!titleInput || !descriptionInput || !imageInput) {
+            throw new Error('Reload the Homepage screen, then save the columns again.');
+        }
         const id = card.getAttribute('data-id');
         return {
             id: id ? Number(id) : null,
-            title: card.querySelector('.three-col-title').value,
-            description: card.querySelector('.three-col-description').value,
-            image: card.querySelector('.three-col-image').value,
+            title: titleInput.value,
+            description: descriptionInput.value,
+            image: imageInput.value || card.getAttribute('data-image') || '',
             order_index: index
         };
+    });
+}
+
+function refreshThreeColumnPreview(input) {
+    if (!input) return;
+    const box = document.getElementById(String(input.id || '').replace('three_col_image_', 'three_col_preview_'));
+    if (!box) return;
+    const url = (input.value || '').trim();
+    box.innerHTML = '';
+    if (!url || url.indexOf('data:') === 0) return;
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = 'Column photo';
+    img.style.cssText = 'width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;display:block;';
+    box.appendChild(img);
+    const card = input.closest('.three-column-editor');
+    if (card) card.setAttribute('data-image', url);
+}
+
+if (!window.__threeColumnPreviewBound) {
+    window.__threeColumnPreviewBound = true;
+    document.addEventListener('input', function (event) {
+        const input = event.target;
+        if (input && input.classList && input.classList.contains('three-col-image')) {
+            refreshThreeColumnPreview(input);
+        }
     });
 }
 
@@ -392,31 +424,40 @@ function displayThreeColumns() {
     }
 
     list.innerHTML = threeColumns.map(function (col, index) {
+        const image = col.image || col.image_url || col.photo || col.file_url || '';
+        const description = col.description || col.content || col.body || col.text || '';
         return `
-        <div class="three-column-editor" data-id="${col.id || ''}" style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+        <div class="three-column-editor" data-id="${col.id || ''}" data-image="${escapeAdminText(image)}" style="background: white; border: 2px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 15px;">
             <div class="form-group">
                 <label class="form-label">Title</label>
                 <input type="text" class="form-input three-col-title" value="${escapeAdminText(col.title)}">
             </div>
             <div class="form-group">
                 <label class="form-label">Description</label>
-                <textarea class="form-input three-col-description" rows="3">${escapeAdminText(col.description)}</textarea>
+                <textarea class="form-input three-col-description" rows="3">${escapeAdminText(description)}</textarea>
             </div>
             <div class="form-group">
                 <label class="form-label">Image</label>
                 <div style="display: flex; gap: 12px; align-items: center;">
                     <div id="three_col_preview_${index}" style="flex-shrink: 0;"></div>
-                    <input type="text" class="form-input three-col-image" id="three_col_image_${index}" value="${escapeAdminText(col.image)}" readonly>
+                    <input type="text" class="form-input three-col-image" id="three_col_image_${index}" value="${escapeAdminText(image)}" placeholder="Paste an image address or click Select">
                     <button type="button" class="btn btn-primary" onclick="openMediaLibrary('three_col_image_${index}')">🖼️ Select</button>
                 </div>
             </div>
             ${col.id ? `<button type="button" class="btn" onclick="deleteThreeColumn(${col.id})" style="background:#ef4444;color:white;">🗑️ Delete</button>` : ''}
         </div>`;
     }).join('') + '<button type="button" class="btn btn-primary" onclick="saveThreeColumns()">💾 Save Columns</button>';
+    list.querySelectorAll('.three-col-image').forEach(refreshThreeColumnPreview);
 }
 
 async function saveThreeColumns() {
-    const sections = readThreeColumnEditors().filter(function (section) { return section.title.trim() !== ''; });
+    let sections = [];
+    try {
+        sections = readThreeColumnEditors().filter(function (section) { return section.title.trim() !== ''; });
+    } catch (error) {
+        showToast(error.message || 'Reload the Homepage screen, then save the columns again.', 'error');
+        return;
+    }
     if (!sections.length) {
         showToast('Add a title before saving a column.', 'error');
         return;
@@ -426,14 +467,28 @@ async function saveThreeColumns() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
+            cache: 'no-store',
             body: JSON.stringify({ section_type: 'three-columns', sections: sections })
         });
         const result = await response.json();
-        if (!response.ok || result.error) throw new Error(result.error || 'The column images were not saved.');
+        if (!response.ok || result.error) throw new Error(result.error || 'The description and photo were not saved.');
+        if (Array.isArray(result.threeColumns)) {
+            const missing = sections.filter(function (section) {
+                return !result.threeColumns.some(function (row) {
+                    const sameTitle = String(row.title || '').trim() === section.title.trim();
+                    const descriptionOk = section.description.trim() === '' || String(row.description || '').trim() === section.description.trim();
+                    const imageOk = section.image.trim() === '' || String(row.image || '').trim() === section.image.trim();
+                    return sameTitle && descriptionOk && imageOk;
+                });
+            });
+            if (missing.length) {
+                throw new Error('The description or photo was not stored. Save the columns again.');
+            }
+        }
         showToast(result.message || 'Columns saved.', 'success');
         await loadHomepageSections();
     } catch (error) {
-        showToast(error.message || 'The column images were not saved.', 'error');
+        showToast(error.message || 'The description and photo were not saved.', 'error');
     }
 }
 

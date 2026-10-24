@@ -347,7 +347,7 @@ try {
                 <div class="form-group">
                     <label class="form-label">Image <span style="color: #6b7280; font-weight: normal;">(This image appears in the <?php echo htmlspecialchars($section['title']); ?> column)</span></label>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" name="sections[<?php echo $index; ?>][image]" id="three_col_image_<?php echo $index; ?>" class="form-input" value="<?php echo htmlspecialchars($section['image'] ?? ''); ?>" readonly placeholder="No image selected - click 'Select' to choose one">
+                        <input type="text" name="sections[<?php echo $index; ?>][image]" id="three_col_image_<?php echo $index; ?>" class="form-input" value="<?php echo htmlspecialchars($section['image'] ?? ''); ?>" placeholder="Paste an image address or click Select">
                         <button type="button" onclick="openMediaLibrary('three_col_image_<?php echo $index; ?>')" class="btn btn-primary">🖼️ Select Image</button>
                     </div>
                     <?php if (!empty($section['image'])): ?>

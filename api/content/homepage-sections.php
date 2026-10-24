@@ -193,51 +193,50 @@ try {
             echo json_encode(['success' => true, 'message' => 'Custom section content saved successfully']);
             
         } elseif ($sectionType === 'three-columns') {
-            // Handle three-column sections - OPTIMIZED for speed
             try {
-                // Set execution time limit for this operation (reduced from 30s)
-                set_time_limit(10);
-                
-                // Ensure table exists (cache this check to avoid repeated queries)
-                static $tableChecked = false;
-                if (!$tableChecked) {
-                    $tableExists = $db->fetchOne("SHOW TABLES LIKE 'three_column_sections'");
-                    if (!$tableExists) {
-                        $db->query("CREATE TABLE IF NOT EXISTS three_column_sections (
-                            id INT AUTO_INCREMENT PRIMARY KEY,
-                            title VARCHAR(200) NOT NULL,
-                            description TEXT,
-                            image VARCHAR(500),
-                            order_index INT DEFAULT 0,
-                            is_active TINYINT(1) DEFAULT 1,
-                            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                            INDEX idx_order (order_index)
-                        )");
+                set_time_limit(60);
+
+                $columnText = function ($section, array $keys) {
+                    foreach ($keys as $key) {
+                        if (!isset($section[$key]) || is_array($section[$key])) {
+                            continue;
+                        }
+                        $value = trim((string) $section[$key]);
+                        if ($value !== '') {
+                            return $value;
+                        }
                     }
-                    $tableChecked = true;
-                }
-                
-                // Process sections first to validate data
+                    return '';
+                };
+
                 $sections = $input['sections'] ?? $_POST['sections'] ?? [];
                 if (!is_array($sections) || empty($sections)) {
                     throw new Exception('No sections data provided');
                 }
-                
-                // Prepare all data first
+
                 $sectionsToSave = [];
                 $sectionIds = [];
                 foreach ($sections as $section) {
-                    $title = trim($section['title'] ?? '');
-                    $description = trim($section['description'] ?? '');
-                    $image = trim($section['image'] ?? '');
+                    if (!is_array($section)) {
+                        continue;
+                    }
+                    $title = $columnText($section, ['title']);
+                    $description = $columnText($section, ['description', 'content', 'body', 'text']);
+                    $image = $columnText($section, ['image', 'image_url', 'photo', 'file_url', 'file_path']);
+                    if (stripos($image, 'data:') === 0) {
+                        $image = '';
+                    }
                     $orderIndex = intval($section['order_index'] ?? 0);
-                    $id = isset($section['id']) ? intval($section['id']) : null;
-                    
-                    if (empty($title)) continue;
-                    
+                    $id = isset($section['id']) && $section['id'] !== '' && $section['id'] !== null
+                        ? intval($section['id'])
+                        : null;
+
+                    if ($title === '') {
+                        continue;
+                    }
+
                     $sectionsToSave[] = [
-                        'id' => $id,
+                        'id' => $id ?: null,
                         'title' => $title,
                         'description' => $description,
                         'image' => $image,
@@ -247,16 +246,14 @@ try {
                         $sectionIds[] = $id;
                     }
                 }
-                
+
                 if (empty($sectionsToSave)) {
                     throw new Exception('No valid sections to save');
                 }
-                
-                // OPTIMIZED: Use transaction for atomic operations
+
                 $db->beginTransaction();
-                
+
                 try {
-                    // Only deactivate sections that are NOT in the current save list (more efficient)
                     if (!empty($sectionIds)) {
                         $placeholders = implode(',', array_fill(0, count($sectionIds), '?'));
                         $db->update(
@@ -264,44 +261,66 @@ try {
                             $sectionIds
                         );
                     } else {
-                        // If no existing IDs, deactivate all
                         $db->update("UPDATE three_column_sections SET is_active = 0");
                     }
-                    
-                    // Save all sections in batch
-                    foreach ($sectionsToSave as $section) {
+
+                    foreach ($sectionsToSave as &$section) {
                         if ($section['id']) {
-                            // Update existing - use single query with all fields
                             $db->update(
                                 "UPDATE three_column_sections SET title = ?, description = ?, image = ?, order_index = ?, is_active = 1, updated_at = NOW() WHERE id = ?",
                                 [$section['title'], $section['description'], $section['image'], $section['order_index'], $section['id']]
                             );
                         } else {
-                            // Insert new
-                            $db->insert(
+                            $section['id'] = $db->insert(
                                 "INSERT INTO three_column_sections (title, description, image, order_index, is_active) VALUES (?, ?, ?, ?, 1)",
                                 [$section['title'], $section['description'], $section['image'], $section['order_index']]
                             );
                         }
                     }
-                    
-                    // Commit transaction
+                    unset($section);
+
                     $db->commit();
-                    
                 } catch (Exception $e) {
-                    // Rollback on error
-                    $db->rollback();
+                    if ($db->inTransaction()) {
+                        $db->rollback();
+                    }
                     throw $e;
                 }
-                
-                // Clear output buffer and send response immediately
+
+                $savedRows = $db->fetchAll(
+                    "SELECT id, title, description, image, order_index FROM three_column_sections WHERE is_active = 1 ORDER BY order_index ASC, id ASC"
+                );
+                foreach ($sectionsToSave as $section) {
+                    $row = null;
+                    foreach ($savedRows as $candidate) {
+                        if (!empty($section['id']) && (int) $candidate['id'] === (int) $section['id']) {
+                            $row = $candidate;
+                            break;
+                        }
+                    }
+                    if (!$row) {
+                        throw new Exception('The column titled "' . $section['title'] . '" was not stored.');
+                    }
+                    if ($section['description'] !== '' && trim((string) ($row['description'] ?? '')) === '') {
+                        throw new Exception('The description for "' . $section['title'] . '" was not stored.');
+                    }
+                    if ($section['image'] !== '' && trim((string) ($row['image'] ?? '')) === '') {
+                        throw new Exception('The photo for "' . $section['title'] . '" was not stored.');
+                    }
+                }
+
                 while (ob_get_level() > 0) {
                     ob_end_clean();
                 }
                 if (!headers_sent()) {
                     header('Content-Type: application/json');
+                    header('Cache-Control: no-store');
                 }
-                echo json_encode(['success' => true, 'message' => 'Three column sections saved successfully']);
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Three column sections saved successfully',
+                    'threeColumns' => $savedRows
+                ]);
                 exit;
             } catch (Exception $e) {
                 error_log("Three columns save error: " . $e->getMessage());
