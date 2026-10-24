@@ -33,6 +33,17 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+        $columns = $db->fetchAll("SHOW COLUMNS FROM map_settings");
+        $columnNames = array_column($columns, 'Field');
+        if (!in_array('marker_title', $columnNames, true)) {
+            $db->query("ALTER TABLE map_settings ADD COLUMN marker_title VARCHAR(200)");
+        }
+        if (!in_array('marker_description', $columnNames, true)) {
+            $db->query("ALTER TABLE map_settings ADD COLUMN marker_description TEXT");
+        }
+        if (!in_array('zoom', $columnNames, true)) {
+            $db->query("ALTER TABLE map_settings ADD COLUMN zoom INT DEFAULT 15");
+        }
     }
 } catch (Exception $e) {
     error_log("Map settings table check error: " . $e->getMessage());

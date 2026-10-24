@@ -35,19 +35,20 @@
         }
         .admin-wrapper { display: flex; height: 100vh; }
         .admin-sidebar {
-            width: 256px;
-            background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            width: 272px;
+            background: #f7f6f3;
+            border-right: 1px solid #e7e5e4;
+            box-shadow: none;
             display: flex;
             flex-direction: column;
             position: fixed;
             height: 100vh;
-            overflow-y: auto;
+            overflow: hidden;
             z-index: 50;
         }
         .admin-main {
             flex: 1;
-            margin-left: 256px;
+            margin-left: 272px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -66,20 +67,59 @@
             box-shadow: none;
             margin-bottom: 40px;
         }
+        .nav-search {
+            margin: 12px 12px 4px;
+            width: calc(100% - 24px);
+            padding: 8px 10px;
+            border: 1px solid #e7e5e4;
+            border-radius: 8px;
+            background: #fff;
+            color: #1c1917;
+            font-size: 13px;
+        }
+        .nav-group { margin: 2px 8px 8px; }
+        .nav-group.collapsed .nav-tab { display: none; }
+        .nav-group-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 8px 4px;
+            background: none;
+            border: none;
+            color: #78716c;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-align: left;
+        }
+        .nav-swatch {
+            width: 8px;
+            height: 8px;
+            border-radius: 99px;
+            flex-shrink: 0;
+        }
+        .nav-chevron { margin-left: auto; font-size: 10px; color: #a8a29e; }
         .nav-tab {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 16px;
-            color: #4b5563;
+            gap: 10px;
+            padding: 8px 10px;
+            margin: 1px 0;
+            color: #44403c;
             text-decoration: none;
             border-radius: 8px;
-            transition: all 0.2s;
+            font-size: 13.5px;
+            font-weight: 500;
+            transition: background 0.15s;
         }
+        .nav-tab:hover { background: #eceae6; }
         .nav-tab.active {
-            background: linear-gradient(135deg, #10b981, #059669);
             color: white;
         }
+        .nav-tab-icon { width: 1.25em; text-align: center; flex-shrink: 0; }
         .admin-topbar {
             background: linear-gradient(135deg, #800020, #6B0000);
             padding: 16px 24px;
@@ -346,7 +386,8 @@
                 </div>
             </div>
             
-            <nav class="nav-tabs" style="flex: 1; padding: 32px 16px 0; overflow-y: auto;" id="nav-tabs">
+            <input type="search" class="nav-search" id="adminSearch" placeholder="Find a section" oninput="filterAdminNav(this.value)" aria-label="Find a section">
+            <nav class="nav-tabs" style="flex: 1; padding: 4px 0 12px; overflow-y: auto;" id="nav-tabs">
                 <!-- Navigation will be loaded dynamically -->
             </nav>
             
@@ -361,7 +402,7 @@
         <div class="admin-main">
             <div class="admin-topbar">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <input type="text" placeholder="Search..." style="padding: 10px 15px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; width: 300px;">
+                    <input type="search" placeholder="Find a section" aria-label="Find a section" oninput="var box=document.getElementById('adminSearch'); if(box){box.value=this.value;} filterAdminNav(this.value);" style="padding: 10px 15px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; background: rgba(255,255,255,0.1); color: white; width: 300px;">
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">A</div>
@@ -979,6 +1020,9 @@
             }
 
             showToast(result.message || 'Saved to the database.', 'success');
+            if (endpoint.indexOf('homepage-sections.php') !== -1 && typeof loadHomepageSections === 'function') {
+                await loadHomepageSections();
+            }
             if (submitBtn) {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
@@ -1023,67 +1067,196 @@
         
         // NO PHP - all functionality uses HTML/JS/CSS with localStorage
         
-        // Navigation tabs
-        const navTabs = [
-            {id: 'dashboard', label: 'Dashboard', icon: '📊'},
-            {id: 'branding', label: 'Branding', icon: '🎨'},
-            {id: 'hero', label: 'Hero Section', icon: '🌐'},
-            {id: 'about', label: 'About Section', icon: '📖'},
-            {id: 'curriculum', label: 'Curriculum', icon: '📚'},
-            {id: 'activities', label: 'Events', icon: '📅'},
-            {id: 'gallery', label: 'School Gallery', icon: '🖼️'},
-            {id: 'teachers', label: 'Teachers', icon: '👨‍🏫'},
-            {id: 'facilities', label: 'Facilities', icon: '🏢'},
-            {id: 'testimonials', label: 'Testimonials', icon: '⭐'},
-            {id: 'contact', label: 'Contact Info', icon: '📧'},
-            {id: 'news', label: 'News', icon: '📰'},
-            {id: 'announcements', label: 'Announcements', icon: '📢'},
-            {id: 'all-updates-settings', label: 'All Updates Settings', icon: '📰'},
-            {id: 'media', label: 'Media Library', icon: '🖼️'},
-            {id: 'users', label: 'User Management', icon: '👥'},
-            {id: 'settings', label: 'Settings', icon: '⚙️'},
-            {id: 'sponsorship', label: 'Sponsorship', icon: '❤️'},
-            {id: 'giveback', label: 'Give Back', icon: '💰'},
-            {id: 'clubs', label: 'Clubs', icon: '👥'},
-            {id: 'background', label: 'School Background', icon: '🏛️'},
-            {id: 'people-behind-school', label: 'People Behind School', icon: '👥'},
-            {id: 'homepage-sections', label: 'Homepage Sections', icon: '🏠'},
-            {id: 'parents', label: 'Parents Portal', icon: '👥'},
-            {id: 'resources', label: 'Resources', icon: '📚'},
-            {id: 'button-customization', label: 'Button Customization', icon: '🎯'},
-            {id: 'colors', label: 'Website Colors', icon: '🎨'},
-            {id: 'hero-text-styles', label: 'Hero Text Styles', icon: '📝'},
-            {id: 'footer', label: 'Footer Content', icon: '⬇️'},
-            {id: 'social-media', label: 'Social Media', icon: '🔗'},
-            {id: 'programs', label: 'Programs', icon: '📚'},
-            {id: 'map', label: 'Map Settings', icon: '📍'},
-            {id: 'festive-animations', label: 'Festive Animations', icon: '❄️'},
-            {id: 'admission', label: 'Admission', icon: '📝'},
-            {id: 'navigation', label: 'Navigation Menu', icon: '🧭'},
-        ];
+        // Saved records sometimes come back as a plain row, and sometimes as
+        // { success, data }. The screens look for a named key, so fill that in.
+        (function () {
+            const nativeFetch = window.fetch.bind(window);
+            const listKeys = {
+                'social-media.php': 'socialMedia',
+                'navigation.php': 'navigation',
+                'programs.php': 'programs',
+                'news.php': 'news',
+                'announcements.php': 'announcements',
+                'teachers.php': 'teachers',
+                'activities.php': 'activities',
+                'facilities.php': 'facilities',
+                'testimonials.php': 'testimonials'
+            };
+            const recordKeys = {
+                'map-settings.php': 'mapSettings',
+                'contact.php': 'contact',
+                'all-updates-settings.php': 'settings',
+                'news-settings.php': 'settings',
+                'announcements-settings.php': 'settings',
+                'activities-settings.php': 'settings',
+                'teachers-settings.php': 'settings',
+                'facilities-settings.php': 'settings',
+                'testimonials-settings.php': 'settings',
+                'gallery-settings.php': 'settings',
+                'hero-text-styles.php': 'heroStyles',
+                'festive-animations.php': 'festive',
+                'admission.php': 'admission',
+                'resources.php': 'resources',
+                'school-background.php': 'background',
+                'footer.php': 'footer',
+                'branding.php': 'branding',
+                'about.php': 'about',
+                'hero-content.php': 'hero'
+            };
+            window.fetch = function (input, init) {
+                const method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+                return nativeFetch(input, init).then(async function (response) {
+                    if (method !== 'GET') return response;
+                    const url = typeof input === 'string' ? input : ((input && input.url) || '');
+                    if (url.indexOf('/api/content/') === -1 && url.indexOf('api/content/') === -1) return response;
+                    const file = (url.split('?')[0].split('/').pop() || '');
+                    const key = listKeys[file] || recordKeys[file];
+                    if (!key) return response;
+                    let data;
+                    try { data = await response.clone().json(); } catch (e) { return response; }
+                    let changed = false;
+                    if (Array.isArray(data)) {
+                        const wrapped = { success: true, data: data };
+                        wrapped[key] = data;
+                        data = wrapped;
+                        changed = true;
+                    } else if (data && typeof data === 'object' && !data.error) {
+                        const copy = Object.assign({}, data);
+                        if (copy.success === undefined) {
+                            copy.success = true;
+                            changed = true;
+                        }
+                        const list = Array.isArray(copy[key]) ? copy[key] : (Array.isArray(copy.data) ? copy.data : null);
+                        if (list && copy[key] == null) {
+                            copy[key] = list;
+                            changed = true;
+                        } else if (!list && copy[key] == null) {
+                            const source = (copy.data && typeof copy.data === 'object' && !Array.isArray(copy.data)) ? copy.data : copy;
+                            if (source && (source.id !== undefined || source === copy)) {
+                                const record = Object.assign({}, source);
+                                delete record.success;
+                                copy[key] = record;
+                                changed = true;
+                            }
+                        }
+                        data = copy;
+                    }
+                    if (!changed) return response;
+                    const headers = new Headers(response.headers);
+                    headers.set('Content-Type', 'application/json');
+                    return new Response(JSON.stringify(data), {
+                        status: response.status,
+                        statusText: response.statusText,
+                        headers: headers
+                    });
+                });
+            };
+        })();
 
-        // Get active tab from URL
+        const navGroups = [
+            { id: 'overview', label: 'Overview', color: '#1e3a5f', items: [
+                { id: 'dashboard', label: 'Dashboard', icon: '▦' }
+            ]},
+            { id: 'design', label: 'Design', color: '#6d28d9', items: [
+                { id: 'branding', label: 'Branding', icon: '◆' },
+                { id: 'colors', label: 'Colors', icon: '◉' },
+                { id: 'button-customization', label: 'Buttons', icon: '▢' },
+                { id: 'hero-text-styles', label: 'Hero Text', icon: 'T' },
+                { id: 'festive-animations', label: 'Animations', icon: '✦' }
+            ]},
+            { id: 'homepage', label: 'Homepage', color: '#0f766e', items: [
+                { id: 'homepage-sections', label: 'Homepage', icon: '⌂' },
+                { id: 'hero', label: 'Hero', icon: '▣' },
+                { id: 'about', label: 'About', icon: '¶' }
+            ]},
+            { id: 'school', label: 'School', color: '#1d4ed8', items: [
+                { id: 'background', label: 'Background', icon: '⌂' },
+                { id: 'people-behind-school', label: 'Our People', icon: '☺' },
+                { id: 'teachers', label: 'Teachers', icon: '✎' },
+                { id: 'curriculum', label: 'Curriculum', icon: '☰' },
+                { id: 'programs', label: 'Programs', icon: '☰' },
+                { id: 'facilities', label: 'Facilities', icon: '⌂' },
+                { id: 'clubs', label: 'Clubs', icon: '☺' }
+            ]},
+            { id: 'updates', label: 'News', color: '#b45309', items: [
+                { id: 'news', label: 'News', icon: '☰' },
+                { id: 'announcements', label: 'Announcements', icon: '!' },
+                { id: 'all-updates-settings', label: 'Updates Page', icon: '☰' },
+                { id: 'activities', label: 'Events', icon: '▦' },
+                { id: 'gallery', label: 'Gallery', icon: '▣' },
+                { id: 'testimonials', label: 'Testimonials', icon: '★' }
+            ]},
+            { id: 'community', label: 'Community', color: '#9f1239', items: [
+                { id: 'admission', label: 'Admission', icon: '✎' },
+                { id: 'parents', label: 'Parents', icon: '☺' },
+                { id: 'sponsorship', label: 'Sponsorship', icon: '♥' },
+                { id: 'giveback', label: 'Give Back', icon: '♥' },
+                { id: 'resources', label: 'Resources', icon: '☰' }
+            ]},
+            { id: 'site', label: 'Site', color: '#334155', items: [
+                { id: 'navigation', label: 'Menu', icon: '≡' },
+                { id: 'footer', label: 'Footer', icon: '↓' },
+                { id: 'social-media', label: 'Social Media', icon: '↗' },
+                { id: 'contact', label: 'Contact & Map', icon: '⌖' }
+            ]},
+            { id: 'system', label: 'System', color: '#44403c', items: [
+                { id: 'media', label: 'Media Library', icon: '▣' },
+                { id: 'users', label: 'Users', icon: '☺' },
+                { id: 'settings', label: 'Settings', icon: '⚙' }
+            ]}
+        ];
+        const navTabs = navGroups.flatMap(group => group.items.map(item => Object.assign({ color: group.color, group: group.id }, item)));
+        const openGroups = JSON.parse(localStorage.getItem('adminNavOpen') || 'null') || {};
+
         const urlParams = new URLSearchParams(window.location.search);
         let activeTab = urlParams.get('tab') || 'dashboard';
+        if (activeTab === 'map') activeTab = 'contact';
 
-        // Render navigation
         function renderNavigation() {
             const navContainer = document.getElementById('nav-tabs');
-            navContainer.innerHTML = navTabs.map(tab => {
-                const isActive = activeTab === tab.id;
-                return `
-                    <a href="?tab=${tab.id}" 
-                       class="nav-tab ${isActive ? 'active' : ''}"
-                       onclick="loadTab('${tab.id}'); return false;">
-                        <span>${tab.icon}</span>
-                        <span>${tab.label}</span>
-                    </a>
-                `;
+            navContainer.innerHTML = navGroups.map(group => {
+                const containsActive = group.items.some(item => item.id === activeTab);
+                const collapsed = openGroups[group.id] === false && !containsActive;
+                const items = group.items.map(tab => {
+                    const isActive = activeTab === tab.id;
+                    return `<a href="?tab=${tab.id}" class="nav-tab ${isActive ? 'active' : ''}" ${isActive ? `style="background:${group.color};color:#fff;"` : ''} onclick="loadTab('${tab.id}'); return false;"><span class="nav-tab-icon">${tab.icon}</span><span>${tab.label}</span></a>`;
+                }).join('');
+                return `<div class="nav-group ${collapsed ? 'collapsed' : ''}" data-group="${group.id}"><button type="button" class="nav-group-label" onclick="toggleNavGroup('${group.id}')"><span class="nav-swatch" style="background:${group.color}"></span><span>${group.label}</span><span class="nav-chevron">${collapsed ? '▸' : '▾'}</span></button>${items}</div>`;
             }).join('');
+            const search = document.getElementById('adminSearch');
+            if (search && search.value) filterAdminNav(search.value);
         }
+
+        function toggleNavGroup(id) {
+            const group = document.querySelector('.nav-group[data-group="' + id + '"]');
+            if (!group) return;
+            const willCollapse = !group.classList.contains('collapsed');
+            group.classList.toggle('collapsed', willCollapse);
+            const chevron = group.querySelector('.nav-chevron');
+            if (chevron) chevron.textContent = willCollapse ? '▸' : '▾';
+            openGroups[id] = !willCollapse;
+            localStorage.setItem('adminNavOpen', JSON.stringify(openGroups));
+        }
+        window.toggleNavGroup = toggleNavGroup;
+
+        function filterAdminNav(query) {
+            const q = String(query || '').trim().toLowerCase();
+            document.querySelectorAll('.nav-group').forEach(group => {
+                let visible = 0;
+                group.querySelectorAll('.nav-tab').forEach(tab => {
+                    const show = !q || tab.textContent.toLowerCase().indexOf(q) !== -1;
+                    tab.style.display = show ? 'flex' : 'none';
+                    if (show) visible += 1;
+                });
+                group.style.display = visible ? '' : 'none';
+                if (q) group.classList.remove('collapsed');
+            });
+        }
+        window.filterAdminNav = filterAdminNav;
 
         // Load tab content
         async function loadTab(tabName) {
+            if (tabName === 'map') tabName = 'contact';
             activeTab = tabName;
             if (window.innerWidth <= 768) {
                 const sidebar = document.getElementById('sidebar');
@@ -1474,6 +1647,7 @@
         window.addEventListener('popstate', () => {
             const urlParams = new URLSearchParams(window.location.search);
             activeTab = urlParams.get('tab') || 'dashboard';
+            if (activeTab === 'map') activeTab = 'contact';
             renderNavigation();
             loadTab(activeTab);
         });

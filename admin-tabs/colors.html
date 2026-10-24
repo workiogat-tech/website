@@ -7,20 +7,19 @@
 </head>
 <body>
     <div class="content-card">
-        <h2>🎨 Website Colors</h2>
-        <p style="margin-bottom: 20px; color: #666;">Customize colors for different sections of your website. Changes save automatically and reflect immediately.</p>
-        
-        <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 30px; border-radius: 4px;">
-            <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1976d2;">📝 How to Edit Colors:</h3>
-            <ol style="margin: 0; padding-left: 20px; color: #555;">
-                <li style="margin-bottom: 8px;"><strong>Click on any color input field</strong> below to open the color picker</li>
-                <li style="margin-bottom: 8px;"><strong>Select your desired color</strong> using the color picker, or type a hex code (e.g., #ffffff for white)</li>
-                <li style="margin-bottom: 8px;"><strong>Click "💾 Save All Colors"</strong> at the bottom to apply changes</li>
-                <li style="margin-bottom: 8px;">Changes will <strong>save automatically</strong> and appear immediately on your website</li>
-            </ol>
+        <h2>Colors</h2>
+        <p style="margin-bottom: 12px; color: #57534e;">Branding sets the default school color. This screen stores a palette for each part of the site. A page uses its own primary color when one is saved.</p>
+        <div style="background: #f5f5f4; border-radius: 10px; padding: 14px 16px; margin-bottom: 22px; color: #44403c; font-size: 14px; line-height: 1.5;">
+            <strong>Primary</strong> is headings and links.
+            <strong>Secondary</strong> is the darker shade.
+            <strong>Background</strong> is the page background.
+            <strong>Text</strong> is paragraph text.
+            <strong>Accent</strong> is highlights.
+            <strong>Hover</strong> is the color when a visitor hovers a button.
+            Choose a color, then click Save all colors.
         </div>
         
-        <form id="colorsForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <form id="colorsForm" action="api/content/website-colors.php" method="POST" onsubmit="return handleAdminFormSubmit(event, this);">
             <div id="colors-container" style="margin-bottom: 30px;">
                 <div style="padding: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; text-align: center;">
                     <p>Loading colors...</p>
@@ -58,78 +57,46 @@
             }
         }
 
+        function colorCard(section, colorsMap) {
+            const colorData = colorsMap[section.name] || {};
+            const fields = [
+                ['primaryColor', 'primary_color', 'Primary', '#800020'],
+                ['secondaryColor', 'secondary_color', 'Secondary', '#6B0000'],
+                ['backgroundColor', 'background_color', 'Background', '#ffffff'],
+                ['textColor', 'text_color', 'Text', '#1e293b'],
+                ['accentColor', 'accent_color', 'Accent', '#800020'],
+                ['hoverColor', 'hover_color', 'Hover', '#6B0000']
+            ];
+            const inputs = fields.map(function (field) {
+                const value = colorData[field[1]] || field[3];
+                return `<div><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#57534e;">${field[2]}</label><input type="color" name="colors[${escapeHtml(section.name)}][${field[0]}]" style="height:42px;width:100%;cursor:pointer;border:1px solid #d6d3d1;border-radius:6px;background:#fff;" value="${escapeHtml(value)}"></div>`;
+            }).join('');
+            return `<div style="background:#fff;padding:16px;border-radius:12px;border:1px solid #e7e5e4;"><h4 style="font-size:15px;font-weight:650;margin:0 0 12px;color:#1c1917;">${escapeHtml(section.label)}</h4><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">${inputs}</div><input type="hidden" name="colors[${escapeHtml(section.name)}][sectionName]" value="${escapeHtml(section.name)}"></div>`;
+        }
+
         function renderColorsForm(data) {
-            const { colors, sections } = data;
-            const colorsMap = colors || {};
-            
-            let html = '<div style="margin-bottom: 30px; padding: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">';
-            html += '<h3 style="margin: 0 0 15px 0; color: #856404; font-size: 18px;">Total Sections: ' + sections.length + '</h3>';
-            html += '<p style="margin: 0; color: #856404; font-weight: bold;">All sections are displayed below. Scroll down to see them all.</p>';
-            html += '</div>';
-            
-            html += '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-bottom: 40px;">';
-            
-            sections.forEach((section, index) => {
-                const colorData = colorsMap[section.name] || {};
-                html += `
-                    <div style="background: #ffffff; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                        <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">
-                            ${escapeHtml(section.label)}
-                        </h4>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
-                            <div>
-                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Primary Color</label>
-                                <input type="color" 
-                                       name="colors[${escapeHtml(section.name)}][primaryColor]" 
-                                       style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                       value="${escapeHtml(colorData.primary_color || '#800020')}">
-                            </div>
-                            <div>
-                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Secondary Color</label>
-                                <input type="color" 
-                                       name="colors[${escapeHtml(section.name)}][secondaryColor]" 
-                                       style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                       value="${escapeHtml(colorData.secondary_color || '#6B0000')}">
-                            </div>
-                            <div>
-                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Background Color</label>
-                                <input type="color" 
-                                       name="colors[${escapeHtml(section.name)}][backgroundColor]" 
-                                       style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                       value="${escapeHtml(colorData.background_color || '#ffffff')}">
-                            </div>
-                            <div>
-                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Text Color</label>
-                                <input type="color" 
-                                       name="colors[${escapeHtml(section.name)}][textColor]" 
-                                       style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                       value="${escapeHtml(colorData.text_color || '#1e293b')}">
-                            </div>
-                            <div>
-                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Accent Color</label>
-                                <input type="color" 
-                                       name="colors[${escapeHtml(section.name)}][accentColor]" 
-                                       style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                       value="${escapeHtml(colorData.accent_color || '#800020')}">
-                            </div>
-                            <div>
-                                <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Hover Color</label>
-                                <input type="color" 
-                                       name="colors[${escapeHtml(section.name)}][hoverColor]" 
-                                       style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                       value="${escapeHtml(colorData.hover_color || '#6B0000')}">
-                            </div>
-                        </div>
-                        <input type="hidden" name="colors[${escapeHtml(section.name)}][sectionName]" value="${escapeHtml(section.name)}">
-                    </div>
-                `;
+            const colorsMap = data.colors || {};
+            const sections = data.sections || [];
+            const order = ['Site-wide', 'Homepage', 'Pages'];
+            const notes = {
+                'Site-wide': 'Header, footer, and the shared button palette.',
+                'Homepage': 'Each block on the home page.',
+                'Pages': 'The palette used on that page.'
+            };
+            let html = '';
+            order.forEach(function (groupName) {
+                const groupSections = sections.filter(function (section) {
+                    return (section.group || 'Pages') === groupName;
+                });
+                if (!groupSections.length) return;
+                html += `<h3 style="margin:8px 0 6px;font-size:18px;color:#1c1917;">${groupName}</h3>`;
+                html += `<p style="margin:0 0 14px;color:#78716c;font-size:14px;">${notes[groupName]}</p>`;
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px;">';
+                groupSections.forEach(function (section) {
+                    html += colorCard(section, colorsMap);
+                });
+                html += '</div>';
             });
-            
-            html += '</div>';
-            html += '<div style="text-align: center; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724; margin-top: 20px;">';
-            html += '<strong>✅ Successfully loaded ' + sections.length + ' out of ' + sections.length + ' sections</strong>';
-            html += '</div>';
-            
             document.getElementById('colors-container').innerHTML = html;
         }
 
@@ -137,55 +104,6 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
-        }
-
-        // Form submission handler (should be in main admin.js)
-        function handleAdminFormSubmit(event, form) {
-            event.preventDefault();
-            
-            const formData = new FormData(form);
-            const data = {};
-            for (const [key, value] of formData.entries()) {
-                // Handle nested keys like colors[header][primaryColor]
-                const keys = key.match(/(\w+)(?:\[(\w+)\])?(?:\[(\w+)\])?/);
-                if (keys) {
-                    if (!data[keys[1]]) data[keys[1]] = {};
-                    if (keys[2]) {
-                        if (!data[keys[1]][keys[2]]) data[keys[1]][keys[2]] = {};
-                        if (keys[3]) {
-                            data[keys[1]][keys[2]][keys[3]] = value;
-                        } else {
-                            data[keys[1]][keys[2]] = value;
-                        }
-                    } else {
-                        data[keys[1]] = value;
-                    }
-                } else {
-                    data[key] = value;
-                }
-            }
-            
-            fetch('/api/content/website-colors.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    alert('Colors saved successfully!');
-                } else {
-                    alert('Error: ' + (result.error || 'Failed to save colors'));
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error saving colors. Please try again.');
-            });
-            
-            return false;
         }
 
         // Load data when page loads

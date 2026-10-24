@@ -128,6 +128,32 @@ try {
         }
         unset($section); // Break reference
     }
+
+    $readOne = function ($sql) use ($db) {
+        try {
+            $row = $db->fetchOne($sql);
+            return is_array($row) ? $row : null;
+        } catch (Exception $e) {
+            return null;
+        }
+    };
+    $readAll = function ($sql) use ($db) {
+        try {
+            $rows = $db->fetchAll($sql);
+            return is_array($rows) ? $rows : [];
+        } catch (Exception $e) {
+            return [];
+        }
+    };
+    $data['visionMissionContent'] = $readOne("SELECT * FROM vision_mission_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
+    $data['coreValues'] = $readAll("SELECT * FROM core_values_items WHERE is_active = 1 ORDER BY order_index ASC, id ASC");
+    $data['whyChooseContent'] = $readOne("SELECT * FROM why_choose_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
+    $data['whyChoosePoints'] = $readAll("SELECT * FROM why_choose_points WHERE is_active = 1 ORDER BY order_index ASC, id ASC");
+    foreach (['academicsContent', 'customSectionContent', 'whyChooseContent'] as $imageKey) {
+        if (!empty($data[$imageKey]['image'])) {
+            $data[$imageKey]['image'] = normalizeImageUrl($data[$imageKey]['image']);
+        }
+    }
     
     ob_clean();
     echo json_encode(['success' => true, 'data' => $data]);

@@ -112,19 +112,30 @@ let hours = [];
 
 async function loadFooterData() {
     try {
-        const response = await fetch('api/content/footer.php');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                footerData = data.footer || {};
-                quickLinks = data.quickLinks || [];
-                hours = data.hours || [];
-                
-                document.getElementById('copyright_text').value = footerData.copyright_text || '';
-                displayQuickLinks();
-                displayHours();
+        const [footerResponse, linksResponse, hoursResponse] = await Promise.all([
+            fetch('api/content/footer.php'),
+            fetch('api/content/footer-links.php'),
+            fetch('api/content/footer-hours.php')
+        ]);
+        if (footerResponse.ok) {
+            const data = await footerResponse.json();
+            const footer = data.footer || data.data || data;
+            if (footer && !Array.isArray(footer)) {
+                footerData = footer;
+                const copyright = document.getElementById('copyright_text');
+                if (copyright) copyright.value = footer.copyright_text || '';
             }
         }
+        if (linksResponse.ok) {
+            const links = await linksResponse.json();
+            quickLinks = Array.isArray(links) ? links : (links.data || links.quickLinks || []);
+        }
+        if (hoursResponse.ok) {
+            const savedHours = await hoursResponse.json();
+            hours = Array.isArray(savedHours) ? savedHours : (savedHours.data || savedHours.hours || []);
+        }
+        displayQuickLinks();
+        displayHours();
     } catch (error) {
         console.error('Error loading footer data:', error);
     }

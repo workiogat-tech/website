@@ -75,17 +75,22 @@ if ($method === 'GET') {
             throw new Exception('No data provided');
         }
         
-        // Allowed fields
+        // Allowed fields. A contact screen has more than one form, so keep
+        // values that this request did not send.
         $allowedFields = ['address', 'phone', 'email', 'hours', 'intro_text', 'map_embed', 'hero_image', 'image'];
+        $existing = $db->fetchOne("SELECT * FROM contact_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: [];
         
-        // Filter and validate input
         $fields = ['is_active'];
         $values = [1];
         
-        foreach ($input as $key => $value) {
-            if ($key !== 'id' && $key !== 'is_active' && in_array($key, $allowedFields)) {
-                $fields[] = $key;
+        foreach ($allowedFields as $field) {
+            if (array_key_exists($field, $input)) {
+                $value = $input[$field];
+                $fields[] = $field;
                 $values[] = ($value === '' || $value === null) ? null : $value;
+            } elseif (array_key_exists($field, $existing) && $existing[$field] !== null && $existing[$field] !== '') {
+                $fields[] = $field;
+                $values[] = $existing[$field];
             }
         }
         
@@ -93,11 +98,7 @@ if ($method === 'GET') {
             throw new Exception('No valid fields to save');
         }
         
-        // Get existing content to update or create new
-        $existing = $db->fetchOne("SELECT * FROM contact_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
-        
-        if ($existing) {
-            // Update existing - deactivate old, create new active one
+        if (!empty($existing['id'])) {
             $db->update("UPDATE contact_content SET is_active = 0 WHERE id = ?", [$existing['id']]);
         }
         

@@ -16,29 +16,56 @@
     <div id="footer-placeholder"></div>
     
     <script src="js/static-pages.js?v=20261022g"></script>
-    <script src="js/main.js?v=20261022b"></script>
+    <script src="js/main.js?v=20261024a"></script>
     <script>
         async function loadContactPage() {
             try {
-                const response = await fetch('/api/content/contact.php');
-                const result = await response.json();
-                const data = result.data || result;
-                
+                const [contactResponse, mapResponse] = await Promise.all([
+                    fetch('/api/content/contact.php'),
+                    fetch('/api/content/map-settings.php')
+                ]);
+                const result = await contactResponse.json();
+                const data = result.contact || result.data || result;
+                let map = {};
+                try {
+                    const mapResult = await mapResponse.json();
+                    map = mapResult.mapSettings || mapResult.data || mapResult || {};
+                } catch (e) {
+                    map = {};
+                }
                 if (data) {
-                    renderContactPage(data);
+                    renderContactPage(data, map);
                 }
             } catch (error) {
                 console.error('Error loading contact page:', error);
             }
         }
 
-        function renderContactPage(data) {
+        function schoolMapSrc(embed, map) {
+            const raw = String(embed || '').trim();
+            let src = '';
+            const match = raw.match(/src\s*=\s*["']([^"']+)["']/i);
+            if (match) src = match[1];
+            else if (/^https?:\/\//i.test(raw)) src = raw;
+            if (src && /google\.|openstreetmap\.org/i.test(src)) return src;
+            const latitude = parseFloat(map && map.latitude);
+            const longitude = parseFloat(map && map.longitude);
+            if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return '';
+            const zoom = Math.min(20, Math.max(1, parseInt(map.zoom, 10) || 15));
+            return 'https://maps.google.com/maps?q=' + encodeURIComponent(latitude + ',' + longitude) + '&z=' + zoom + '&output=embed';
+        }
+
+        function renderContactPage(data, map) {
             const address = data.address || '';
             const phone = data.phone || '';
             const email = data.email || '';
+            const hours = data.hours || '';
+            const intro = data.intro_text || '';
+            const mapSrc = schoolMapSrc(data.map_embed, map);
+            const marker = (map && map.marker_title) ? `<p style="margin-top:8px;"><strong>${escapeHtml(map.marker_title)}</strong>${map.marker_description ? '<br>' + escapeHtml(map.marker_description) : ''}</p>` : '';
             
             document.getElementById('page-content').innerHTML = `
-                <section class="page-hero" style="background: linear-gradient(135deg, #800020, #6B0000); color: white; padding: 80px 0; text-align: center;">
+                <section class="page-hero" style="background: linear-gradient(135deg, var(--primary-color, #800020), var(--secondary-color, #6B0000)); color: white; padding: 80px 0; text-align: center;">
                     <div class="container">
                         <h1>Contact Us</h1>
                     </div>
@@ -47,9 +74,12 @@
                     <div class="container">
                         <div class="content-reveal-card" style="max-width: 800px; margin: 0 auto;">
                             <h2>Get in Touch</h2>
+                            ${intro ? `<p>${escapeHtml(intro)}</p>` : ''}
                             ${address ? `<p><strong>Address:</strong> ${escapeHtml(address)}</p>` : ''}
                             ${phone ? `<p><strong>Phone:</strong> <a href="tel:${escapeHtml(phone)}">${escapeHtml(phone)}</a></p>` : ''}
                             ${email ? `<p><strong>Email:</strong> <a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></p>` : ''}
+                            ${hours ? `<p><strong>Hours:</strong> ${escapeHtml(hours).replace(/\n/g, '<br>')}</p>` : ''}
+                            ${mapSrc ? `<div style="margin:24px 0;border-radius:12px;overflow:hidden;">${marker}<iframe title="School location" src="${mapSrc.replace(/"/g, '')}" style="width:100%;height:320px;border:0;" loading="lazy"></iframe></div>` : ''}
                             
                             <form id="contactForm" style="margin-top: 30px;">
                                 <div style="margin-bottom: 15px;">

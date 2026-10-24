@@ -17,16 +17,26 @@
         
         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
             <h3 style="margin-bottom: 15px;">Security</h3>
-            <div class="form-group">
-                <label class="form-label">Session Timeout (minutes)</label>
-                <input type="number" class="form-input" value="30">
-            </div>
-            <div class="form-group">
-                <label class="form-label">Max Upload Size (MB)</label>
-                <input type="number" class="form-input" value="50">
-            </div>
+            <?php
+            $siteSettings = [];
+            try {
+                $siteSettings = $db->fetchOne("SELECT * FROM site_settings ORDER BY id DESC LIMIT 1") ?: [];
+            } catch (Exception $e) {
+                $siteSettings = [];
+            }
+            ?>
+            <form method="POST" action="api/content/settings.php" id="settingsForm" onsubmit="return handleAdminFormSubmit(event, this);">
+                <div class="form-group">
+                    <label class="form-label">Session Timeout (minutes)</label>
+                    <input type="number" name="session_timeout" class="form-input" min="5" max="1440" value="<?php echo htmlspecialchars($siteSettings['session_timeout'] ?? 30); ?>">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Max Upload Size (MB)</label>
+                    <input type="number" name="max_upload_size" class="form-input" min="1" max="500" value="<?php echo htmlspecialchars($siteSettings['max_upload_size'] ?? 50); ?>">
+                </div>
+                <button type="submit" class="btn btn-primary">Save settings</button>
+            </form>
+            <p style="color:#78716c;font-size:13px;margin-top:12px;">These numbers are stored. The hosting server still sets the real session length and the largest file it will accept.</p>
         </div>
     </div>
-    
-    <button class="btn btn-primary" style="margin-top: 20px;">💾 Save Settings</button>
 </div>

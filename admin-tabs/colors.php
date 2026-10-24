@@ -9,67 +9,72 @@ foreach ($colors as $color) {
 }
 
 $sections = [
-    ['name' => 'header', 'label' => 'Header'],
-    ['name' => 'footer', 'label' => 'Footer'],
-    ['name' => 'buttons', 'label' => 'Buttons'],
-    ['name' => 'hero', 'label' => 'Hero Section'],
-    ['name' => 'about-section', 'label' => 'About Section (Homepage)'],
-    ['name' => 'school-life', 'label' => 'School Life Section'],
-    ['name' => 'academics', 'label' => 'Academics Section'],
-    ['name' => 'sports', 'label' => 'Sports Section'],
-    ['name' => 'vision-mission', 'label' => 'Vision & Mission Section'],
-    ['name' => 'core-values', 'label' => 'Core Values Section'],
-    ['name' => 'why-choose', 'label' => 'Why Choose Section'],
-    ['name' => 'join-section', 'label' => 'Join Section'],
-    ['name' => 'index', 'label' => 'Homepage (Index)'],
-    ['name' => 'about', 'label' => 'About Page'],
-    ['name' => 'activities', 'label' => 'Activities Page'],
-    ['name' => 'admission', 'label' => 'Admission Page'],
-    ['name' => 'announcements', 'label' => 'Announcements Page'],
-    ['name' => 'clubs', 'label' => 'Clubs Page'],
-    ['name' => 'contact', 'label' => 'Contact Page'],
-    ['name' => 'curriculum', 'label' => 'Curriculum Page'],
-    ['name' => 'events', 'label' => 'Events Page'],
-    ['name' => 'facilities', 'label' => 'Facilities Page'],
-    ['name' => 'gallery', 'label' => 'Gallery Page'],
-    ['name' => 'give-back', 'label' => 'Give Back Page'],
-    ['name' => 'news', 'label' => 'News Page'],
-    ['name' => 'parents', 'label' => 'Parents Portal Page'],
-    ['name' => 'people-behind-school', 'label' => 'People Behind School Page'],
-    ['name' => 'resources', 'label' => 'Resources Page'],
-    ['name' => 'school-background', 'label' => 'School Background Page'],
-    ['name' => 'sponsorship', 'label' => 'Sponsorship Page'],
-    ['name' => 'teachers', 'label' => 'Teachers Page'],
-    ['name' => 'testimonials', 'label' => 'Testimonials Page'],
+    ['name' => 'header', 'label' => 'Header', 'group' => 'Site-wide'],
+    ['name' => 'footer', 'label' => 'Footer', 'group' => 'Site-wide'],
+    ['name' => 'buttons', 'label' => 'Buttons', 'group' => 'Site-wide'],
+    ['name' => 'index', 'label' => 'Homepage', 'group' => 'Homepage'],
+    ['name' => 'hero', 'label' => 'Hero', 'group' => 'Homepage'],
+    ['name' => 'about-section', 'label' => 'About', 'group' => 'Homepage'],
+    ['name' => 'school-life', 'label' => 'School Life', 'group' => 'Homepage'],
+    ['name' => 'academics', 'label' => 'Academics', 'group' => 'Homepage'],
+    ['name' => 'sports', 'label' => 'Sports', 'group' => 'Homepage'],
+    ['name' => 'vision-mission', 'label' => 'Vision and Mission', 'group' => 'Homepage'],
+    ['name' => 'core-values', 'label' => 'Core Values', 'group' => 'Homepage'],
+    ['name' => 'why-choose', 'label' => 'Why Choose Us', 'group' => 'Homepage'],
+    ['name' => 'join-section', 'label' => 'Join', 'group' => 'Homepage'],
+    ['name' => 'about', 'label' => 'About', 'group' => 'Pages'],
+    ['name' => 'activities', 'label' => 'Activities', 'group' => 'Pages'],
+    ['name' => 'admission', 'label' => 'Admission', 'group' => 'Pages'],
+    ['name' => 'announcements', 'label' => 'Announcements', 'group' => 'Pages'],
+    ['name' => 'clubs', 'label' => 'Clubs', 'group' => 'Pages'],
+    ['name' => 'contact', 'label' => 'Contact', 'group' => 'Pages'],
+    ['name' => 'curriculum', 'label' => 'Curriculum', 'group' => 'Pages'],
+    ['name' => 'events', 'label' => 'Events', 'group' => 'Pages'],
+    ['name' => 'facilities', 'label' => 'Facilities', 'group' => 'Pages'],
+    ['name' => 'gallery', 'label' => 'Gallery', 'group' => 'Pages'],
+    ['name' => 'give-back', 'label' => 'Give Back', 'group' => 'Pages'],
+    ['name' => 'news', 'label' => 'News', 'group' => 'Pages'],
+    ['name' => 'parents', 'label' => 'Parents', 'group' => 'Pages'],
+    ['name' => 'people-behind-school', 'label' => 'Our People', 'group' => 'Pages'],
+    ['name' => 'resources', 'label' => 'Resources', 'group' => 'Pages'],
+    ['name' => 'school-background', 'label' => 'Background', 'group' => 'Pages'],
+    ['name' => 'sponsorship', 'label' => 'Sponsorship', 'group' => 'Pages'],
+    ['name' => 'teachers', 'label' => 'Teachers', 'group' => 'Pages'],
+    ['name' => 'testimonials', 'label' => 'Testimonials', 'group' => 'Pages'],
+];
+$colorGroupNotes = [
+    'Site-wide' => 'Header, footer, and the shared button palette.',
+    'Homepage' => 'Each block on the home page.',
+    'Pages' => 'The palette used on that page.',
 ];
 ?>
 <div class="content-card">
-    <h2>🎨 Website Colors</h2>
-    <p style="margin-bottom: 20px; color: #666;">Customize colors for different sections of your website. Changes save automatically and reflect immediately.</p>
-    
-    <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 15px; margin-bottom: 30px; border-radius: 4px;">
-        <h3 style="margin: 0 0 10px 0; font-size: 16px; color: #1976d2;">📝 How to Edit Colors:</h3>
-        <ol style="margin: 0; padding-left: 20px; color: #555;">
-            <li style="margin-bottom: 8px;"><strong>Click on any color input field</strong> below to open the color picker</li>
-            <li style="margin-bottom: 8px;"><strong>Select your desired color</strong> using the color picker, or type a hex code (e.g., #ffffff for white)</li>
-            <li style="margin-bottom: 8px;"><strong>Click "💾 Save All Colors"</strong> at the bottom to apply changes</li>
-            <li style="margin-bottom: 8px;">Changes will <strong>save automatically</strong> and appear immediately on your website</li>
-        </ol>
+    <h2>Colors</h2>
+    <p style="margin-bottom: 12px; color: #57534e;">Branding sets the default school color. This screen stores a palette for each part of the site. A page uses its own primary color when one is saved.</p>
+    <div style="background: #f5f5f4; border-radius: 10px; padding: 14px 16px; margin-bottom: 22px; color: #44403c; font-size: 14px; line-height: 1.5;">
+        <strong>Primary</strong> is headings and links.
+        <strong>Secondary</strong> is the darker shade.
+        <strong>Background</strong> is the page background.
+        <strong>Text</strong> is paragraph text.
+        <strong>Accent</strong> is highlights.
+        <strong>Hover</strong> is the color when a visitor hovers a button.
     </div>
     
     <form method="POST" action="api/content/website-colors.php" id="colorsForm" onsubmit="return handleAdminFormSubmit(event, this);">
-        <div style="margin-bottom: 30px; padding: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px;">
-            <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 18px;">Total Sections: <?php echo count($sections); ?></h3>
-            <p style="margin: 0; color: #856404; font-weight: bold;">All sections are displayed below. Scroll down to see them all.</p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; margin-bottom: 40px;">
-            <?php 
-            $sectionCount = 0;
-            foreach ($sections as $section): 
-                $sectionCount++;
-                $colorData = $colorsMap[$section['name']] ?? [];
-            ?>
+        <?php
+        $sectionCount = 0;
+        $lastGroup = '';
+        foreach ($sections as $section):
+            $sectionCount++;
+            $colorData = $colorsMap[$section['name']] ?? [];
+            if ($lastGroup !== $section['group']):
+                if ($lastGroup !== '') echo '</div>';
+                $lastGroup = $section['group'];
+        ?>
+            <h3 style="margin: 8px 0 6px; font-size: 18px; color: #1c1917;"><?php echo htmlspecialchars($section['group']); ?></h3>
+            <p style="margin: 0 0 14px; color: #78716c; font-size: 14px;"><?php echo htmlspecialchars($colorGroupNotes[$section['group']] ?? ''); ?></p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px;">
+        <?php endif; ?>
                 <div style="background: #ffffff; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">
                         <?php echo htmlspecialchars($section['label']); ?>
@@ -120,15 +125,11 @@ $sections = [
                     </div>
                     <input type="hidden" name="colors[<?php echo htmlspecialchars($section['name']); ?>][sectionName]" value="<?php echo htmlspecialchars($section['name']); ?>">
                 </div>
-            <?php endforeach; ?>
-        </div>
+            <?php endforeach; if ($lastGroup !== '') echo '</div>'; ?>
         
-        <div style="text-align: center; margin-top: 40px; padding: 30px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e0e0e0;">
-            <div style="margin-bottom: 20px; padding: 15px; background: #d4edda; border-radius: 8px; color: #155724; font-size: 16px; font-weight: bold;">
-                ✅ Displayed <?php echo $sectionCount; ?> out of <?php echo count($sections); ?> sections
-            </div>
-            <button type="submit" class="btn btn-primary" style="padding: 15px 40px; font-size: 16px; font-weight: 600; background: linear-gradient(135deg, #800020, #6B0000); color: white; border: none; border-radius: 8px; cursor: pointer;">
-                💾 Save All Colors
+        <div style="text-align: center; margin-top: 12px; padding: 24px; background: #fafaf9; border-radius: 12px; border: 1px solid #e7e5e4;">
+            <button type="submit" class="btn btn-primary" style="padding: 14px 32px; font-size: 16px; font-weight: 600;">
+                Save all colors
             </button>
             <p style="margin-top: 15px; color: #666; font-size: 14px;">
                 All color changes will be saved and applied immediately to your website

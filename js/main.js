@@ -337,9 +337,86 @@ window.refreshScrollReveal = function () {
     });
 };
 
+function applySavedAppearance() {
+    const pageSections = {
+        'index.html': 'index',
+        'about.html': 'about',
+        'activities.html': 'activities',
+        'events.html': 'events',
+        'admission.html': 'admission',
+        'announcements.html': 'announcements',
+        'clubs.html': 'clubs',
+        'contact.html': 'contact',
+        'curriculum.html': 'curriculum',
+        'facilities.html': 'facilities',
+        'gallery.html': 'gallery',
+        'give-back.html': 'give-back',
+        'news.html': 'news',
+        'parents.html': 'parents',
+        'people-behind-school.html': 'people-behind-school',
+        'resources.html': 'resources',
+        'school-background.html': 'school-background',
+        'sponsorship.html': 'sponsorship',
+        'teachers.html': 'teachers',
+        'testimonials.html': 'testimonials'
+    };
+
+    function paint(record) {
+        if (!record || !record.primary_color) return;
+        const root = document.documentElement;
+        root.style.setProperty('--primary-color', record.primary_color);
+        if (record.secondary_color) root.style.setProperty('--secondary-color', record.secondary_color);
+        if (record.text_color) root.style.setProperty('--text-color', record.text_color);
+        if (record.background_color && String(record.background_color).toLowerCase() !== '#ffffff') {
+            document.body.style.backgroundColor = record.background_color;
+        }
+    }
+
+    const file = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    fetch('/api/content/website-colors.php', { credentials: 'same-origin' })
+        .then(function (response) { return response.ok ? response.json() : null; })
+        .then(function (payload) {
+            const rows = payload && Array.isArray(payload.data) ? payload.data : (Array.isArray(payload) ? payload : []);
+            const byName = {};
+            rows.forEach(function (row) {
+                if (row && row.section_name) byName[row.section_name] = row;
+            });
+            paint(byName[pageSections[file] || '']);
+            const header = byName.header;
+            if (header && header.background_color) {
+                document.querySelectorAll('.site-header').forEach(function (el) {
+                    el.style.backgroundColor = header.background_color;
+                    if (header.text_color) el.style.color = header.text_color;
+                });
+            }
+            const buttons = byName.buttons;
+            if (buttons && buttons.primary_color) {
+                document.querySelectorAll('.btn-primary').forEach(function (el) {
+                    el.style.background = buttons.primary_color;
+                    el.style.borderColor = buttons.primary_color;
+                });
+            }
+        })
+        .catch(function () {});
+
+    fetch('/api/content/button-settings.php', { credentials: 'same-origin' })
+        .then(function (response) { return response.ok ? response.json() : null; })
+        .then(function (payload) {
+            const settings = payload && payload.settings;
+            if (!settings || !settings.primary_button_color) return;
+            document.querySelectorAll('.btn-primary').forEach(function (el) {
+                el.style.background = settings.primary_button_color;
+                el.style.borderColor = settings.primary_button_color;
+            });
+        })
+        .catch(function () {});
+}
+
 // Mobile Menu Toggle and Search
 document.addEventListener('DOMContentLoaded', function() {
     window.initHeaderChrome();
+    applySavedAppearance();
+    setTimeout(applySavedAppearance, 1200);
 
     window.refreshScrollReveal();
 

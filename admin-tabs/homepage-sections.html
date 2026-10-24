@@ -21,7 +21,7 @@
     <!-- Academics Section -->
     <div id="academics-section" class="homepage-section-content">
         <h3>Academics Section</h3>
-        <form method="POST" action="api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
+        <form method="POST" action="/api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
             <input type="hidden" name="section_type" value="academics">
             <div class="form-group">
                 <label class="form-label">Title</label>
@@ -69,7 +69,7 @@
     <!-- Vision/Mission Section -->
     <div id="vision-mission-section" class="homepage-section-content" style="display: none;">
         <h3>Vision, Mission & Core Values</h3>
-        <form method="POST" action="api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
+        <form method="POST" action="/api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
             <input type="hidden" name="section_type" value="vision-mission">
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
                 <div>
@@ -128,7 +128,7 @@
     <!-- Why Choose Section -->
     <div id="why-choose-section" class="homepage-section-content" style="display: none;">
         <h3>Why Choose SJS Section</h3>
-        <form method="POST" action="api/content/homepage-sections.php" id="whyChooseForm" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
+        <form method="POST" action="/api/content/homepage-sections.php" id="whyChooseForm" style="margin-top: 20px;" onsubmit="return saveWhyChooseForm(event, this);">
             <input type="hidden" name="section_type" value="why-choose">
             
             <div class="form-group">
@@ -172,7 +172,7 @@
     <!-- Custom Section -->
     <div id="custom-section" class="homepage-section-content" style="display: none;">
         <h3>Custom Section (Additional Section)</h3>
-        <form method="POST" action="api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
+        <form method="POST" action="/api/content/homepage-sections.php" style="margin-top: 20px;" onsubmit="return handleAdminFormSubmit(event, this);">
             <input type="hidden" name="section_type" value="custom-section">
             <div class="form-group">
                 <label class="form-label">Title</label>
@@ -239,7 +239,7 @@ let whyChoosePointCounter = 0;
 
 async function loadHomepageSections() {
     try {
-        const response = await fetch('api/content/homepage-sections.php');
+        const response = await fetch('/api/content/homepage-sections.php', { credentials: 'same-origin', cache: 'no-store' });
         if (response.ok) {
             const data = await response.json();
             if (data.success) {
@@ -271,7 +271,7 @@ function populateForms() {
     document.getElementById('academics_motto').value = academicsData.motto || '';
     document.getElementById('academics_image').value = academicsData.image || '';
     document.getElementById('academics_curriculum_link').value = academicsData.curriculum_link || '';
-    document.getElementById('academics_button_text').value = academicsData.button_text || 'Learn More About Our Curriculum';
+    document.getElementById('academics_button_text').value = academicsData.button_text || '';
     
     // Vision/Mission
     document.getElementById('vision_title').value = visionMissionData.vision_title || 'OUR VISION';
@@ -297,9 +297,9 @@ function populateForms() {
 function showHomepageSection(section, btn) {
     document.querySelectorAll('.homepage-section-content').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.section-tab-btn').forEach(b => b.classList.remove('active'));
-    
-    document.getElementById(section + '-section').style.display = 'block';
-    btn.classList.add('active');
+    const panel = document.getElementById(section + '-section') || document.getElementById(section);
+    if (panel) panel.style.display = 'block';
+    if (btn) btn.classList.add('active');
 }
 
 function displayCoreValues() {
@@ -349,9 +349,8 @@ function displayWhyChoosePoints() {
         <div class="why-choose-point-item" data-point-id="${point.id}" style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 15px;">
             <div style="flex: 1;">
                 <input type="text" 
-                       name="points[${point.id}]" 
-                       class="form-input" 
-                       value="${point.point_text || ''}" 
+                       class="form-input why-point-text" 
+                       value="${escapeAdminText(point.point_text)}" 
                        placeholder="Enter point text...">
             </div>
             <button type="button" onclick="removeWhyChoosePoint(${point.id})" 
@@ -423,7 +422,7 @@ async function saveThreeColumns() {
         return;
     }
     try {
-        const response = await fetch('api/content/homepage-sections.php', {
+        const response = await fetch('/api/content/homepage-sections.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'same-origin',
@@ -462,11 +461,12 @@ async function handleAddCoreValue(event) {
     const formData = new FormData(form);
     const data = {
         value_name: formData.get('value_name'),
-        section_type: 'vision-mission'
+        section_type: 'core-values'
     };
     
     try {
-        const response = await fetch('api/content/homepage-sections.php', {
+        const response = await fetch('/api/content/homepage-sections.php', {
+            credentials: 'same-origin',
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -491,10 +491,11 @@ function editCoreValue(id) {
     const newName = prompt('Enter new value name:', value.value_name);
     if (!newName) return;
     
-    fetch('api/content/homepage-sections.php', {
+    fetch('/api/content/homepage-sections.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, value_name: newName, section_type: 'vision-mission' })
+        credentials: 'same-origin',
+        body: JSON.stringify({ id, value_name: newName, section_type: 'core-values' })
     })
     .then(r => r.json())
     .then(data => {
@@ -510,10 +511,11 @@ function editCoreValue(id) {
 function deleteCoreValue(id) {
     if (!confirm('Delete this core value?')) return;
     
-    fetch('api/content/homepage-sections.php', {
+    fetch('/api/content/homepage-sections.php', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, section_type: 'vision-mission' })
+        credentials: 'same-origin',
+        body: JSON.stringify({ id, section_type: 'core-values' })
     })
     .then(r => r.json())
     .then(data => {
@@ -526,6 +528,51 @@ function deleteCoreValue(id) {
     });
 }
 
+async function saveWhyChooseForm(event, form) {
+    event.preventDefault();
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn ? submitBtn.textContent : '';
+    if (submitBtn) {
+        submitBtn.textContent = '💾 Saving...';
+        submitBtn.disabled = true;
+    }
+    const points = Array.from(document.querySelectorAll('#whyChoosePointsContainer .why-choose-point-item')).map(function (row, index) {
+        const rawId = row.getAttribute('data-point-id') || '';
+        const input = row.querySelector('.why-point-text');
+        return {
+            id: rawId.indexOf('new_') === 0 ? null : Number(rawId),
+            point_text: input ? input.value : '',
+            order_index: index
+        };
+    }).filter(function (point) { return point.point_text.trim() !== ''; });
+    try {
+        const response = await fetch('/api/content/homepage-sections.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                section_type: 'why-choose',
+                title: document.getElementById('why_choose_title').value,
+                image: document.getElementById('why_choose_image').value,
+                points: points,
+                points_touched: 1
+            })
+        });
+        const result = await response.json().catch(function () { return {}; });
+        if (!response.ok || result.error) throw new Error(result.error || 'Why Choose was not saved.');
+        showToast(result.message || 'Why Choose content saved successfully', 'success');
+        await loadHomepageSections();
+    } catch (error) {
+        showToast(error.message || 'Why Choose was not saved.', 'error');
+    } finally {
+        if (submitBtn) {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+        }
+    }
+    return false;
+}
+
 function addWhyChoosePoint() {
     const container = document.getElementById('whyChoosePointsContainer');
     const pointId = 'new_' + (++whyChoosePointCounter);
@@ -533,8 +580,7 @@ function addWhyChoosePoint() {
         <div class="why-choose-point-item" data-point-id="${pointId}" style="background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e5e7eb; display: flex; align-items: center; gap: 15px;">
             <div style="flex: 1;">
                 <input type="text" 
-                       name="points[${pointId}]" 
-                       class="form-input" 
+                       class="form-input why-point-text" 
                        placeholder="Enter point text...">
             </div>
             <button type="button" onclick="removeWhyChoosePoint('${pointId}')" 
@@ -573,8 +619,9 @@ function showAddThreeColumnModal() {
 
 function deleteThreeColumn(id) {
     if (!confirm('Delete this column?')) return;
-    fetch('api/content/homepage-sections.php', {
+    fetch('/api/content/homepage-sections.php', {
         method: 'DELETE',
+        credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, section_type: 'three-columns' })
     })
@@ -588,6 +635,11 @@ function deleteThreeColumn(id) {
         }
     });
 }
+
+window.showHomepageSection = showHomepageSection;
+window.saveWhyChooseForm = saveWhyChooseForm;
+window.saveThreeColumns = saveThreeColumns;
+window.handleAddCoreValue = handleAddCoreValue;
 
 document.getElementById('addCoreValueModal')?.addEventListener('click', function(e) {
     if (e.target === this) closeAddCoreValueModal();

@@ -23,7 +23,21 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'GET') {
     try {
         $settings = $db->fetchAll("SELECT * FROM button_settings WHERE is_active = 1");
-        echo json_encode(['success' => true, 'data' => $settings]);
+        $global = null;
+        foreach ($settings as $row) {
+            if (($row['button_name'] ?? '') === 'global') {
+                $global = $row;
+            }
+        }
+        echo json_encode([
+            'success' => true,
+            'data' => $settings,
+            'settings' => [
+                'button_spacing' => $global['text'] ?? '8',
+                'primary_button_color' => $global['color'] ?? '#10b981',
+                'secondary_button_color' => $global['background_color'] ?? '#6366f1',
+            ],
+        ]);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch button settings: ' . $e->getMessage()]);
@@ -52,9 +66,25 @@ if ($method === 'GET') {
         if (empty($input)) {
             throw new Exception('No data provided');
         }
-        
-        // If input is an object with button settings, process each button
-        if (isset($input['button_name'])) {
+
+        if (isset($input['button_spacing']) || isset($input['primary_button_color']) || isset($input['secondary_button_color'])) {
+            $spacing = $input['button_spacing'] ?? '8';
+            $primary = $input['primary_button_color'] ?? '#10b981';
+            $secondary = $input['secondary_button_color'] ?? '#6366f1';
+            $existing = $db->fetchOne("SELECT id FROM button_settings WHERE button_name = ? AND is_active = 1", ['global']);
+            if ($existing) {
+                $db->update(
+                    "UPDATE button_settings SET text = ?, color = ?, background_color = ?, updated_at = NOW() WHERE button_name = ? AND is_active = 1",
+                    [$spacing, $primary, $secondary, 'global']
+                );
+            } else {
+                $db->insert(
+                    "INSERT INTO button_settings (button_name, text, color, background_color, is_active, created_at) VALUES (?, ?, ?, ?, 1, NOW())",
+                    ['global', $spacing, $primary, $secondary]
+                );
+            }
+            echo json_encode(['success' => true, 'message' => 'Button settings saved.']);
+        } elseif (isset($input['button_name'])) {
             // Single button update
             $buttonName = $input['button_name'];
             $text = $input['text'] ?? null;

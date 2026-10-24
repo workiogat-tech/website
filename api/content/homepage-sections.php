@@ -76,7 +76,7 @@ try {
                 'motto' => $input['motto'] ?? $_POST['motto'] ?? '',
                 'image' => $input['image'] ?? $_POST['image'] ?? '',
                 'curriculum_link' => $input['curriculum_link'] ?? $_POST['curriculum_link'] ?? '',
-                'button_text' => $input['button_text'] ?? $_POST['button_text'] ?? 'Learn More About Our Curriculum'
+                'button_text' => $input['button_text'] ?? $_POST['button_text'] ?? ''
             ];
             
             // Ensure button_text column exists
@@ -370,64 +370,57 @@ try {
                 );
             }
             
-            // Handle points. A missing list means this save did not edit the points.
             $points = $input['points'] ?? $input['why_choose_points'] ?? null;
-            if (is_array($points) && !empty($points)) {
-                // Get max order index
-                $maxOrder = $db->fetchOne("SELECT MAX(order_index) as max_order FROM why_choose_points WHERE is_active = 1");
-                $orderIndex = ($maxOrder && isset($maxOrder['max_order'])) ? intval($maxOrder['max_order']) + 1 : 1;
-                
-                $updatedPointIds = [];
-                
-                foreach ($points as $pointKey => $point) {
-                    // Handle both array format and object format
-                    if (is_array($point)) {
-                        $pointText = $point['point_text'] ?? $point;
-                        $pointId = $point['id'] ?? null;
-                    } else {
-                        $pointText = $point;
-                        $pointId = null;
-                    }
-                    
-                    // Extract ID from key if it's numeric (existing point)
-                    if (is_numeric($pointKey)) {
-                        $pointId = intval($pointKey);
-                    }
-                    
-                    if (empty(trim($pointText))) {
-                        continue; // Skip empty points
-                    }
-                    
-                    if ($pointId !== null && is_numeric($pointId) && $pointId > 0) {
-                        // Update existing point
-                        $db->update(
-                            "UPDATE why_choose_points SET point_text = ?, updated_at = NOW() WHERE id = ? AND is_active = 1",
-                            [trim($pointText), $pointId]
-                        );
-                        $updatedPointIds[] = $pointId;
-                    } else {
-                        // Insert new point
-                        $db->insert(
-                            "INSERT INTO why_choose_points (point_text, order_index, is_active) VALUES (?, ?, 1)",
-                            [trim($pointText), $orderIndex]
-                        );
-                        $orderIndex++;
-                    }
+            $pointsTouched = is_array($points) || !empty($input['points_touched']);
+            if ($pointsTouched) {
+                if (!is_array($points)) {
+                    $points = [];
                 }
-                
-                // Soft delete points that are no longer in the list
-                if (!empty($updatedPointIds)) {
-                    $placeholders = implode(',', array_fill(0, count($updatedPointIds), '?'));
+                $kept = [];
+                $order = 1;
+                foreach ($points as $pointKey => $point) {
+                    $pointText = '';
+                    $pointId = 0;
+                    if (is_array($point)) {
+                        $pointText = trim((string) ($point['point_text'] ?? ''));
+                        if (!empty($point['id']) && is_numeric($point['id'])) {
+                            $pointId = (int) $point['id'];
+                        }
+                    } else {
+                        $pointText = trim((string) $point);
+                    }
+                    if ($pointId <= 0 && is_numeric($pointKey) && (int) $pointKey > 0) {
+                        $pointId = (int) $pointKey;
+                    }
+                    if ($pointText === '') {
+                        continue;
+                    }
+                    if ($pointId > 0) {
+                        $db->update(
+                            "UPDATE why_choose_points SET point_text = ?, order_index = ?, is_active = 1, updated_at = NOW() WHERE id = ?",
+                            [$pointText, $order, $pointId]
+                        );
+                        $kept[] = $pointId;
+                    } else {
+                        $newId = $db->insert(
+                            "INSERT INTO why_choose_points (point_text, order_index, is_active) VALUES (?, ?, 1)",
+                            [$pointText, $order]
+                        );
+                        if ($newId) {
+                            $kept[] = (int) $newId;
+                        }
+                    }
+                    $order++;
+                }
+                if ($kept) {
+                    $placeholders = implode(',', array_fill(0, count($kept), '?'));
                     $db->update(
                         "UPDATE why_choose_points SET is_active = 0 WHERE id NOT IN ($placeholders) AND is_active = 1",
-                        $updatedPointIds
+                        $kept
                     );
                 } else {
-                    // If no existing points were updated, deactivate all existing
                     $db->update("UPDATE why_choose_points SET is_active = 0 WHERE is_active = 1");
                 }
-            } elseif (is_array($points)) {
-                $db->update("UPDATE why_choose_points SET is_active = 0 WHERE is_active = 1");
             }
             
             echo json_encode(['success' => true, 'message' => 'Why Choose content saved successfully']);
@@ -578,17 +571,28 @@ try {
         }
         
     } elseif ($method === 'DELETE') {
-        $type = $_GET['type'] ?? '';
-        $id = $_GET['id'] ?? 0;
+        $body = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($body)) {
+            $body = [];
+        }
+        $type = $_GET['type'] ?? ($body['section_type'] ?? '');
+        $id = (int) ($_GET['id'] ?? ($body['id'] ?? 0));
+        if ($id <= 0) {
+            throw new Exception('Choose an item to delete.');
+        }
         
         if ($type === 'school-life') {
             $db->update("UPDATE school_life_items SET is_active = 0 WHERE id = ?", [$id]);
         } elseif ($type === 'sports') {
             $db->update("UPDATE sports_items SET is_active = 0 WHERE id = ?", [$id]);
-        } elseif ($type === 'core-values') {
+        } elseif ($type === 'core-values' || $type === 'vision-mission') {
             $db->update("UPDATE core_values_items SET is_active = 0 WHERE id = ?", [$id]);
         } elseif ($type === 'why-choose-points') {
             $db->update("UPDATE why_choose_points SET is_active = 0 WHERE id = ?", [$id]);
+        } elseif ($type === 'three-columns') {
+            $db->update("UPDATE three_column_sections SET is_active = 0 WHERE id = ?", [$id]);
+        } else {
+            throw new Exception('This item could not be deleted.');
         }
         
         while (ob_get_level() > 0) {

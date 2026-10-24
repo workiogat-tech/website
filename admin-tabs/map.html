@@ -40,8 +40,8 @@
         const response = await fetch('api/content/map-settings.php');
         if (response.ok) {
             const data = await response.json();
-            if (data.success && data.mapSettings) {
-                const map = data.mapSettings;
+            const map = data.mapSettings || data.data || data;
+            if (map && (map.latitude !== undefined || map.longitude !== undefined || map.id)) {
                 document.getElementById('latitude').value = map.latitude || '';
                 document.getElementById('longitude').value = map.longitude || '';
                 document.getElementById('zoom').value = map.zoom || 15;

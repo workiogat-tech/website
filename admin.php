@@ -140,8 +140,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_GET['tab']) && $_GET['tab']
     }
 }
 
-// Get active tab from URL
+// Get active tab from URL. The map editor lives on the Contact screen.
 $activeTab = $_GET['tab'] ?? 'dashboard';
+if ($activeTab === 'map') {
+    header('Location: admin.php?tab=contact#school-map');
+    exit;
+}
 $customizationSection = $_GET['section'] ?? 'header';
 
 // Get statistics
@@ -164,43 +168,57 @@ try {
 // Get branding
 $branding = $db->fetchOne("SELECT * FROM branding WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?? [];
 
-// Navigation tabs - EXACT ORDER from React component
-$navTabs = [
-    ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => '📊', 'iconColor' => 'text-blue-600', 'hoverBg' => 'hover:bg-blue-50 hover:text-blue-700'],
-    ['id' => 'branding', 'label' => 'Branding', 'icon' => '🎨', 'iconColor' => 'text-purple-600', 'hoverBg' => 'hover:bg-purple-50 hover:text-purple-700'],
-    ['id' => 'hero', 'label' => 'Hero Section', 'icon' => '🌐', 'iconColor' => 'text-indigo-600', 'hoverBg' => 'hover:bg-indigo-50 hover:text-indigo-700'],
-    ['id' => 'about', 'label' => 'About Section', 'icon' => '📖', 'iconColor' => 'text-green-600', 'hoverBg' => 'hover:bg-green-50 hover:text-green-700'],
-    ['id' => 'curriculum', 'label' => 'Curriculum', 'icon' => '📚', 'iconColor' => 'text-green-600', 'hoverBg' => 'hover:bg-green-50 hover:text-green-700'],
-    ['id' => 'activities', 'label' => 'Events', 'icon' => '📅', 'iconColor' => 'text-orange-600', 'hoverBg' => 'hover:bg-orange-50 hover:text-orange-700'],
-    ['id' => 'gallery', 'label' => 'School Gallery', 'icon' => '🖼️', 'iconColor' => 'text-emerald-600', 'hoverBg' => 'hover:bg-emerald-50 hover:text-emerald-700'],
-    ['id' => 'teachers', 'label' => 'Teachers', 'icon' => '👨‍🏫', 'iconColor' => 'text-pink-600', 'hoverBg' => 'hover:bg-pink-50 hover:text-pink-700'],
-    ['id' => 'facilities', 'label' => 'Facilities', 'icon' => '🏢', 'iconColor' => 'text-teal-600', 'hoverBg' => 'hover:bg-teal-50 hover:text-teal-700'],
-    ['id' => 'testimonials', 'label' => 'Testimonials', 'icon' => '⭐', 'iconColor' => 'text-yellow-600', 'hoverBg' => 'hover:bg-yellow-50 hover:text-yellow-700'],
-    ['id' => 'contact', 'label' => 'Contact Info', 'icon' => '📧', 'iconColor' => 'text-red-600', 'hoverBg' => 'hover:bg-red-50 hover:text-red-700'],
-    ['id' => 'news', 'label' => 'News', 'icon' => '📰', 'iconColor' => 'text-cyan-600', 'hoverBg' => 'hover:bg-cyan-50 hover:text-cyan-700'],
-    ['id' => 'announcements', 'label' => 'Announcements', 'icon' => '📢', 'iconColor' => 'text-green-600', 'hoverBg' => 'hover:bg-green-50 hover:text-green-700'],
-    ['id' => 'all-updates-settings', 'label' => 'All Updates Settings', 'icon' => '📰', 'iconColor' => 'text-cyan-600', 'hoverBg' => 'hover:bg-cyan-50 hover:text-cyan-700'],
-    ['id' => 'media', 'label' => 'Media Library', 'icon' => '🖼️', 'iconColor' => 'text-emerald-600', 'hoverBg' => 'hover:bg-emerald-50 hover:text-emerald-700'],
-    ['id' => 'users', 'label' => 'User Management', 'icon' => '👥', 'iconColor' => 'text-violet-600', 'hoverBg' => 'hover:bg-violet-50 hover:text-violet-700'],
-    ['id' => 'settings', 'label' => 'Settings', 'icon' => '⚙️', 'iconColor' => 'text-gray-600', 'hoverBg' => 'hover:bg-gray-50 hover:text-gray-700'],
-    ['id' => 'sponsorship', 'label' => 'Sponsorship', 'icon' => '❤️', 'iconColor' => 'text-rose-600', 'hoverBg' => 'hover:bg-rose-50 hover:text-rose-700'],
-    ['id' => 'giveback', 'label' => 'Give Back', 'icon' => '💰', 'iconColor' => 'text-emerald-600', 'hoverBg' => 'hover:bg-emerald-50 hover:text-emerald-700'],
-    ['id' => 'clubs', 'label' => 'Clubs', 'icon' => '👥', 'iconColor' => 'text-purple-600', 'hoverBg' => 'hover:bg-purple-50 hover:text-purple-700'],
-    ['id' => 'background', 'label' => 'School Background', 'icon' => '🏛️', 'iconColor' => 'text-indigo-600', 'hoverBg' => 'hover:bg-indigo-50 hover:text-indigo-700'],
-    ['id' => 'people-behind-school', 'label' => 'People Behind School', 'icon' => '👥', 'iconColor' => 'text-indigo-600', 'hoverBg' => 'hover:bg-indigo-50 hover:text-indigo-700'],
-    ['id' => 'homepage-sections', 'label' => 'Homepage Sections', 'icon' => '🏠', 'iconColor' => 'text-blue-600', 'hoverBg' => 'hover:bg-blue-50 hover:text-blue-700'],
-    ['id' => 'parents', 'label' => 'Parents Portal', 'icon' => '👥', 'iconColor' => 'text-sky-600', 'hoverBg' => 'hover:bg-sky-50 hover:text-sky-700'],
-    ['id' => 'resources', 'label' => 'Resources', 'icon' => '📚', 'iconColor' => 'text-purple-600', 'hoverBg' => 'hover:bg-purple-50 hover:text-purple-700'],
-    ['id' => 'button-customization', 'label' => 'Button Customization', 'icon' => '🎯', 'iconColor' => 'text-lime-600', 'hoverBg' => 'hover:bg-lime-50 hover:text-lime-700'],
-    ['id' => 'colors', 'label' => 'Website Colors', 'icon' => '🎨', 'iconColor' => 'text-purple-600', 'hoverBg' => 'hover:bg-purple-50 hover:text-purple-700'],
-    ['id' => 'hero-text-styles', 'label' => 'Hero Text Styles', 'icon' => '📝', 'iconColor' => 'text-blue-600', 'hoverBg' => 'hover:bg-blue-50 hover:text-blue-700'],
-    ['id' => 'footer', 'label' => 'Footer Content', 'icon' => '⬇️', 'iconColor' => 'text-gray-600', 'hoverBg' => 'hover:bg-gray-50 hover:text-gray-700'],
-    ['id' => 'social-media', 'label' => 'Social Media', 'icon' => '🔗', 'iconColor' => 'text-blue-600', 'hoverBg' => 'hover:bg-blue-50 hover:text-blue-700'],
-    ['id' => 'programs', 'label' => 'Programs', 'icon' => '📚', 'iconColor' => 'text-green-600', 'hoverBg' => 'hover:bg-green-50 hover:text-green-700'],
-    ['id' => 'map', 'label' => 'Map Settings', 'icon' => '📍', 'iconColor' => 'text-orange-600', 'hoverBg' => 'hover:bg-orange-50 hover:text-orange-700'],
-    ['id' => 'festive-animations', 'label' => 'Festive Animations', 'icon' => '❄️', 'iconColor' => 'text-blue-600', 'hoverBg' => 'hover:bg-blue-50 hover:text-blue-700'],
-    ['id' => 'admission', 'label' => 'Admission', 'icon' => '📝', 'iconColor' => 'text-red-600', 'hoverBg' => 'hover:bg-red-50 hover:text-red-700'],
-    ['id' => 'navigation', 'label' => 'Navigation Menu', 'icon' => '🧭', 'iconColor' => 'text-indigo-600', 'hoverBg' => 'hover:bg-indigo-50 hover:text-indigo-700'],
+$navGroups = [
+    ['id' => 'overview', 'label' => 'Overview', 'color' => '#1e3a5f', 'items' => [
+        ['id' => 'dashboard', 'label' => 'Dashboard', 'icon' => '▦'],
+    ]],
+    ['id' => 'design', 'label' => 'Design', 'color' => '#6d28d9', 'items' => [
+        ['id' => 'branding', 'label' => 'Branding', 'icon' => '◆'],
+        ['id' => 'colors', 'label' => 'Colors', 'icon' => '◉'],
+        ['id' => 'button-customization', 'label' => 'Buttons', 'icon' => '▢'],
+        ['id' => 'hero-text-styles', 'label' => 'Hero Text', 'icon' => 'T'],
+        ['id' => 'festive-animations', 'label' => 'Animations', 'icon' => '✦'],
+    ]],
+    ['id' => 'homepage', 'label' => 'Homepage', 'color' => '#0f766e', 'items' => [
+        ['id' => 'homepage-sections', 'label' => 'Homepage', 'icon' => '⌂'],
+        ['id' => 'hero', 'label' => 'Hero', 'icon' => '▣'],
+        ['id' => 'about', 'label' => 'About', 'icon' => '¶'],
+    ]],
+    ['id' => 'school', 'label' => 'School', 'color' => '#1d4ed8', 'items' => [
+        ['id' => 'background', 'label' => 'Background', 'icon' => '⌂'],
+        ['id' => 'people-behind-school', 'label' => 'Our People', 'icon' => '☺'],
+        ['id' => 'teachers', 'label' => 'Teachers', 'icon' => '✎'],
+        ['id' => 'curriculum', 'label' => 'Curriculum', 'icon' => '☰'],
+        ['id' => 'programs', 'label' => 'Programs', 'icon' => '☰'],
+        ['id' => 'facilities', 'label' => 'Facilities', 'icon' => '⌂'],
+        ['id' => 'clubs', 'label' => 'Clubs', 'icon' => '☺'],
+    ]],
+    ['id' => 'updates', 'label' => 'News', 'color' => '#b45309', 'items' => [
+        ['id' => 'news', 'label' => 'News', 'icon' => '☰'],
+        ['id' => 'announcements', 'label' => 'Announcements', 'icon' => '!'],
+        ['id' => 'all-updates-settings', 'label' => 'Updates Page', 'icon' => '☰'],
+        ['id' => 'activities', 'label' => 'Events', 'icon' => '▦'],
+        ['id' => 'gallery', 'label' => 'Gallery', 'icon' => '▣'],
+        ['id' => 'testimonials', 'label' => 'Testimonials', 'icon' => '★'],
+    ]],
+    ['id' => 'community', 'label' => 'Community', 'color' => '#9f1239', 'items' => [
+        ['id' => 'admission', 'label' => 'Admission', 'icon' => '✎'],
+        ['id' => 'parents', 'label' => 'Parents', 'icon' => '☺'],
+        ['id' => 'sponsorship', 'label' => 'Sponsorship', 'icon' => '♥'],
+        ['id' => 'giveback', 'label' => 'Give Back', 'icon' => '♥'],
+        ['id' => 'resources', 'label' => 'Resources', 'icon' => '☰'],
+    ]],
+    ['id' => 'site', 'label' => 'Site', 'color' => '#334155', 'items' => [
+        ['id' => 'navigation', 'label' => 'Menu', 'icon' => '≡'],
+        ['id' => 'footer', 'label' => 'Footer', 'icon' => '↓'],
+        ['id' => 'social-media', 'label' => 'Social Media', 'icon' => '↗'],
+        ['id' => 'contact', 'label' => 'Contact & Map', 'icon' => '⌖'],
+    ]],
+    ['id' => 'system', 'label' => 'System', 'color' => '#44403c', 'items' => [
+        ['id' => 'media', 'label' => 'Media Library', 'icon' => '▣'],
+        ['id' => 'users', 'label' => 'Users', 'icon' => '☺'],
+        ['id' => 'settings', 'label' => 'Settings', 'icon' => '⚙'],
+    ]],
 ];
 ?>
 <!DOCTYPE html>
@@ -240,14 +258,15 @@ $navTabs = [
         
         /* Sidebar - Gradient Background */
         .admin-sidebar {
-            width: 256px;
-            background: linear-gradient(135deg, #faf5ff 0%, #fdf2f8 100%);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            width: 272px;
+            background: #f7f6f3;
+            border-right: 1px solid #e7e5e4;
+            box-shadow: none;
             display: flex;
             flex-direction: column;
             position: fixed;
             height: 100vh;
-            overflow-y: auto;
+            overflow: hidden;
             z-index: 50;
         }
         
@@ -289,28 +308,60 @@ $navTabs = [
             color: #6b7280;
         }
         
+        .nav-search {
+            margin: 12px 12px 4px;
+            width: calc(100% - 24px);
+            padding: 8px 10px;
+            border: 1px solid #e7e5e4;
+            border-radius: 8px;
+            background: #fff;
+            color: #1c1917;
+            font-size: 13px;
+        }
+
         .nav-tabs {
             flex: 1;
-            padding: 32px 16px 0;
+            padding: 4px 0 12px;
             overflow-y: auto;
             scroll-behavior: smooth;
         }
+
+        .nav-group { margin: 2px 8px 8px; }
+        .nav-group.collapsed .nav-tab { display: none; }
+        .nav-group-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 8px 4px;
+            background: none;
+            border: none;
+            color: #78716c;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            text-align: left;
+        }
+        .nav-swatch { width: 8px; height: 8px; border-radius: 99px; flex-shrink: 0; }
+        .nav-chevron { margin-left: auto; font-size: 10px; color: #a8a29e; }
         
         .nav-tab {
             display: flex;
             align-items: center;
-            padding: 12px 16px;
-            margin-bottom: 8px;
+            padding: 8px 10px;
+            margin-bottom: 1px;
             border-radius: 8px;
             text-decoration: none;
-            color: #374151;
-            transition: all 0.3s;
+            color: #44403c;
+            transition: background 0.15s;
             cursor: pointer;
             width: 100%;
             text-align: left;
             border: none;
             background: none;
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 500;
         }
         
@@ -371,7 +422,7 @@ $navTabs = [
         /* Main Content */
         .admin-main {
             flex: 1;
-            margin-left: 256px;
+            margin-left: 272px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -909,68 +960,31 @@ $navTabs = [
                 <button class="mobile-menu-toggle" onclick="toggleSidebar()" style="display: none;">✕</button>
             </div>
             
+            <input type="search" class="nav-search" id="adminSearch" placeholder="Find a section" oninput="filterAdminNav(this.value)" aria-label="Find a section">
             <nav class="nav-tabs">
-                <?php foreach ($navTabs as $tab): 
-                    $isActive = $activeTab === $tab['id'];
-                    $iconColor = $isActive ? 'text-green-700' : $tab['iconColor'];
+                <?php foreach ($navGroups as $group):
+                    $containsActive = false;
+                    foreach ($group['items'] as $item) {
+                        if ($item['id'] === $activeTab) $containsActive = true;
+                    }
                 ?>
-                    <?php
-                    // Get icon color hex value
-                    $iconColorMap = [
-                        'text-blue-600' => '#2563eb',
-                        'text-purple-600' => '#9333ea',
-                        'text-indigo-600' => '#4f46e5',
-                        'text-green-600' => '#16a34a',
-                        'text-orange-600' => '#ea580c',
-                        'text-pink-600' => '#db2777',
-                        'text-teal-600' => '#0d9488',
-                        'text-yellow-600' => '#ca8a04',
-                        'text-red-600' => '#dc2626',
-                        'text-cyan-600' => '#0891b2',
-                        'text-emerald-600' => '#059669',
-                        'text-violet-600' => '#7c3aed',
-                        'text-gray-600' => '#4b5563',
-                        'text-rose-600' => '#e11d48',
-                        'text-amber-600' => '#d97706',
-                        'text-sky-600' => '#0284c7',
-                        'text-lime-600' => '#65a30d',
-                    ];
-                    $iconColorHex = $iconColorMap[$tab['iconColor']] ?? '#374151';
-                    if ($isActive) $iconColorHex = '#065f46';
-                    
-                    // Get hover background color
-                    $hoverBgMap = [
-                        'hover:bg-blue-50' => '#eff6ff',
-                        'hover:bg-purple-50' => '#faf5ff',
-                        'hover:bg-indigo-50' => '#eef2ff',
-                        'hover:bg-green-50' => '#f0fdf4',
-                        'hover:bg-orange-50' => '#fff7ed',
-                        'hover:bg-pink-50' => '#fdf2f8',
-                        'hover:bg-teal-50' => '#f0fdfa',
-                        'hover:bg-yellow-50' => '#fefce8',
-                        'hover:bg-red-50' => '#fef2f2',
-                        'hover:bg-cyan-50' => '#ecfeff',
-                        'hover:bg-emerald-50' => '#ecfdf5',
-                        'hover:bg-violet-50' => '#f5f3ff',
-                        'hover:bg-gray-50' => '#f9fafb',
-                        'hover:bg-rose-50' => '#fff1f2',
-                        'hover:bg-amber-50' => '#fffbeb',
-                        'hover:bg-sky-50' => '#f0f9ff',
-                        'hover:bg-lime-50' => '#f7fef7',
-                    ];
-                    $hoverBgHex = $hoverBgMap[$tab['hoverBg']] ?? '#f3f4f6';
-                    ?>
-                    <a href="?tab=<?php echo $tab['id']; ?>" 
-                       class="nav-tab <?php echo $isActive ? 'active' : ''; ?>"
-                       <?php if ($isActive): ?>id="active-nav-tab"<?php endif; ?>
-                       onmouseover="if (!this.classList.contains('active')) { this.style.background='<?php echo $hoverBgHex; ?>'; }"
-                       onmouseout="if (!this.classList.contains('active')) { this.style.background='transparent'; }">
-                        <span class="nav-tab-icon" style="color: <?php echo $iconColorHex; ?>;"><?php echo $tab['icon']; ?></span>
-                        <span><?php echo $tab['label']; ?></span>
-                        <?php if ($isActive): ?>
-                            <span style="margin-left: auto; color: #065f46; font-size: 18px;">●</span>
-                        <?php endif; ?>
-                    </a>
+                    <div class="nav-group" data-group="<?php echo htmlspecialchars($group['id']); ?>">
+                        <button type="button" class="nav-group-label" onclick="toggleNavGroup('<?php echo htmlspecialchars($group['id']); ?>')">
+                            <span class="nav-swatch" style="background: <?php echo htmlspecialchars($group['color']); ?>"></span>
+                            <span><?php echo htmlspecialchars($group['label']); ?></span>
+                            <span class="nav-chevron">▾</span>
+                        </button>
+                        <?php foreach ($group['items'] as $tab):
+                            $isActive = $activeTab === $tab['id'];
+                        ?>
+                            <a href="?tab=<?php echo htmlspecialchars($tab['id']); ?>"
+                               class="nav-tab <?php echo $isActive ? 'active' : ''; ?>"
+                               <?php if ($isActive): ?>id="active-nav-tab" style="background: <?php echo htmlspecialchars($group['color']); ?>; color: #fff;"<?php endif; ?>>
+                                <span class="nav-tab-icon"><?php echo $tab['icon']; ?></span>
+                                <span><?php echo htmlspecialchars($tab['label']); ?></span>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
                 <?php endforeach; ?>
             </nav>
             
@@ -988,7 +1002,7 @@ $navTabs = [
             <div class="admin-topbar">
                 <div class="topbar-left">
                     <button class="mobile-menu-toggle" onclick="toggleSidebar()">☰</button>
-                    <input type="text" class="topbar-search" placeholder="Search...">
+                    <input type="search" class="topbar-search" placeholder="Find a section" aria-label="Find a section" oninput="var box=document.getElementById('adminSearch'); if(box){box.value=this.value;} filterAdminNav(this.value);">
                 </div>
                 <div class="topbar-user">
                     <div class="user-avatar"><?php echo strtoupper(substr($currentUser['username'] ?? 'A', 0, 1)); ?></div>
@@ -1019,6 +1033,46 @@ $navTabs = [
     </div>
     
     <script>
+        function toggleNavGroup(id) {
+            const group = document.querySelector('.nav-group[data-group="' + id + '"]');
+            if (!group) return;
+            const willCollapse = !group.classList.contains('collapsed');
+            group.classList.toggle('collapsed', willCollapse);
+            const chevron = group.querySelector('.nav-chevron');
+            if (chevron) chevron.textContent = willCollapse ? '▸' : '▾';
+            const open = JSON.parse(localStorage.getItem('adminNavOpen') || '{}');
+            open[id] = !willCollapse;
+            localStorage.setItem('adminNavOpen', JSON.stringify(open));
+        }
+
+        function filterAdminNav(query) {
+            const q = String(query || '').trim().toLowerCase();
+            document.querySelectorAll('.nav-group').forEach(group => {
+                let visible = 0;
+                group.querySelectorAll('.nav-tab').forEach(tab => {
+                    const show = !q || tab.textContent.toLowerCase().indexOf(q) !== -1;
+                    tab.style.display = show ? 'flex' : 'none';
+                    if (show) visible += 1;
+                });
+                group.style.display = visible ? '' : 'none';
+                if (q) group.classList.remove('collapsed');
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            let open = {};
+            try { open = JSON.parse(localStorage.getItem('adminNavOpen') || '{}'); } catch (e) { open = {}; }
+            document.querySelectorAll('.nav-group').forEach(group => {
+                const id = group.getAttribute('data-group');
+                const hasActive = group.querySelector('.nav-tab.active');
+                if (open[id] === false && !hasActive) {
+                    group.classList.add('collapsed');
+                    const chevron = group.querySelector('.nav-chevron');
+                    if (chevron) chevron.textContent = '▸';
+                }
+            });
+        });
+
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const overlay = document.querySelector('.admin-sidebar-overlay');

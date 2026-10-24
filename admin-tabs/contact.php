@@ -102,6 +102,13 @@ $contact = $db->fetchOne("SELECT * FROM contact_content WHERE is_active = 1 ORDE
             <label class="form-label">Intro Text</label>
             <textarea name="intro_text" class="form-input" rows="3"><?php echo htmlspecialchars($contact['intro_text'] ?? ''); ?></textarea>
         </div>
+
+        <div id="school-map" class="form-group" style="background:#fafaf9;border:1px solid #e7e5e4;border-radius:12px;padding:18px;">
+            <h3 style="margin:0 0 8px;font-size:18px;">School map</h3>
+            <p style="color:#57534e;font-size:14px;line-height:1.5;margin:0 0 12px;">Open Google Maps, find the school, click Share, then Embed a map, and copy the HTML. Paste it here. A normal Google Maps link also works. This map is shown on the Contact page.</p>
+            <label class="form-label">Google Maps embed or link</label>
+            <textarea name="map_embed" class="form-input" rows="4" placeholder="Paste the embed code or the maps link"><?php echo htmlspecialchars($contact['map_embed'] ?? ''); ?></textarea>
+        </div>
         
         <div class="form-group">
             <label class="form-label">Section Image</label>
@@ -133,6 +140,35 @@ $contact = $db->fetchOne("SELECT * FROM contact_content WHERE is_active = 1 ORDE
             <p style="color: #666; font-size: 13px; margin-top: 8px;">This image will appear next to the contact information on the right side of the page.</p>
         </div>
         
-        <button type="submit" class="btn btn-primary" style="margin-top: 30px;">💾 Save Changes</button>
+        <button type="submit" class="btn btn-primary" style="margin-top: 30px;">Save contact details</button>
+    </form>
+
+    <?php $mapSettings = $db->fetchOne("SELECT * FROM map_settings WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?? []; ?>
+    <form method="POST" action="api/content/map-settings.php" id="mapForm" onsubmit="return handleAdminFormSubmit(event, this);" style="margin-top:24px;background:#fff;border:1px solid #e7e5e4;border-radius:12px;padding:18px;">
+        <h3 style="margin:0 0 8px;font-size:18px;">Or enter the coordinates</h3>
+        <p style="color:#57534e;font-size:14px;line-height:1.5;margin:0 0 14px;">In Google Maps, right-click the school. The first line looks like <strong>-1.292100, 36.821900</strong>. The first number is latitude. The second is longitude. The Contact page uses this pin when no embed code is saved.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
+            <div class="form-group">
+                <label class="form-label">Latitude</label>
+                <input type="number" step="0.00000001" name="latitude" class="form-input" value="<?php echo htmlspecialchars($mapSettings['latitude'] ?? ''); ?>">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Longitude</label>
+                <input type="number" step="0.00000001" name="longitude" class="form-input" value="<?php echo htmlspecialchars($mapSettings['longitude'] ?? ''); ?>">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Zoom (1 to 20)</label>
+                <input type="number" min="1" max="20" name="zoom" class="form-input" value="<?php echo htmlspecialchars($mapSettings['zoom'] ?? 15); ?>">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Marker title</label>
+            <input type="text" name="marker_title" class="form-input" value="<?php echo htmlspecialchars($mapSettings['marker_title'] ?? ''); ?>">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Marker description</label>
+            <textarea name="marker_description" class="form-input" rows="2"><?php echo htmlspecialchars($mapSettings['marker_description'] ?? ''); ?></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Save map location</button>
     </form>
 </div>

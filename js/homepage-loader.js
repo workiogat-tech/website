@@ -479,6 +479,179 @@ const HomepageLoader = {
         });
         if (typeof window.refreshScrollReveal === 'function') window.refreshScrollReveal();
     },
+
+    filled(value) {
+        return value !== undefined && value !== null && String(value).trim() !== '';
+    },
+
+    setText(id, value) {
+        const node = document.getElementById(id);
+        if (!node) return;
+        node.textContent = this.filled(value) ? String(value) : '';
+        node.hidden = !this.filled(value);
+    },
+
+    setPhoto(id, url, alt) {
+        const node = document.getElementById(id);
+        if (!node) return;
+        const src = this.filled(url) ? this.heroDisplayUrl(url) : '';
+        if (!src) {
+            node.hidden = true;
+            node.innerHTML = '';
+            return;
+        }
+        node.hidden = false;
+        const img = document.createElement('img');
+        img.src = src;
+        img.alt = alt || '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        node.replaceChildren(img);
+    },
+
+    async loadHomeSections() {
+        await this.loadThreeColumnSections();
+        try {
+            const result = await this.fetchHomepage();
+            const data = result && result.success ? result.data : null;
+            if (!data) return;
+            this.renderAcademics(data.academicsContent);
+            this.renderVision(data.visionMissionContent, data.coreValues);
+            this.renderWhyChoose(data.whyChooseContent, data.whyChoosePoints);
+            this.renderCustomSection(data.customSectionContent);
+            if (typeof window.refreshScrollReveal === 'function') window.refreshScrollReveal();
+        } catch (error) {
+            console.error('Error loading homepage sections:', error);
+        }
+    },
+
+    renderAcademics(content) {
+        const section = document.getElementById('home-academics');
+        if (!section) return;
+        const item = content || {};
+        const visible = ['title', 'description', 'motto', 'student_count', 'success_rate', 'image', 'button_text']
+            .some((key) => this.filled(item[key]));
+        section.hidden = !visible;
+        if (!visible) return;
+        this.setText('academicsTitle', item.title);
+        this.setText('academicsDescription', item.description);
+        this.setText('academicsMotto', item.motto);
+        const stats = document.getElementById('academicsStats');
+        if (stats) {
+            stats.innerHTML = '';
+            [['student_count', 'Students'], ['success_rate', 'Success Rate']].forEach((pair) => {
+                if (!this.filled(item[pair[0]])) return;
+                const stat = document.createElement('div');
+                stat.className = 'stat-item';
+                const number = document.createElement('div');
+                number.className = 'stat-number';
+                number.textContent = item[pair[0]];
+                const label = document.createElement('div');
+                label.className = 'stat-label';
+                label.textContent = pair[1];
+                stat.append(number, label);
+                stats.appendChild(stat);
+            });
+            stats.hidden = !stats.childElementCount;
+        }
+        const button = document.getElementById('academicsButton');
+        if (button) {
+            const label = this.filled(item.button_text) ? item.button_text : '';
+            const link = this.filled(item.curriculum_link) ? item.curriculum_link : '';
+            button.hidden = !label;
+            button.textContent = label;
+            button.href = link || 'curriculum.html';
+        }
+        this.setPhoto('academicsImage', item.image, item.title);
+    },
+
+    renderVision(content, values) {
+        const section = document.getElementById('home-vision');
+        const cards = document.getElementById('visionMissionCards');
+        if (!section || !cards) return;
+        const item = content || {};
+        const list = Array.isArray(values) ? values.filter((value) => this.filled(value.value_name || value.name)) : [];
+        const hasCards = this.filled(item.vision_text) || this.filled(item.mission_text) || this.filled(item.vision_title) || this.filled(item.mission_title);
+        section.hidden = !hasCards && !list.length;
+        cards.innerHTML = '';
+        if (this.filled(item.vision_title) || this.filled(item.vision_text)) {
+            const card = document.createElement('div');
+            card.className = 'vision-card';
+            const title = document.createElement('h2');
+            title.className = 'vision-mission-title';
+            title.textContent = item.vision_title || '';
+            const text = document.createElement('p');
+            text.className = 'vision-mission-text';
+            text.textContent = item.vision_text || '';
+            card.append(title, text);
+            cards.appendChild(card);
+        }
+        if (this.filled(item.mission_title) || this.filled(item.mission_text)) {
+            const card = document.createElement('div');
+            card.className = 'mission-card';
+            const title = document.createElement('h2');
+            title.className = 'vision-mission-title';
+            title.textContent = item.mission_title || '';
+            const text = document.createElement('p');
+            text.className = 'vision-mission-text';
+            text.textContent = item.mission_text || '';
+            card.append(title, text);
+            cards.appendChild(card);
+        }
+        const valuesWrap = document.getElementById('home-values');
+        const valuesTitle = document.getElementById('valuesTitle');
+        const grid = document.getElementById('valuesGrid');
+        if (valuesWrap && valuesTitle && grid) {
+            valuesWrap.hidden = !list.length;
+            valuesTitle.textContent = item.core_values_title || '';
+            valuesTitle.hidden = !this.filled(item.core_values_title);
+            grid.innerHTML = '';
+            list.forEach((value) => {
+                const card = document.createElement('div');
+                card.className = 'value-card-item';
+                card.style.background = '#f3f4f6';
+                card.textContent = value.value_name || value.name;
+                grid.appendChild(card);
+            });
+        }
+    },
+
+    renderWhyChoose(content, points) {
+        const section = document.getElementById('home-why');
+        const list = document.getElementById('whyPoints');
+        if (!section || !list) return;
+        const item = content || {};
+        const rows = Array.isArray(points) ? points.map((point) => {
+            if (typeof point === 'string') return point;
+            return point.point_text || point.text || '';
+        }).filter((point) => this.filled(point)) : [];
+        const visible = this.filled(item.title) || this.filled(item.image) || rows.length > 0;
+        section.hidden = !visible;
+        this.setText('whyTitle', item.title);
+        list.innerHTML = '';
+        rows.forEach((point) => {
+            const row = document.createElement('div');
+            row.className = 'point-item';
+            const dot = document.createElement('div');
+            dot.className = 'point-dot';
+            const text = document.createElement('p');
+            text.textContent = point;
+            row.append(dot, text);
+            list.appendChild(row);
+        });
+        this.setPhoto('whyImage', item.image, item.title);
+    },
+
+    renderCustomSection(content) {
+        const section = document.getElementById('home-custom');
+        if (!section) return;
+        const item = content || {};
+        const visible = this.filled(item.title) || this.filled(item.description) || this.filled(item.image);
+        section.hidden = !visible;
+        this.setText('customTitle', item.title);
+        this.setText('customDescription', item.description);
+        this.setPhoto('customImage', item.image, item.title);
+    },
     
     escapeHtml(text) {
         const div = document.createElement('div');
@@ -491,7 +664,7 @@ const HomepageLoader = {
         await Promise.all([
             this.loadBranding(),
             this.loadHeroContent(),
-            this.loadThreeColumnSections()
+            this.loadHomeSections()
         ]);
         
         if (!this._resizeBound) {
@@ -511,14 +684,14 @@ const HomepageLoader = {
         window.addEventListener('storage', () => {
             this.loadBranding();
             this.loadHeroContent();
-            this.loadThreeColumnSections();
+            this.loadHomeSections();
         });
         
         // Also listen for custom event from admin panel
         window.addEventListener('adminDataSaved', () => {
             this.loadBranding();
             this.loadHeroContent();
-            this.loadThreeColumnSections();
+            this.loadHomeSections();
         });
     }
 };

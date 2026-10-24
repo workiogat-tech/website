@@ -21,7 +21,8 @@
                     <label class="form-label">Max Upload Size (MB)</label>
                     <input type="number" name="max_upload_size" class="form-input" id="max_upload_size" value="50" min="1" max="500">
                 </div>
-                <button type="submit" class="btn btn-primary" style="margin-top: 10px;">💾 Save Settings</button>
+                <button type="submit" class="btn btn-primary" style="margin-top: 10px;">Save settings</button>
+                <p style="color:#78716c;font-size:13px;margin-top:12px;">These numbers are stored. The hosting server still sets the real session length and the largest file it will accept.</p>
             </form>
         </div>
     </div>
@@ -32,6 +33,17 @@
     document.getElementById('phpVersion').textContent = 'PHP';
     document.getElementById('dbName').textContent = 'Supabase';
     document.getElementById('serverInfo').textContent = 'Vercel';
+    try {
+        const saved = await fetch('api/content/settings.php', { credentials: 'same-origin', cache: 'no-store' });
+        if (saved.ok) {
+            const savedData = await saved.json();
+            const settings = savedData.settings || {};
+            if (settings.session_timeout) document.getElementById('session_timeout').value = settings.session_timeout;
+            if (settings.max_upload_size) document.getElementById('max_upload_size').value = settings.max_upload_size;
+        }
+    } catch (error) {
+        console.error('Error loading saved settings:', error);
+    }
     try {
         const sysResponse = await fetch('api/health.php', { cache: 'no-store' });
         if (sysResponse.ok) {
