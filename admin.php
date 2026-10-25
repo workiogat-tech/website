@@ -1814,8 +1814,15 @@ $navGroups = [
         }
         
         function loadMediaLibrary() {
-            fetch('api/media/list.php')
+            const controller = typeof AbortController === 'function' ? new AbortController() : null;
+            const timer = setTimeout(function () { if (controller) controller.abort(); }, 8000);
+            fetch('api/media/list.php', {
+                credentials: 'same-origin',
+                cache: 'no-store',
+                signal: controller ? controller.signal : undefined
+            })
                 .then(response => {
+                    clearTimeout(timer);
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
                     }

@@ -10,7 +10,7 @@
       var api=map[file];
       if(!api)return;
       window.__pagePath=api.split('/').pop();
-      window.__pageData=fetch(api).then(function(r){return r.ok?r.json():null;}).then(function(data){
+      window.__pageData=fetch(api,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(data){
         var urls=[], seen={};
         function add(url){if(!url||seen[url]||String(url).indexOf('data:')===0)return;if(String(url).indexOf('http')!==0&&String(url).indexOf('/')!==0)return;seen[url]=1;urls.push(url);}
         function walk(value,key){if(!value)return;if(typeof value==='string'){if(/image|slide|logo|photo|background|file_path|file_url/i.test(key||''))add(value);return;}if(Array.isArray(value)){value.forEach(function(item){walk(item,key);});return;}if(typeof value==='object'){Object.keys(value).forEach(function(name){walk(value[name],name);});}}
@@ -21,7 +21,7 @@
     })();
     </script>
     <title>School Background - Excellence Academy</title>
-    <link rel="stylesheet" href="css/style.css?v=20261022k">
+    <link rel="stylesheet" href="css/style.css?v=20261025b">
 </head>
 <body>
     <div id="header-placeholder"><header class="site-header" id="mainHeader"><div class="header-top"><div class="container"><div class="header-top-content"><div class="contact-info"></div><nav class="top-nav-desktop"><a href="index.html" class="top-nav-link">Home</a><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="top-nav-link">Contact</a></nav></div></div></div><div class="header-main"><div class="container"><div class="header-content"><div class="logo"><a href="index.html" class="logo-link"><div class="logo-placeholder"><span>S</span></div></a></div><div class="header-actions"><button type="button" class="search-button" id="searchButton" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></button><button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false"><span class="menu-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button></div></div><nav class="main-nav mobile-nav" id="mainNav"><a href="index.html" class="nav-link">Home</a><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="nav-link">Contact</a></nav></div></div></header></div>
@@ -73,7 +73,7 @@
     <div id="footer-placeholder"></div>
     
     <script src="js/static-pages.js?v=20261022g"></script>
-    <script src="js/page-data-loader.js?v=20261021"></script>
+    <script src="js/page-data-loader.js?v=20261025f"></script>
     <script>
         (async function() {
             const data = await PageDataLoader.loadSchoolBackgroundData();
@@ -100,8 +100,11 @@
                 
                 // Update history section - check both data.historySection and data.backgroundContent.history_section
                 let historySection = data.historySection || (data.backgroundContent && data.backgroundContent.history_section) || null;
+                if (historySection && !historySection.image && data.backgroundContent && data.backgroundContent.history_image) {
+                    historySection.image = data.backgroundContent.history_image;
+                }
                 
-                if (historySection && historySection.content) {
+                if (historySection && (historySection.content || historySection.title || historySection.image)) {
                     const historyText = document.querySelector('.school-bg-history-text');
                     if (historyText) {
                         if (historySection.title) {
@@ -122,10 +125,10 @@
                 }
                 
                 // Update main content section
-                if (data.backgroundContent && data.backgroundContent.content) {
+                if (data.backgroundContent && (data.backgroundContent.content || data.backgroundContent.content_title || data.backgroundContent.content_image)) {
                     const mainSection = document.getElementById('main-content-section');
                     if (mainSection) {
-                        mainSection.style.display = 'block';
+                        mainSection.style.display = 'grid';
                         const title = mainSection.querySelector('.school-bg-section-title');
                         if (title) title.textContent = data.backgroundContent.content_title || data.backgroundContent.subtitle || 'our history and foundation';
                         const text = document.getElementById('main-content-text');
@@ -140,7 +143,8 @@
                 }
                 
                 // Render milestones
-                if (data.milestones && data.milestones.length > 0) {
+                const milestones = (data.milestones && data.milestones.length) ? data.milestones : ((data.backgroundContent && data.backgroundContent.milestones) || []);
+                if (milestones.length > 0) {
                     const milestonesSection = document.getElementById('milestones-section');
                     if (milestonesSection) {
                         milestonesSection.style.display = 'block';
@@ -150,7 +154,7 @@
                                     <h2 class="section-title text-center" style="margin-bottom: 40px;">Key Milestones</h2>
                                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;">
                         `;
-                        data.milestones.forEach(milestone => {
+                        milestones.forEach(milestone => {
                             milestonesHtml += `
                                 <div class="content-reveal-card" style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center;">
                                     <div style="width: 60px; height: 60px; background: ${escapeHtml(milestone.icon_color || '#ef4444')}; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 24px;">
@@ -270,6 +274,6 @@
             return div.innerHTML;
         }
     </script>
-<script src="js/main.js?v=20261024a"></script>
+<script src="js/main.js?v=20261025b"></script>
 </body>
 </html>

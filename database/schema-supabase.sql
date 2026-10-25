@@ -449,6 +449,11 @@ CREATE TABLE IF NOT EXISTS testimonials_settings (
     hero_image VARCHAR(500),
     title VARCHAR(200) DEFAULT 'Testimonials',
     subtitle TEXT,
+    enable_slider SMALLINT DEFAULT 1,
+    slide_direction VARCHAR(20) DEFAULT 'left',
+    slide_interval_ms INTEGER DEFAULT 3000,
+    items_per_view INTEGER DEFAULT 3,
+    card_width INTEGER DEFAULT 280,
     is_active SMALLINT DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

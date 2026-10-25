@@ -619,7 +619,6 @@ const HomepageLoader = {
             list.forEach((value) => {
                 const card = document.createElement('div');
                 card.className = 'value-card-item';
-                card.style.background = '#f3f4f6';
                 card.textContent = value.value_name || value.name;
                 grid.appendChild(card);
             });

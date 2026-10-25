@@ -61,6 +61,7 @@ $colorGroupNotes = [
     </div>
     
     <form method="POST" action="api/content/website-colors.php" id="colorsForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <input type="search" placeholder="Find a section, such as Core Values" oninput="filterColorCards(this.value)" style="width:100%;max-width:420px;margin-bottom:18px;padding:10px 12px;border:1px solid #d6d3d1;border-radius:8px;">
         <?php
         $sectionCount = 0;
         $lastGroup = '';
@@ -75,13 +76,17 @@ $colorGroupNotes = [
             <p style="margin: 0 0 14px; color: #78716c; font-size: 14px;"><?php echo htmlspecialchars($colorGroupNotes[$section['group']] ?? ''); ?></p>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px;">
         <?php endif; ?>
-                <div style="background: #ffffff; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <?php $isCoreValues = $section['name'] === 'core-values'; ?>
+                <div class="color-section-card" data-color-label="<?php echo htmlspecialchars(strtolower($section['label'] . ' ' . $section['name'])); ?>" style="background: #ffffff; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">
                         <?php echo htmlspecialchars($section['label']); ?>
                     </h4>
+                    <?php if ($isCoreValues): ?>
+                    <p style="margin: 0 0 12px; color: #57534e; font-size: 13px; line-height: 1.45;">Homepage Core Values boxes. Card color fills each box. Card text is the wording inside it. Title color is the heading above the boxes.</p>
+                    <?php endif; ?>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Primary Color</label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Title color' : 'Primary Color'; ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][primaryColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
@@ -95,18 +100,18 @@ $colorGroupNotes = [
                                    value="<?php echo htmlspecialchars($colorData['secondary_color'] ?? '#6B0000'); ?>">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Background Color</label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card color' : 'Background Color'; ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][backgroundColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                   value="<?php echo htmlspecialchars($colorData['background_color'] ?? '#ffffff'); ?>">
+                                   value="<?php echo htmlspecialchars($colorData['background_color'] ?? ($isCoreValues ? '#f3f4f6' : '#ffffff')); ?>">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Text Color</label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card text' : 'Text Color'; ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][textColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                   value="<?php echo htmlspecialchars($colorData['text_color'] ?? '#1e293b'); ?>">
+                                   value="<?php echo htmlspecialchars($colorData['text_color'] ?? ($isCoreValues ? '#1f2937' : '#1e293b')); ?>">
                         </div>
                         <div>
                             <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Accent Color</label>
@@ -116,11 +121,11 @@ $colorGroupNotes = [
                                    value="<?php echo htmlspecialchars($colorData['accent_color'] ?? '#800020'); ?>">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Hover Color</label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card hover' : 'Hover Color'; ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][hoverColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                   value="<?php echo htmlspecialchars($colorData['hover_color'] ?? '#6B0000'); ?>">
+                                   value="<?php echo htmlspecialchars($colorData['hover_color'] ?? ($isCoreValues ? '#e5e7eb' : '#6B0000')); ?>">
                         </div>
                     </div>
                     <input type="hidden" name="colors[<?php echo htmlspecialchars($section['name']); ?>][sectionName]" value="<?php echo htmlspecialchars($section['name']); ?>">
@@ -137,3 +142,12 @@ $colorGroupNotes = [
         </div>
     </form>
 </div>
+<script>
+function filterColorCards(query) {
+    var needle = String(query || '').trim().toLowerCase();
+    document.querySelectorAll('.color-section-card').forEach(function (card) {
+        var label = (card.getAttribute('data-color-label') || '').toLowerCase();
+        card.style.display = !needle || label.indexOf(needle) !== -1 ? '' : 'none';
+    });
+}
+</script>

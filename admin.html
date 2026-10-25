@@ -17,7 +17,7 @@
                 window.location.replace('login.html?next=' + encodeURIComponent('admin.html' + window.location.search));
             });
     </script>
-    <link rel="stylesheet" href="css/style.css?v=20261022k">
+    <link rel="stylesheet" href="css/style.css?v=20261025b">
     <style>
         /* Admin panel styles */
         html, body {
@@ -657,28 +657,39 @@
             if (!container) {
                 return;
             }
-            purgeBrowserPhotos();
-            let settled = false;
-
+            const requestId = (window.__mediaLibraryRequest || 0) + 1;
+            window.__mediaLibraryRequest = requestId;
+            if (window.adminMediaItems && window.adminMediaItems.length) {
+                displayMedia();
+            }
+            const controller = typeof AbortController === 'function' ? new AbortController() : null;
             const timer = setTimeout(function () {
-                if (!settled) finishMediaLibrary(container, []);
+                if (controller) controller.abort();
+                if (window.__mediaLibraryRequest !== requestId) return;
+                if ((container.textContent || '').indexOf('Loading media') === -1) return;
+                showMediaLibraryMessage(container, 'The photo list did not open', 'Close this window and click Select again.');
             }, 8000);
 
             fetch('/api/media/list.php', {
                 credentials: 'same-origin',
-                cache: 'no-store'
+                cache: 'no-store',
+                signal: controller ? controller.signal : undefined
             })
-                .then(response => response.ok ? response.json() : null)
+                .then(function (response) {
+                    if (!response.ok) throw new Error('The photo list did not open');
+                    return response.json();
+                })
                 .then(data => {
-                    settled = true;
                     clearTimeout(timer);
+                    if (window.__mediaLibraryRequest !== requestId) return;
                     const remote = (data && Array.isArray(data.media)) ? data.media.filter(usableMediaUrl) : [];
                     finishMediaLibrary(container, remote);
                 })
                 .catch(() => {
-                    settled = true;
                     clearTimeout(timer);
-                    finishMediaLibrary(container, []);
+                    if (window.__mediaLibraryRequest !== requestId) return;
+                    if ((container.textContent || '').indexOf('Loading media') === -1) return;
+                    showMediaLibraryMessage(container, 'The photo list did not open', 'Close this window and click Select again.');
                 });
         }
         
@@ -687,61 +698,38 @@
         
         function displayMedia() {
             const container = document.getElementById('mediaLibraryContent');
-            const mediaItems = window.adminMediaItems || [];
+            if (!container) return;
+            const mediaItems = (window.adminMediaItems || []).filter(usableMediaUrl).slice(0, 80);
             if (mediaItems.length === 0) {
-                container.innerHTML = '<div style="text-align: center; padding: 40px; color: #999;">No media files found. Upload files in the Media Library tab.</div>';
+                showMediaLibraryMessage(container, 'No photos yet', 'Upload images in the Media Library tab. New photos are stored online.');
                 return;
             }
-            
-            container.innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
-                    ${mediaItems.map(item => {
-                        // Get URL - prioritize data URLs (from client-side storage)
-                        let url = item.file_path || item.file_url || item.url || '';
-                        if (!url || url.indexOf('data:') === 0) {
-                            return '';
-                        }
-                        const filename = item.original_name || item.filename || 'Image';
-                        
-                        // If it's a data URL, use it directly (from localStorage)
-                        if (url.startsWith('data:')) {
-                            // Data URL is ready to use - no modification needed
-                        } else {
-                            // For regular URLs, ensure proper format
-                            if (url && !url.startsWith('http') && !url.startsWith('data:') && !url.startsWith('/')) {
-                                url = '/' + url;
-                            }
-                            
-                            // Handle folder paths (like "h/" or "uploads/h/")
-                            if (url.includes('folder h') || url.includes('h/')) {
-                                url = url.replace(/folder\s*h/gi, 'h').replace(/\\/g, '/');
-                                if (!url.startsWith('/') && !url.startsWith('http')) {
-                                    url = '/uploads/' + url;
-                                }
-                            }
-                        }
-                        
-                        // Escape URL for use in HTML (but preserve data URLs)
-                        const safeUrl = url.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-                        const safeFilename = filename.replace(/'/g, "\\'").replace(/"/g, '&quot;').substring(0, 30);
-                        
-                        return `
-                        <div style="border: 2px solid #e5e7eb; border-radius: 8px; overflow: hidden; cursor: pointer; transition: all 0.2s; position: relative;" 
-                             onmouseover="this.style.borderColor='#10b981'; this.style.transform='scale(1.02)'"
-                             onmouseout="this.style.borderColor='#e5e7eb'; this.style.transform='scale(1)'"
-                             onclick="selectImage('${safeUrl}')">
-                            <img src="${safeUrl}" 
-                                 style="width: 100%; height: 150px; object-fit: cover; display: block;" 
-                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
-                                 loading="lazy"
-                                 alt="${safeFilename}">
-                            <div style="display: none; width: 100%; height: 150px; background: #f3f4f6; align-items: center; justify-content: center; color: #9ca3af; font-size: 32px; position: absolute; top: 0; left: 0;">🖼️</div>
-                            <div style="padding: 8px; font-size: 12px; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; background: white;">${safeFilename}</div>
-                        </div>
-                    `;
-                    }).join('')}
-                </div>
-            `;
+
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;';
+            mediaItems.forEach(function (item) {
+                let url = item.file_path || item.file_url || item.url || '';
+                if (url && url.indexOf('http') !== 0 && url.charAt(0) !== '/') {
+                    url = '/' + url;
+                }
+                const filename = item.original_name || item.filename || 'Image';
+                const card = document.createElement('button');
+                card.type = 'button';
+                card.style.cssText = 'border:2px solid #e5e7eb;border-radius:8px;overflow:hidden;cursor:pointer;background:white;padding:0;text-align:left;';
+                card.addEventListener('click', function () { selectImage(url); });
+                const img = document.createElement('img');
+                img.src = url;
+                img.alt = filename;
+                img.loading = 'lazy';
+                img.style.cssText = 'width:100%;height:120px;object-fit:cover;display:block;background:#f3f4f6;';
+                const label = document.createElement('div');
+                label.textContent = filename;
+                label.style.cssText = 'padding:8px;font-size:12px;color:#666;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+                card.appendChild(img);
+                card.appendChild(label);
+                grid.appendChild(card);
+            });
+            container.replaceChildren(grid);
         }
         
         function findImageInput(fieldId) {
@@ -1023,11 +1011,14 @@
             if (endpoint.indexOf('homepage-sections.php') !== -1 && typeof loadHomepageSections === 'function') {
                 await loadHomepageSections();
             }
+            if (endpoint.indexOf('admission.php') !== -1 && typeof loadAdmission === 'function') {
+                await loadAdmission();
+            }
             if (submitBtn) {
                 submitBtn.textContent = originalText;
                 submitBtn.disabled = false;
             }
-            return false;
+            return true;
         } catch (error) {
             console.error('Database save failed:', error);
             showToast(error.message || 'The database did not save this change.', 'error');

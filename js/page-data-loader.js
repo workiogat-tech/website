@@ -38,13 +38,23 @@ const PageDataLoader = {
             if (window.__pagePath === path && window.__pageData) {
                 return window.__pageData;
             }
-            const response = await fetch(this.baseURL + '/' + path);
+            const response = await fetch(this.baseURL + '/' + path, { cache: 'no-store' });
             if (!response.ok) return null;
             return response.json();
         };
         try {
             const row = await read(endpoints[key] || (key + '.php'));
-            const settings = (row && !row.error && !Array.isArray(row)) ? row : {};
+            let settings = (row && !row.error && !Array.isArray(row)) ? row : {};
+            if (settings.data && typeof settings.data === 'object' && !Array.isArray(settings.data)) {
+                settings = Object.assign({}, settings, settings.data);
+            }
+            Object.keys(settings).forEach((name) => {
+                const value = settings[name];
+                if (typeof value !== 'string') return;
+                const trimmed = value.trim();
+                if (!trimmed || (trimmed.charAt(0) !== '[' && trimmed.charAt(0) !== '{')) return;
+                try { settings[name] = JSON.parse(trimmed); } catch (parseError) {}
+            });
             if (lists[key]) {
                 const list = await read(lists[key]);
                 if (list && Array.isArray(list.data)) settings[key] = list.data;
@@ -72,8 +82,9 @@ const PageDataLoader = {
             url = '/' + url.replace(/^\.?\//, '');
         }
         this.preload(url);
-        const hero = document.getElementById('page-hero');
-        const bg = hero && hero.querySelector('.page-hero-background');
+        const hero = document.getElementById('page-hero') || document.querySelector('.page-hero-section, .admission-hero-section');
+        const bg = (hero && hero.querySelector('.page-hero-background, .admission-hero-background'))
+            || document.querySelector('.page-hero-background, .admission-hero-background');
         if (!bg) return;
         let img = bg.querySelector('img.page-hero-photo');
         if (!img) {
@@ -215,20 +226,43 @@ const PageDataLoader = {
         };
     },
     
+    asList(value) {
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'string') {
+            try {
+                const parsed = JSON.parse(value);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (parseError) {
+                return [];
+            }
+        }
+        return [];
+    },
+
+    pageContent(settings, nestedName) {
+        const source = settings && typeof settings === 'object' ? settings : {};
+        const nested = source[nestedName];
+        if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+            return Object.assign({}, source, nested);
+        }
+        return source;
+    },
+
     // Load clubs data
     async loadClubsData() {
         try {
             this.initMediaStorage();
             const settings = await this.loadDb('clubs');
             const defaultData = this.getDefaultClubsData();
+            const content = this.pageContent(settings, 'clubsContent');
             
             return {
                 clubsContent: {
                     ...defaultData.clubsContent,
-                    ...settings.clubsContent,
-                    hero_image: settings.hero_image || settings.clubsContent?.hero_image || defaultData.clubsContent.hero_image
+                    ...content,
+                    hero_image: content.hero_image || ''
                 },
-                clubs: settings.clubs || defaultData.clubs || []
+                clubs: this.asList(settings.clubs)
             };
         } catch (error) {
             return this.getDefaultClubsData();
@@ -253,18 +287,22 @@ const PageDataLoader = {
             const settings = await this.loadDb('curriculum');
             const defaultData = this.getDefaultCurriculumData();
             
+            const content = this.pageContent(settings.basicContent || settings, 'curriculumContent');
+            const programs = this.asList(settings.programs || settings.curriculumPrograms);
+            const whyChoose = settings.whyChoose || settings.curriculumWhyChoose || {};
+            const whyItems = this.asList(whyChoose.items || settings.curriculumWhyChooseItems);
             return {
                 curriculumContent: {
                     ...defaultData.curriculumContent,
-                    ...settings.curriculumContent,
-                    hero_image: settings.hero_image || settings.curriculumContent?.hero_image || defaultData.curriculumContent.hero_image
+                    ...content,
+                    hero_image: content.hero_image || ''
                 },
-                curriculumPrograms: settings.curriculumPrograms || defaultData.curriculumPrograms,
+                curriculumPrograms: programs.length ? programs : defaultData.curriculumPrograms,
                 curriculumWhyChoose: {
                     ...defaultData.curriculumWhyChoose,
-                    ...settings.curriculumWhyChoose
+                    ...whyChoose
                 },
-                curriculumWhyChooseItems: settings.curriculumWhyChooseItems || defaultData.curriculumWhyChooseItems
+                curriculumWhyChooseItems: whyItems.length ? whyItems : defaultData.curriculumWhyChooseItems
             };
         } catch (error) {
             return this.getDefaultCurriculumData();
@@ -329,11 +367,11 @@ const PageDataLoader = {
             return {
                 facilitiesSettings: {
                     ...defaultData.facilitiesSettings,
-                    ...settings.facilitiesSettings,
-                    hero_image: settings.hero_image || settings.facilitiesSettings?.hero_image || defaultData.facilitiesSettings.hero_image
+                    ...this.pageContent(settings, 'facilitiesSettings'),
+                    hero_image: settings.hero_image || ''
                 },
-                facilities: settings.facilities || defaultData.facilities || [],
-                features: settings.features || defaultData.features || []
+                facilities: this.asList(settings.facilities).length ? this.asList(settings.facilities) : (defaultData.facilities || []),
+                features: this.asList(settings.features)
             };
         } catch (error) {
             return this.getDefaultFacilitiesData();
@@ -362,10 +400,10 @@ const PageDataLoader = {
             return {
                 teachersSettings: {
                     ...defaultData.teachersSettings,
-                    ...settings.teachersSettings,
-                    hero_image: settings.hero_image || settings.teachersSettings?.hero_image || defaultData.teachersSettings.hero_image
+                    ...this.pageContent(settings, 'teachersSettings'),
+                    hero_image: settings.hero_image || ''
                 },
-                teachers: settings.teachers || settings.people_json || defaultData.teachers || []
+                teachers: this.asList(settings.teachers).length ? this.asList(settings.teachers) : this.asList(settings.people_json)
             };
         } catch (error) {
             return this.getDefaultTeachersData();
@@ -393,10 +431,10 @@ const PageDataLoader = {
             return {
                 testimonialsSettings: {
                     ...defaultData.testimonialsSettings,
-                    ...settings.testimonialsSettings,
-                    hero_image: settings.hero_image || settings.testimonialsSettings?.hero_image || defaultData.testimonialsSettings.hero_image
+                    ...this.pageContent(settings, 'testimonialsSettings'),
+                    hero_image: settings.hero_image || ''
                 },
-                testimonials: settings.testimonials || defaultData.testimonials || []
+                testimonials: this.asList(settings.testimonials)
             };
         } catch (error) {
             return this.getDefaultTestimonialsData();
@@ -488,10 +526,10 @@ const PageDataLoader = {
             return {
                 activitiesSettings: {
                     ...defaultData.activitiesSettings,
-                    ...settings.activitiesSettings,
-                    hero_image: settings.hero_image || settings.activitiesSettings?.hero_image || defaultData.activitiesSettings.hero_image
+                    ...this.pageContent(settings, 'activitiesSettings'),
+                    hero_image: settings.hero_image || ''
                 },
-                activities: settings.activities || settings.clubs || defaultData.activities || []
+                activities: this.asList(settings.activities)
             };
         } catch (error) {
             return this.getDefaultEventsData();
@@ -519,10 +557,10 @@ const PageDataLoader = {
             return {
                 newsSettings: {
                     ...defaultData.newsSettings,
-                    ...settings.newsSettings,
-                    hero_image: settings.hero_image || settings.newsSettings?.hero_image || defaultData.newsSettings.hero_image
+                    ...this.pageContent(settings, 'newsSettings'),
+                    hero_image: settings.hero_image || ''
                 },
-                news: settings.news || defaultData.news || []
+                news: this.asList(settings.news)
             };
         } catch (error) {
             return this.getDefaultNewsData();
@@ -550,10 +588,10 @@ const PageDataLoader = {
             return {
                 announcementsSettings: {
                     ...defaultData.announcementsSettings,
-                    ...settings.announcementsSettings,
-                    hero_image: settings.hero_image || settings.announcementsSettings?.hero_image || defaultData.announcementsSettings.hero_image
+                    ...this.pageContent(settings, 'announcementsSettings'),
+                    hero_image: settings.hero_image || ''
                 },
-                announcements: settings.announcements || defaultData.announcements || []
+                announcements: this.asList(settings.announcements)
             };
         } catch (error) {
             return this.getDefaultAnnouncementsData();
@@ -581,13 +619,13 @@ const PageDataLoader = {
             return {
                 admissionContent: {
                     ...defaultData.admissionContent,
-                    ...settings.admissionContent,
-                    hero_image: settings.hero_image || settings.admissionContent?.hero_image || defaultData.admissionContent.hero_image
+                    ...this.pageContent(settings, 'admissionContent'),
+                    hero_image: settings.hero_image || ''
                 },
-                admissionLevels: settings.admissionLevels || defaultData.admissionLevels,
+                admissionLevels: this.asList(settings.admissionLevels || settings.admission_levels).length ? this.asList(settings.admissionLevels || settings.admission_levels) : defaultData.admissionLevels,
                 feeStructure: {
                     ...defaultData.feeStructure,
-                    ...settings.feeStructure
+                    ...(typeof settings.fee_structure === 'string' ? { content: settings.fee_structure } : (settings.fee_structure || settings.feeStructure || {}))
                 },
                 contactInfo: {
                     ...defaultData.contactInfo,
@@ -635,17 +673,26 @@ const PageDataLoader = {
             const settings = await this.loadDb('background');
             const defaultData = this.getDefaultSchoolBackgroundData();
             
+            const content = this.pageContent(settings, 'backgroundContent');
+            const history = (content.history_section && typeof content.history_section === 'object' && !Array.isArray(content.history_section))
+                ? content.history_section
+                : {};
+            const saved = !!(settings && (settings.id || settings.content || settings.history_section || settings.history_image));
             return {
                 backgroundContent: {
                     ...defaultData.backgroundContent,
-                    ...settings.backgroundContent,
-                    hero_image: settings.hero_image || settings.backgroundContent?.hero_image || defaultData.backgroundContent.hero_image
+                    ...content,
+                    hero_image: content.hero_image || settings.hero_image || '',
+                    content: content.content || (saved ? '' : defaultData.backgroundContent.content),
+                    content_title: content.content_title || '',
+                    content_image: content.content_image || ''
                 },
                 historySection: {
-                    ...defaultData.historySection,
-                    ...settings.historySection,
-                    ...settings.backgroundContent?.history_section
-                }
+                    title: history.title || content.history_title || (saved ? 'Our History' : defaultData.historySection.title),
+                    content: history.content || content.history_content || (saved ? '' : defaultData.historySection.content),
+                    image: history.image || content.history_image || ''
+                },
+                milestones: this.asList(content.milestones || settings.milestones)
             };
         } catch (error) {
             return this.getDefaultSchoolBackgroundData();
@@ -687,10 +734,10 @@ const PageDataLoader = {
             return {
                 sponsorship: {
                     ...defaultData.sponsorship,
-                    ...settings.sponsorship,
-                    hero_image: settings.hero_image || settings.sponsorship?.hero_image || defaultData.sponsorship.hero_image
+                    ...this.pageContent(settings, 'sponsorship'),
+                    hero_image: settings.hero_image || ''
                 },
-                successStories: settings.successStories || settings.success_stories || defaultData.successStories || [],
+                successStories: this.asList(settings.successStories || settings.success_stories),
                 sponsorshipLevels: settings.sponsorshipLevels || settings.sponsorship_levels || defaultData.sponsorshipLevels,
                 steps: settings.steps || settings.sponsorship_steps || defaultData.steps
             };
@@ -756,10 +803,10 @@ const PageDataLoader = {
             return {
                 giveback: {
                     ...defaultData.giveback,
-                    ...settings.giveback,
-                    hero_image: settings.hero_image || settings.giveback?.hero_image || defaultData.giveback.hero_image
+                    ...this.pageContent(settings, 'giveback'),
+                    hero_image: settings.hero_image || ''
                 },
-                needs: settings.needs || defaultData.needs || [],
+                needs: this.asList(settings.needs),
                 paymentDetails: settings.paymentDetails || settings.payment_details || defaultData.paymentDetails
             };
         } catch (error) {
@@ -791,10 +838,10 @@ const PageDataLoader = {
             return {
                 parentsContent: {
                     ...defaultData.parentsContent,
-                    ...settings.parentsContent,
-                    hero_image: settings.hero_image || settings.parentsContent?.hero_image || defaultData.parentsContent.hero_image
+                    ...this.pageContent(settings, 'parentsContent'),
+                    hero_image: settings.hero_image || ''
                 },
-                upcomingEvents: settings.upcomingEvents || defaultData.upcomingEvents,
+                upcomingEvents: this.asList(settings.upcomingEvents || settings.upcoming_events).length ? this.asList(settings.upcomingEvents || settings.upcoming_events) : defaultData.upcomingEvents,
                 resources: settings.resources || defaultData.resources,
                 contactInfo: settings.contactInfo || defaultData.contactInfo
             };
@@ -840,10 +887,10 @@ const PageDataLoader = {
             return {
                 peopleContent: {
                     ...defaultData.peopleContent,
-                    ...settings.peopleContent,
-                    hero_image: settings.hero_image || settings.peopleContent?.hero_image || defaultData.peopleContent.hero_image
+                    ...this.pageContent(settings, 'peopleContent'),
+                    hero_image: settings.hero_image || ''
                 },
-                people: settings.people || settings.people_json || defaultData.people || []
+                people: this.asList(settings.people).length ? this.asList(settings.people) : this.asList(settings.people_json)
             };
         } catch (error) {
             return this.getDefaultPeopleBehindSchoolData();
@@ -874,10 +921,10 @@ const PageDataLoader = {
             return {
                 parentsContent: {
                     ...defaultData.parentsContent,
-                    ...settings.parentsContent,
-                    hero_image: settings.hero_image || settings.parentsContent?.hero_image || defaultData.parentsContent.hero_image
+                    ...this.pageContent(settings, 'parentsContent'),
+                    hero_image: settings.hero_image || ''
                 },
-                resourceDetailSections: settings.resourceDetailSections || settings.resource_detail_sections || defaultData.resourceDetailSections
+                resourceDetailSections: this.asList(settings.resourceDetailSections || settings.resource_detail_sections).length ? this.asList(settings.resourceDetailSections || settings.resource_detail_sections) : defaultData.resourceDetailSections
             };
         } catch (error) {
             return this.getDefaultResourcesData();

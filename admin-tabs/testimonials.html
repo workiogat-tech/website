@@ -78,12 +78,12 @@
                 </label>
                 <p style="color: #666; font-size: 13px; margin-bottom: 10px;">Show testimonials in a sliding carousel</p>
                 <label style="position: relative; display: inline-block; width: 60px; height: 30px; cursor: pointer;">
+                    <input type="hidden" name="enable_slider" id="enable_slider_value" value="1">
                     <input type="checkbox" 
-                           name="enable_slider" 
                            id="enable_slider"
-                           value="1"
+                           checked
                            style="opacity: 0; width: 0; height: 0;"
-                           onchange="this.value = this.checked ? '1' : '0'; updateSliderToggle(this.checked);">
+                           onchange="updateSliderToggle(this.checked);">
                     <span id="sliderToggle" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #9333ea; border-radius: 30px; transition: 0.3s;">
                         <span style="position: absolute; content: ''; height: 24px; width: 24px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; transform: translateX(30px);"></span>
                     </span>
@@ -338,6 +338,7 @@ async function loadTestimonialsSettings() {
     try {
         const response = await fetch('api/content/testimonials-settings.php', {
             method: 'GET',
+            cache: 'no-store',
             headers: { 'Accept': 'application/json' }
         });
         if (response.ok) {
@@ -512,6 +513,10 @@ function updateTestimonialsHeroPreview(url) {
 }
 
 function updateSliderToggle(enabled) {
+    const hidden = document.getElementById('enable_slider_value');
+    const box = document.getElementById('enable_slider');
+    if (hidden) hidden.value = enabled ? '1' : '0';
+    if (box) box.checked = !!enabled;
     const toggle = document.getElementById('sliderToggle');
     if (toggle) {
         toggle.style.backgroundColor = enabled ? '#9333ea' : '#ccc';

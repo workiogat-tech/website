@@ -119,13 +119,12 @@ $testimonialsSettings = $db->fetchOne("SELECT * FROM testimonials_settings WHERE
                 </label>
                 <p style="color: #666; font-size: 13px; margin-bottom: 10px;">Show testimonials in a sliding carousel</p>
                 <label style="position: relative; display: inline-block; width: 60px; height: 30px; cursor: pointer;">
+                    <input type="hidden" name="enable_slider" value="<?php echo (!isset($testimonialsSettings['enable_slider']) || $testimonialsSettings['enable_slider']) ? '1' : '0'; ?>">
                     <input type="checkbox" 
-                           name="enable_slider" 
                            id="enable_slider"
-                           value="1"
                            <?php echo (!isset($testimonialsSettings['enable_slider']) || $testimonialsSettings['enable_slider']) ? 'checked' : ''; ?>
                            style="opacity: 0; width: 0; height: 0;"
-                           onchange="this.value = this.checked ? '1' : '0';">
+                           onchange="this.previousElementSibling.value = this.checked ? '1' : '0';">
                     <span style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: <?php echo (!isset($testimonialsSettings['enable_slider']) || $testimonialsSettings['enable_slider']) ? '#9333ea' : '#ccc'; ?>; border-radius: 30px; transition: 0.3s;">
                         <span style="position: absolute; content: ''; height: 24px; width: 24px; left: 3px; bottom: 3px; background-color: white; border-radius: 50%; transition: 0.3s; transform: translateX(<?php echo (!isset($testimonialsSettings['enable_slider']) || $testimonialsSettings['enable_slider']) ? '30px' : '0px'; ?>);"></span>
                     </span>

@@ -16,6 +16,7 @@ ob_clean();
 
 // Set JSON header
 header('Content-Type: application/json');
+header('Cache-Control: no-store, no-cache, must-revalidate');
 
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
@@ -27,6 +28,14 @@ if ($method === 'GET') {
         );
         
         if ($content) {
+            foreach (['history_section', 'milestones'] as $jsonField) {
+                if (!empty($content[$jsonField]) && is_string($content[$jsonField])) {
+                    $decoded = json_decode($content[$jsonField], true);
+                    if (is_array($decoded)) {
+                        $content[$jsonField] = $decoded;
+                    }
+                }
+            }
             echo json_encode($content);
         } else {
             echo json_encode([]);

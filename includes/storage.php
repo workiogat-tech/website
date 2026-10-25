@@ -18,13 +18,14 @@ function supabasePublicUrl(string $bucket, string $objectPath): string {
     return rtrim(appEnv('SUPABASE_URL'), '/') . '/storage/v1/object/public/' . $encoded;
 }
 
-function supabaseHttp(string $method, string $path, $body = null, array $headers = []): array {
+function supabaseHttp(string $method, string $path, $body = null, array $headers = [], int $timeout = 25): array {
     $key = appEnv('SUPABASE_SERVICE_ROLE_KEY');
     $url = rtrim(appEnv('SUPABASE_URL'), '/') . $path;
     $headerLines = array_merge([
         'Authorization: Bearer ' . $key,
         'apikey: ' . $key,
     ], $headers);
+    $timeout = max(1, $timeout);
 
     if (function_exists('curl_init')) {
         $ch = curl_init($url);
@@ -32,7 +33,8 @@ function supabaseHttp(string $method, string $path, $body = null, array $headers
             CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_HTTPHEADER => $headerLines,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_TIMEOUT => 25,
+            CURLOPT_CONNECTTIMEOUT => min(4, $timeout),
+            CURLOPT_TIMEOUT => $timeout,
         ];
         if ($body !== null) {
             $options[CURLOPT_POSTFIELDS] = $body;
@@ -54,7 +56,7 @@ function supabaseHttp(string $method, string $path, $body = null, array $headers
             'header' => implode("\r\n", $headerLines),
             'content' => $body ?? '',
             'ignore_errors' => true,
-            'timeout' => 25,
+            'timeout' => $timeout,
         ],
     ]);
     $response = @file_get_contents($url, false, $context);
@@ -68,6 +70,64 @@ function supabaseHttp(string $method, string $path, $body = null, array $headers
         throw new Exception('Supabase request failed');
     }
     return [$status, $response];
+}
+
+function listSupabaseImagesPage(): array {
+    if (!supabaseStorageConfigured()) {
+        return [];
+    }
+
+    $bucket = appEnv('SUPABASE_STORAGE_BUCKET', 'uploads');
+    $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    try {
+        [$status, $body] = supabaseHttp(
+            'POST',
+            '/storage/v1/object/list/' . rawurlencode($bucket),
+            json_encode([
+                'prefix' => '',
+                'limit' => 80,
+                'offset' => 0,
+                'sortBy' => ['column' => 'name', 'order' => 'desc'],
+            ]),
+            ['Content-Type: application/json'],
+            4
+        );
+    } catch (Exception $e) {
+        error_log('Storage list skipped: ' . $e->getMessage());
+        return [];
+    }
+
+    $page = json_decode($body, true);
+    if ($status < 200 || $status >= 300 || !is_array($page)) {
+        return [];
+    }
+
+    $found = [];
+    foreach ($page as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $name = (string) ($item['name'] ?? '');
+        if ($name === '' || $name === '.emptyFolderPlaceholder' || strpos($name, '/') !== false) {
+            continue;
+        }
+        $isFolder = !isset($item['id']) || $item['id'] === null || $item['id'] === '';
+        if ($isFolder) {
+            continue;
+        }
+        $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if (!in_array($ext, $allowed, true)) {
+            continue;
+        }
+        $found[] = [
+            'name' => $name,
+            'url' => supabasePublicUrl($bucket, $name),
+            'size' => (int) ($item['metadata']['size'] ?? 0),
+            'mime' => $item['metadata']['mimetype'] ?? 'image/jpeg',
+        ];
+    }
+
+    return $found;
 }
 
 function listSupabaseImages(): array {

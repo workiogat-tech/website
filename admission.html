@@ -10,7 +10,7 @@
       var api=map[file];
       if(!api)return;
       window.__pagePath=api.split('/').pop();
-      window.__pageData=fetch(api).then(function(r){return r.ok?r.json():null;}).then(function(data){
+      window.__pageData=fetch(api,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(data){
         var urls=[], seen={};
         function add(url){if(!url||seen[url]||String(url).indexOf('data:')===0)return;if(String(url).indexOf('http')!==0&&String(url).indexOf('/')!==0)return;seen[url]=1;urls.push(url);}
         function walk(value,key){if(!value)return;if(typeof value==='string'){if(/image|slide|logo|photo|background|file_path|file_url/i.test(key||''))add(value);return;}if(Array.isArray(value)){value.forEach(function(item){walk(item,key);});return;}if(typeof value==='object'){Object.keys(value).forEach(function(name){walk(value[name],name);});}}
@@ -21,7 +21,7 @@
     })();
     </script>
     <title>Admission - Excellence Academy</title>
-    <link rel="stylesheet" href="css/style.css?v=20261022k">
+    <link rel="stylesheet" href="css/style.css?v=20261025b">
 </head>
 <body>
     <div id="header-placeholder"><header class="site-header" id="mainHeader"><div class="header-top"><div class="container"><div class="header-top-content"><div class="contact-info"></div><nav class="top-nav-desktop"><a href="index.html" class="top-nav-link">Home</a><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="top-nav-link">Contact</a></nav></div></div></div><div class="header-main"><div class="container"><div class="header-content"><div class="logo"><a href="index.html" class="logo-link"><div class="logo-placeholder"><span>S</span></div></a></div><div class="header-actions"><button type="button" class="search-button" id="searchButton" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></button><button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false"><span class="menu-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button></div></div><nav class="main-nav mobile-nav" id="mainNav"><a href="index.html" class="nav-link">Home</a><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="nav-link">Contact</a></nav></div></div></header></div>
@@ -88,44 +88,37 @@
     <div id="footer-placeholder"></div>
     
     <script src="js/static-pages.js?v=20261022g"></script>
-    <script src="js/page-data-loader.js?v=20261021"></script>
+    <script src="js/page-data-loader.js?v=20261025f"></script>
     <script>
         (async function() {
             const data = await PageDataLoader.loadAdmissionData();
             const contentContainer = document.getElementById('admission-content');
             
-            // Update hero
             if (data.admissionContent && data.admissionContent.hero_image) {
                 const bg = document.querySelector('.admission-hero-background');
                 if (bg) {
-                    const heroImageUrl = data.admissionContent.hero_image.replace(/'/g, "\\'");
-                    PageDataLoader.paintHero(heroImageUrl);
+                    const heroImageUrl = String(data.admissionContent.hero_image).replace(/"/g, '');
+                    bg.style.backgroundImage = 'url("' + heroImageUrl + '")';
+                    bg.style.backgroundSize = 'cover';
+                    bg.style.backgroundPosition = 'center';
                 }
             }
-            
-            // Render admission levels
-            if (data.admissionLevels && data.admissionLevels.length > 0) {
+
+            if (contentContainer && data.admissionLevels && data.admissionLevels.length > 0) {
                 let contentHtml = '';
-                if (data.feeStructure && data.feeStructure.image) {
-                    contentHtml += `
-                        <div class="admission-fee-image">
-                            <img src="${escapeHtml(data.feeStructure.image)}" alt="Fee Structure" style="width: 100%; height: auto; border-radius: 8px;">
-                        </div>
-                    `;
+                const fee = data.feeStructure || {};
+                if (fee.image) {
+                    contentHtml += '<div class="admission-fee-image"><img src="' + escapeHtml(fee.image) + '" alt="Fee Structure" style="width: 100%; height: auto; border-radius: 8px;"></div>';
+                }
+                if (fee.content) {
+                    contentHtml += '<div class="admission-section"><h2 class="admission-section-title">Fee Structure</h2><p class="admission-section-text">' + escapeHtml(fee.content).replace(/\n/g, '<br>') + '</p></div>';
                 }
                 data.admissionLevels.forEach((level, index) => {
-                    if (index > 0) {
-                        contentHtml += '<div class="admission-divider"></div>';
-                    }
-                    contentHtml += `
-                        <div class="admission-section">
-                            <h2 class="admission-section-title">
-                                ${level.icon ? `<span style="font-size: 1.2em; margin-right: 8px;">${escapeHtml(level.icon)}</span>` : ''}
-                                ${escapeHtml(level.title || '')}
-                            </h2>
-                            <p class="admission-section-text">${escapeHtml((level.description || '').replace(/\n/g, '<br>'))}</p>
-                        </div>
-                    `;
+                    if (contentHtml) contentHtml += '<div class="admission-divider"></div>';
+                    contentHtml += '<div class="admission-section"><h2 class="admission-section-title">'
+                        + (level.icon ? '<span style="font-size: 1.2em; margin-right: 8px;">' + escapeHtml(level.icon) + '</span>' : '')
+                        + escapeHtml(level.title || level.heading || '')
+                        + '</h2><p class="admission-section-text">' + escapeHtml(level.description || '').replace(/\n/g, '<br>') + '</p></div>';
                 });
                 contentContainer.innerHTML = contentHtml;
             }
@@ -150,6 +143,6 @@
             return div.innerHTML;
         }
     </script>
-<script src="js/main.js?v=20261024a"></script>
+<script src="js/main.js?v=20261025b"></script>
 </body>
 </html>

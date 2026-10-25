@@ -10,7 +10,7 @@
       var api=map[file];
       if(!api)return;
       window.__pagePath=api.split('/').pop();
-      window.__pageData=fetch(api).then(function(r){return r.ok?r.json():null;}).then(function(data){
+      window.__pageData=fetch(api,{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(data){
         var urls=[], seen={};
         function add(url){if(!url||seen[url]||String(url).indexOf('data:')===0)return;if(String(url).indexOf('http')!==0&&String(url).indexOf('/')!==0)return;seen[url]=1;urls.push(url);}
         function walk(value,key){if(!value)return;if(typeof value==='string'){if(/image|slide|logo|photo|background|file_path|file_url/i.test(key||''))add(value);return;}if(Array.isArray(value)){value.forEach(function(item){walk(item,key);});return;}if(typeof value==='object'){Object.keys(value).forEach(function(name){walk(value[name],name);});}}
@@ -21,7 +21,7 @@
     })();
     </script>
     <title>Testimonials - Excellence Academy</title>
-    <link rel="stylesheet" href="css/style.css?v=20261022k">
+    <link rel="stylesheet" href="css/style.css?v=20261025d">
 </head>
 <body>
     <div id="header-placeholder"><header class="site-header" id="mainHeader"><div class="header-top"><div class="container"><div class="header-top-content"><div class="contact-info"></div><nav class="top-nav-desktop"><a href="index.html" class="top-nav-link">Home</a><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="top-nav-link">Contact</a></nav></div></div></div><div class="header-main"><div class="container"><div class="header-content"><div class="logo"><a href="index.html" class="logo-link"><div class="logo-placeholder"><span>S</span></div></a></div><div class="header-actions"><button type="button" class="search-button" id="searchButton" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></button><button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false"><span class="menu-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button></div></div><nav class="main-nav mobile-nav" id="mainNav"><a href="index.html" class="nav-link">Home</a><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="nav-link">Contact</a></nav></div></div></header></div>
@@ -55,93 +55,99 @@
     <div id="footer-placeholder"></div>
     
     <script src="js/static-pages.js?v=20261022g"></script>
-    <script src="js/page-data-loader.js?v=20261021"></script>
+    <script src="js/page-data-loader.js?v=20261025f"></script>
     <script>
-        (async function() {
-            const data = await PageDataLoader.loadTestimonialsData();
-            const container = document.getElementById('testimonials-container');
-            
-            // Update hero
-            if (data.testimonialsSettings) {
-                const hero = document.querySelector('.page-hero-section');
-                if (data.testimonialsSettings.title) {
-                    const title = hero.querySelector('.page-hero-title');
-                    if (title) title.textContent = data.testimonialsSettings.title;
-                }
-                if (data.testimonialsSettings.subtitle) {
-                    const subtitle = hero.querySelector('.page-hero-subtitle');
-                    if (subtitle) subtitle.textContent = data.testimonialsSettings.subtitle;
-                }
-                if (data.testimonialsSettings.hero_image) {
-                    const bg = hero.querySelector('.page-hero-background');
-                    if (bg) {
-                        const heroImageUrl = data.testimonialsSettings.hero_image.replace(/'/g, "\\'");
-                        PageDataLoader.paintHero(heroImageUrl);
-                    }
-                }
-            }
-            
-            // Render testimonials
-            if (data.testimonials && data.testimonials.length > 0) {
-                // Duplicate for seamless loop
-                const duplicatedTestimonials = [...data.testimonials, ...data.testimonials, ...data.testimonials];
-                let testimonialsHtml = `
-                    <div class="testimonials-slider-wrapper">
-                        <div class="testimonials-slider" id="testimonialsSlider">
-                `;
-                duplicatedTestimonials.forEach(testimonial => {
-                    const rating = testimonial.rating || 5;
-                    let starsHtml = '';
-                    for (let i = 0; i < rating; i++) {
-                        starsHtml += '<span class="star filled">★</span>';
-                    }
-                    testimonialsHtml += `
-                        <div class="testimonial-card-slide">
-                            <div class="testimonial-quote-icon">
-                                <svg width="48" height="48" viewBox="0 0 24 24" fill="#2563eb">
-                                    <path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path>
-                                    <path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"></path>
-                                </svg>
-                            </div>
-                            <div class="testimonial-rating">${starsHtml}</div>
-                            <p class="testimonial-content">"${escapeHtml(testimonial.content || '')}"</p>
-                            <div class="testimonial-author">
-                                ${testimonial.image ? `
-                                    <img src="${escapeHtml(testimonial.image)}" alt="${escapeHtml(testimonial.name)}" class="testimonial-avatar">
-                                ` : `
-                                    <div class="testimonial-avatar-placeholder"></div>
-                                `}
-                                <div class="testimonial-author-info">
-                                    <h4 class="testimonial-author-name">${escapeHtml(testimonial.name || '')}</h4>
-                                    <p class="testimonial-author-role">${escapeHtml(testimonial.position || 'parent')}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                testimonialsHtml += `
-                        </div>
-                    </div>
-                `;
-                container.innerHTML = testimonialsHtml;
-                
-                // Initialize slider animation
-                const slider = document.getElementById('testimonialsSlider');
-                if (slider) {
-                    const slideWidth = 100 / data.testimonials.length;
-                    slider.style.width = `${duplicatedTestimonials.length * 100}%`;
-                    slider.style.animation = `testimonialsSlide ${data.testimonials.length * 5}s linear infinite`;
-                }
-            }
-        })();
-        
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
         }
+
+        function sliderIsOn(value) {
+            return !(value === false || value === 0 || value === '0' || value === 'f' || value === 'false' || value === 'off');
+        }
+
+        function clampNumber(value, fallback, min, max) {
+            const number = parseInt(value, 10);
+            if (!number) return fallback;
+            return Math.min(max, Math.max(min, number));
+        }
+
+        function testimonialCard(testimonial, cardWidth) {
+            const rating = Math.min(5, Math.max(0, parseInt(testimonial.rating, 10) || 5));
+            let starsHtml = '';
+            for (let i = 0; i < rating; i++) starsHtml += '<span class="star filled">★</span>';
+            const image = testimonial.image
+                ? '<img src="' + escapeHtml(testimonial.image) + '" alt="' + escapeHtml(testimonial.name) + '" class="testimonial-avatar">'
+                : '<div class="testimonial-avatar-placeholder"></div>';
+            return '<div class="testimonial-card-slide" style="flex:0 0 ' + cardWidth + 'px;width:' + cardWidth + 'px;">'
+                + '<div class="testimonial-quote-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="#2563eb"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"></path><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"></path></svg></div>'
+                + '<div class="testimonial-rating">' + starsHtml + '</div>'
+                + '<p class="testimonial-content">"' + escapeHtml(testimonial.content || '') + '"</p>'
+                + '<div class="testimonial-author">' + image
+                + '<div class="testimonial-author-info"><h4 class="testimonial-author-name">' + escapeHtml(testimonial.name || '') + '</h4>'
+                + '<p class="testimonial-author-role">' + escapeHtml(testimonial.position || 'parent') + '</p></div></div></div>';
+        }
+
+        (async function() {
+            const data = await PageDataLoader.loadTestimonialsData();
+            const settings = data.testimonialsSettings || {};
+            const container = document.getElementById('testimonials-container');
+            const hero = document.querySelector('.page-hero-section');
+
+            if (settings.title) {
+                const heroTitle = hero && hero.querySelector('.page-hero-title');
+                const sectionTitle = document.querySelector('.testimonials-section .section-title');
+                if (heroTitle) heroTitle.textContent = settings.title;
+                if (sectionTitle) sectionTitle.textContent = settings.title;
+            }
+            if (settings.subtitle) {
+                const heroSubtitle = hero && hero.querySelector('.page-hero-subtitle');
+                const sectionSubtitle = document.querySelector('.testimonials-section .section-subtitle');
+                if (heroSubtitle) heroSubtitle.textContent = settings.subtitle;
+                if (sectionSubtitle) sectionSubtitle.textContent = settings.subtitle;
+            }
+            if (settings.hero_image && hero) {
+                const bg = hero.querySelector('.page-hero-background');
+                if (bg) {
+                    const url = String(settings.hero_image).replace(/"/g, '');
+                    bg.style.backgroundImage = 'url("' + url + '")';
+                    bg.style.backgroundSize = 'cover';
+                    bg.style.backgroundPosition = 'center';
+                }
+            }
+
+            const testimonials = Array.isArray(data.testimonials) ? data.testimonials : [];
+            if (!testimonials.length || !container) return;
+
+            const cardWidth = clampNumber(settings.card_width, 280, 200, 600);
+            const perView = clampNumber(settings.items_per_view, 3, 1, 6);
+            const interval = clampNumber(settings.slide_interval_ms, 3000, 1000, 10000);
+            const gap = 30;
+
+            if (!sliderIsOn(settings.enable_slider)) {
+                container.innerHTML = '<div class="testimonials-static" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,' + cardWidth + 'px),1fr));gap:' + gap + 'px;">'
+                    + testimonials.map(function(item) { return testimonialCard(item, cardWidth); }).join('')
+                    + '</div>';
+                return;
+            }
+
+            const loop = testimonials.concat(testimonials, testimonials);
+            const seconds = Math.max(1, (testimonials.length * interval) / 1000);
+            const animation = settings.slide_direction === 'right' ? 'testimonialsMoveLeft' : 'testimonialsMoveRight';
+            const visible = (perView * cardWidth) + ((perView - 1) * gap);
+            container.innerHTML = '<div class="testimonials-slider-wrapper" style="max-width:' + visible + 'px;">'
+                + '<div class="testimonials-slider" id="testimonialsSlider" style="gap:' + gap + 'px;animation:' + animation + ' ' + seconds + 's linear infinite;">'
+                + loop.map(function(item) { return testimonialCard(item, cardWidth); }).join('')
+                + '</div></div>';
+            const slider = document.getElementById('testimonialsSlider');
+            if (slider) {
+                slider.addEventListener('mouseenter', function() { this.style.animationPlayState = 'paused'; });
+                slider.addEventListener('mouseleave', function() { this.style.animationPlayState = 'running'; });
+            }
+        })();
     </script>
-<script src="js/main.js?v=20261024a"></script>
+<script src="js/main.js?v=20261025b"></script>
 </body>
 </html>

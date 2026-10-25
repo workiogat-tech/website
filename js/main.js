@@ -382,11 +382,14 @@ function applySavedAppearance() {
                 if (row && row.section_name) byName[row.section_name] = row;
             });
             paint(byName[pageSections[file] || '']);
+            document.querySelectorAll('.site-header, .header-main').forEach(function (el) {
+                el.style.backgroundColor = 'transparent';
+                el.style.boxShadow = 'none';
+            });
             const header = byName.header;
-            if (header && header.background_color) {
-                document.querySelectorAll('.site-header').forEach(function (el) {
-                    el.style.backgroundColor = header.background_color;
-                    if (header.text_color) el.style.color = header.text_color;
+            if (header && header.text_color) {
+                document.querySelectorAll('.header-top').forEach(function (el) {
+                    el.style.color = header.text_color;
                 });
             }
             const buttons = byName.buttons;
@@ -395,6 +398,14 @@ function applySavedAppearance() {
                     el.style.background = buttons.primary_color;
                     el.style.borderColor = buttons.primary_color;
                 });
+            }
+            const coreValues = byName['core-values'];
+            if (coreValues) {
+                const root = document.documentElement;
+                if (coreValues.background_color) root.style.setProperty('--core-values-card', coreValues.background_color);
+                if (coreValues.text_color) root.style.setProperty('--core-values-text', coreValues.text_color);
+                if (coreValues.primary_color) root.style.setProperty('--core-values-title', coreValues.primary_color);
+                if (coreValues.hover_color) root.style.setProperty('--core-values-hover', coreValues.hover_color);
             }
         })
         .catch(function () {});

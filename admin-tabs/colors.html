@@ -20,6 +20,7 @@
         </div>
         
         <form id="colorsForm" action="api/content/website-colors.php" method="POST" onsubmit="return handleAdminFormSubmit(event, this);">
+            <input type="search" id="colorSearch" placeholder="Find a section, such as Core Values" oninput="filterColorCards(this.value)" style="width:100%;max-width:420px;margin-bottom:18px;padding:10px 12px;border:1px solid #d6d3d1;border-radius:8px;">
             <div id="colors-container" style="margin-bottom: 30px;">
                 <div style="padding: 20px; background: #fff3cd; border: 2px solid #ffc107; border-radius: 8px; text-align: center;">
                     <p>Loading colors...</p>
@@ -59,19 +60,31 @@
 
         function colorCard(section, colorsMap) {
             const colorData = colorsMap[section.name] || {};
+            const coreValues = section.name === 'core-values';
             const fields = [
-                ['primaryColor', 'primary_color', 'Primary', '#800020'],
+                ['primaryColor', 'primary_color', coreValues ? 'Title color' : 'Primary', coreValues ? '#800020' : '#800020'],
                 ['secondaryColor', 'secondary_color', 'Secondary', '#6B0000'],
-                ['backgroundColor', 'background_color', 'Background', '#ffffff'],
-                ['textColor', 'text_color', 'Text', '#1e293b'],
+                ['backgroundColor', 'background_color', coreValues ? 'Card color' : 'Background', coreValues ? '#f3f4f6' : '#ffffff'],
+                ['textColor', 'text_color', coreValues ? 'Card text' : 'Text', coreValues ? '#1f2937' : '#1e293b'],
                 ['accentColor', 'accent_color', 'Accent', '#800020'],
-                ['hoverColor', 'hover_color', 'Hover', '#6B0000']
+                ['hoverColor', 'hover_color', coreValues ? 'Card hover' : 'Hover', coreValues ? '#e5e7eb' : '#6B0000']
             ];
             const inputs = fields.map(function (field) {
                 const value = colorData[field[1]] || field[3];
                 return `<div><label style="display:block;font-size:12px;font-weight:600;margin-bottom:5px;color:#57534e;">${field[2]}</label><input type="color" name="colors[${escapeHtml(section.name)}][${field[0]}]" style="height:42px;width:100%;cursor:pointer;border:1px solid #d6d3d1;border-radius:6px;background:#fff;" value="${escapeHtml(value)}"></div>`;
             }).join('');
-            return `<div style="background:#fff;padding:16px;border-radius:12px;border:1px solid #e7e5e4;"><h4 style="font-size:15px;font-weight:650;margin:0 0 12px;color:#1c1917;">${escapeHtml(section.label)}</h4><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">${inputs}</div><input type="hidden" name="colors[${escapeHtml(section.name)}][sectionName]" value="${escapeHtml(section.name)}"></div>`;
+            const note = coreValues
+                ? '<p style="margin:0 0 12px;color:#57534e;font-size:13px;line-height:1.45;">Homepage Core Values boxes. Card color fills each box. Card text is the wording inside it. Title color is the heading above the boxes.</p>'
+                : '';
+            return `<div class="color-section-card" data-color-label="${escapeHtml(section.label)} ${escapeHtml(section.name)}" style="background:#fff;padding:16px;border-radius:12px;border:1px solid #e7e5e4;"><h4 style="font-size:15px;font-weight:650;margin:0 0 12px;color:#1c1917;">${escapeHtml(section.label)}</h4>${note}<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;">${inputs}</div><input type="hidden" name="colors[${escapeHtml(section.name)}][sectionName]" value="${escapeHtml(section.name)}"></div>`;
+        }
+
+        function filterColorCards(query) {
+            const needle = String(query || '').trim().toLowerCase();
+            document.querySelectorAll('.color-section-card').forEach(function (card) {
+                const label = (card.getAttribute('data-color-label') || '').toLowerCase();
+                card.style.display = !needle || label.indexOf(needle) !== -1 ? '' : 'none';
+            });
         }
 
         function renderColorsForm(data) {

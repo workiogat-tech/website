@@ -11,6 +11,7 @@ error_reporting(E_ALL);
 
 // Set JSON header early - MUST be before any output
 header('Content-Type: application/json; charset=utf-8');
+header('Cache-Control: no-store, no-cache, must-revalidate');
 
 // Prevent any output before this point
 if (ob_get_level()) {
@@ -75,6 +76,22 @@ try {
     error_log("Testimonials settings table check error: " . $e->getMessage());
 }
 
+function testimonialsSliderFlag($value): int {
+    if ($value === false || $value === 0 || $value === '0' || $value === 'f' || $value === 'false' || $value === 'off') {
+        return 0;
+    }
+    return 1;
+}
+
+function testimonialsSettingsRow(array $row): array {
+    $row['enable_slider'] = testimonialsSliderFlag($row['enable_slider'] ?? 1);
+    $row['slide_direction'] = (($row['slide_direction'] ?? '') === 'right') ? 'right' : 'left';
+    $row['slide_interval_ms'] = max(1000, min(10000, intval($row['slide_interval_ms'] ?? 3000)));
+    $row['items_per_view'] = max(1, min(6, intval($row['items_per_view'] ?? 3)));
+    $row['card_width'] = max(200, min(600, intval($row['card_width'] ?? 280)));
+    return $row;
+}
+
 if ($method === 'GET') {
     try {
         $content = $db->fetchOne(
@@ -82,7 +99,7 @@ if ($method === 'GET') {
         );
         
         if ($content) {
-            echo json_encode($content);
+            echo json_encode(testimonialsSettingsRow($content));
         } else {
             echo json_encode([]);
         }
@@ -115,49 +132,73 @@ if ($method === 'GET') {
             throw new Exception('No data provided');
         }
         
-        // Allowed fields
         $allowedFields = ['hero_image', 'title', 'subtitle', 'enable_slider', 'slide_direction', 'slide_interval_ms', 'items_per_view', 'card_width'];
-        
-        // Filter and validate input
-        $fields = ['is_active'];
-        $values = [1];
-        
-        foreach ($input as $key => $value) {
-            if ($key !== 'id' && $key !== 'is_active' && in_array($key, $allowedFields)) {
-                $fields[] = $key;
-                // Handle boolean and integer values properly
-                if ($key === 'enable_slider') {
-                    $values[] = ($value === 'true' || $value === true || $value === '1' || $value === 1) ? 1 : 0;
-                } elseif (in_array($key, ['slide_interval_ms', 'items_per_view', 'card_width'])) {
-                    $values[] = is_numeric($value) ? intval($value) : ($key === 'slide_interval_ms' ? 3000 : ($key === 'items_per_view' ? 3 : 280));
-                } else {
-                    $values[] = ($value === '' || $value === null) ? null : $value;
-                }
+        $existing = $db->fetchOne("SELECT * FROM testimonials_settings WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: [];
+        $record = [
+            'hero_image' => $existing['hero_image'] ?? null,
+            'title' => $existing['title'] ?? 'Testimonials',
+            'subtitle' => $existing['subtitle'] ?? '',
+            'enable_slider' => testimonialsSliderFlag($existing['enable_slider'] ?? 1),
+            'slide_direction' => (($existing['slide_direction'] ?? '') === 'right') ? 'right' : 'left',
+            'slide_interval_ms' => intval($existing['slide_interval_ms'] ?? 3000) ?: 3000,
+            'items_per_view' => intval($existing['items_per_view'] ?? 3) ?: 3,
+            'card_width' => intval($existing['card_width'] ?? 280) ?: 280,
+        ];
+
+        $received = false;
+        foreach ($allowedFields as $key) {
+            if (!array_key_exists($key, $input)) {
+                continue;
+            }
+            $received = true;
+            $value = $input[$key];
+            if ($key === 'enable_slider') {
+                $record[$key] = testimonialsSliderFlag($value);
+            } elseif (in_array($key, ['slide_interval_ms', 'items_per_view', 'card_width'], true)) {
+                $record[$key] = is_numeric($value) ? intval($value) : $record[$key];
+            } else {
+                $record[$key] = ($value === null) ? null : $value;
             }
         }
-        
-        if (count($fields) <= 1) {
+
+        if (!$received) {
             throw new Exception('No valid fields to save');
         }
-        
-        // Get existing content to update or create new
-        $existing = $db->fetchOne("SELECT * FROM testimonials_settings WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
-        
-        if ($existing) {
-            // Update existing - deactivate old, create new active one
-            $db->update("UPDATE testimonials_settings SET is_active = 0 WHERE id = ?", [$existing['id']]);
+
+        $record = testimonialsSettingsRow($record);
+        $fields = array_keys($record);
+        $values = array_values($record);
+
+        if (!empty($existing['id'])) {
+            $sets = [];
+            foreach ($fields as $field) {
+                $sets[] = $field . ' = ?';
+            }
+            $values[] = $existing['id'];
+            $db->update(
+                "UPDATE testimonials_settings SET " . implode(', ', $sets) . ", updated_at = NOW() WHERE id = ?",
+                $values
+            );
+            $id = $existing['id'];
+        } else {
+            $placeholders = array_fill(0, count($fields), '?');
+            $id = $db->insert(
+                "INSERT INTO testimonials_settings (" . implode(', ', $fields) . ", is_active, created_at) VALUES (" . implode(', ', $placeholders) . ", 1, NOW())",
+                array_values($record)
+            );
         }
-        
-        // Insert new record
-        $placeholders = array_fill(0, count($values), '?');
-        $sql = "INSERT INTO testimonials_settings (" . implode(', ', $fields) . ", created_at) VALUES (" . implode(', ', $placeholders) . ", NOW())";
-        $id = $db->insert($sql, $values);
-        
+
         if (!$id) {
             throw new Exception('Failed to save testimonials settings');
         }
-        
-        echo json_encode(['success' => true, 'id' => $id, 'message' => 'Testimonials settings saved successfully']);
+
+        $saved = $db->fetchOne("SELECT * FROM testimonials_settings WHERE id = ?", [$id]) ?: $record;
+        echo json_encode([
+            'success' => true,
+            'id' => $id,
+            'message' => 'Testimonials settings saved successfully',
+            'settings' => testimonialsSettingsRow($saved)
+        ]);
     } catch (Exception $e) {
         error_log("Testimonials Settings API Error: " . $e->getMessage());
         http_response_code(500);

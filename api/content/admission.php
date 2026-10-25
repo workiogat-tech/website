@@ -36,6 +36,7 @@ try {
     
     if (!headers_sent()) {
         header('Content-Type: application/json');
+        header('Cache-Control: no-store, no-cache, must-revalidate');
     }
 } catch (Exception $e) {
     while (ob_get_level() > 0) {
@@ -61,6 +62,33 @@ try {
 
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
+
+function admissionDecode($value, $fallback) {
+    if (is_array($value)) {
+        return $value;
+    }
+    if (!is_string($value) || trim($value) === '') {
+        return $fallback;
+    }
+    $decoded = json_decode($value, true);
+    return is_array($decoded) ? $decoded : $fallback;
+}
+
+function admissionPrepareRow($row) {
+    if (!$row) {
+        return $row;
+    }
+    $row['admission_levels'] = admissionDecode($row['admission_levels'] ?? null, []);
+    $fee = admissionDecode($row['fee_structure'] ?? null, []);
+    if (!is_array($fee)) {
+        $fee = ['content' => is_string($row['fee_structure'] ?? null) ? $row['fee_structure'] : ''];
+    }
+    if (!isset($fee['content']) && isset($fee[0]) && is_string($fee[0])) {
+        $fee = ['content' => $fee[0]];
+    }
+    $row['fee_structure'] = $fee;
+    return $row;
+}
 
         // Ensure table exists
         try {
@@ -107,7 +135,7 @@ if ($method === 'GET') {
         );
         
         if ($content) {
-            echo json_encode($content);
+            echo json_encode(admissionPrepareRow($content));
         } else {
             echo json_encode([]);
         }
@@ -152,144 +180,98 @@ if ($method === 'GET') {
             $feeImage = handleImageUpload($_FILES['fee_structure_image'], 'admission');
         }
         
-        // Handle admission levels (new flexible system)
-        $admissionLevels = [];
-        
-        // Handle nested array structure from form
-        if (isset($input['admission_levels']) && is_array($input['admission_levels'])) {
-            foreach ($input['admission_levels'] as $index => $level) {
-                try {
-                    if (!is_array($level)) {
-                        error_log("Admission level $index is not an array: " . gettype($level));
-                        continue;
-                    }
-                    
-                    // Only add if heading or title exists
-                    if (empty($level['heading']) && empty($level['title'])) {
-                        continue;
-                    }
-                    
-                    // Safely process description - handle special characters and encoding
-                    $description = '';
-                    if (isset($level['description'])) {
-                        if (is_string($level['description'])) {
-                            $description = trim($level['description']);
-                            // Clean and validate description
-                            $description = mb_convert_encoding($description, 'UTF-8', 'UTF-8');
-                            // Remove any null bytes or invalid UTF-8 sequences
-                            $description = str_replace("\0", '', $description);
-                            // Ensure valid UTF-8
-                            if (!mb_check_encoding($description, 'UTF-8')) {
-                                $description = mb_convert_encoding($description, 'UTF-8', mb_detect_encoding($description));
-                            }
-                        } elseif (is_array($level['description'])) {
-                            // If it's an array, convert to string
-                            $description = '';
-                            error_log("Warning: Description for level $index is an array, converting to empty string");
-                        } else {
-                            $description = (string)$level['description'];
-                        }
-                    }
-                    
-                    $admissionLevels[] = [
-                        'icon' => trim($level['icon'] ?? '📚'),
-                        'heading' => trim($level['heading'] ?? ''),
-                        'title' => trim($level['title'] ?? ''),
-                        'description' => $description
-                    ];
-                } catch (Exception $levelError) {
-                    error_log("Error processing admission level $index: " . $levelError->getMessage());
-                    // Continue with next level instead of failing completely
+        $existing = $db->fetchOne("SELECT * FROM admission_content WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1") ?: [];
+        $existingLevels = admissionDecode($existing['admission_levels'] ?? null, []);
+        $existingFee = admissionDecode($existing['fee_structure'] ?? null, []);
+
+        $admissionLevels = $existingLevels;
+        $levelsWereSent = array_key_exists('admission_levels', $input) || !empty($input['admission_levels_present']);
+        if ($levelsWereSent) {
+            $admissionLevels = [];
+            $levelInput = is_array($input['admission_levels'] ?? null) ? $input['admission_levels'] : [];
+            foreach ($levelInput as $level) {
+                if (!is_array($level)) {
                     continue;
                 }
-            }
-        }
-        
-        // If no levels found, check for old format (backward compatibility)
-        if (empty($admissionLevels)) {
-            $olevelContent = [
-                'title' => $input['olevel_title'] ?? "O'LEVEL",
-                'description' => $input['olevel_description'] ?? ''
-            ];
-            
-            $alevelContent = [
-                'title' => $input['alevel_title'] ?? "A'LEVEL",
-                'description' => $input['alevel_description'] ?? ''
-            ];
-            
-            // Convert to new format
-            if (!empty($olevelContent['title']) || !empty($olevelContent['description'])) {
+                $heading = trim((string)($level['heading'] ?? ''));
+                $title = trim((string)($level['title'] ?? ''));
+                $description = trim((string)($level['description'] ?? ''));
+                $icon = trim((string)($level['icon'] ?? ''));
+                if ($heading === '' && $title === '' && $description === '') {
+                    continue;
+                }
                 $admissionLevels[] = [
-                    'icon' => '📚',
-                    'heading' => "O'LEVEL Information",
-                    'title' => $olevelContent['title'],
-                    'description' => $olevelContent['description']
-                ];
-            }
-            
-            if (!empty($alevelContent['title']) || !empty($alevelContent['description'])) {
-                $admissionLevels[] = [
-                    'icon' => '📚',
-                    'heading' => "A'LEVEL Information",
-                    'title' => $alevelContent['title'],
-                    'description' => $alevelContent['description']
+                    'icon' => $icon !== '' ? $icon : '📚',
+                    'heading' => $heading,
+                    'title' => $title,
+                    'description' => $description
                 ];
             }
         }
-        
-        // Ensure we have at least empty array
-        if (empty($admissionLevels)) {
-            $admissionLevels = [];
+
+        $feeStructure = [
+            'content' => is_array($existingFee) ? (string)($existingFee['content'] ?? '') : '',
+            'image' => $feeImage ?: (is_array($existingFee) ? (string)($existingFee['image'] ?? '') : '')
+        ];
+        if (array_key_exists('fee_structure', $input)) {
+            if (is_array($input['fee_structure'])) {
+                if (array_key_exists('content', $input['fee_structure'])) {
+                    $feeStructure['content'] = trim((string)$input['fee_structure']['content']);
+                }
+                if (!empty($input['fee_structure']['image'])) {
+                    $feeStructure['image'] = trim((string)$input['fee_structure']['image']);
+                }
+            } else {
+                $feeStructure['content'] = trim((string)$input['fee_structure']);
+            }
         }
-        
-        // Prepare fee structure
-        $feeStructure = [];
         if ($feeImage) {
             $feeStructure['image'] = $feeImage;
         }
-        
-        // Deactivate all existing records
-        $db->update("UPDATE admission_content SET is_active = 0");
-        
-        // Clear old format fields when using new format (to prevent fallback)
-        $olevelContentForDB = empty($admissionLevels) ? (isset($olevelContent) ? json_encode($olevelContent, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null) : null;
-        $alevelContentForDB = empty($admissionLevels) ? (isset($alevelContent) ? json_encode($alevelContent, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : null) : null;
-        
-        // Encode admission levels with proper flags to handle special characters
-        $admissionLevelsJson = json_encode($admissionLevels, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($admissionLevelsJson === false) {
-            $errorMsg = 'Failed to encode admission levels: ' . json_last_error_msg();
-            error_log("Admission JSON encode error: " . $errorMsg);
-            throw new Exception($errorMsg);
+
+        if ($heroImage === null && array_key_exists('hero_image', $input)) {
+            $heroImage = '';
+        } elseif ($heroImage === null) {
+            $heroImage = $existing['hero_image'] ?? '';
         }
-        
-        // Encode fee structure
+
+        $admissionLevelsJson = json_encode(array_values($admissionLevels), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         $feeStructureJson = json_encode($feeStructure, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        if ($feeStructureJson === false) {
-            $errorMsg = 'Failed to encode fee structure: ' . json_last_error_msg();
-            error_log("Admission fee structure JSON encode error: " . $errorMsg);
-            throw new Exception($errorMsg);
+        if ($admissionLevelsJson === false || $feeStructureJson === false) {
+            throw new Exception('The admission details could not be saved.');
         }
-        
-        // Insert new record
+
+        $db->beginTransaction();
         try {
-            $db->insert(
-                "INSERT INTO admission_content (hero_image, admission_levels, olevel_content, alevel_content, fee_structure, is_active) VALUES (?, ?, ?, ?, ?, 1)",
-                [
-                    $heroImage,
-                    $admissionLevelsJson,
-                    $olevelContentForDB,
-                    $alevelContentForDB,
-                    $feeStructureJson
-                ]
-            );
+            if (!empty($existing['id'])) {
+                $db->update(
+                    "UPDATE admission_content SET hero_image = ?, admission_levels = ?, fee_structure = ?, is_active = 1, updated_at = NOW() WHERE id = ?",
+                    [$heroImage, $admissionLevelsJson, $feeStructureJson, $existing['id']]
+                );
+                $db->update("UPDATE admission_content SET is_active = 0 WHERE id <> ?", [$existing['id']]);
+                $savedId = $existing['id'];
+            } else {
+                $savedId = $db->insert(
+                    "INSERT INTO admission_content (hero_image, admission_levels, fee_structure, is_active, created_at) VALUES (?, ?, ?, 1, NOW())",
+                    [$heroImage, $admissionLevelsJson, $feeStructureJson]
+                );
+            }
+            $db->commit();
         } catch (Exception $dbError) {
-            error_log("Admission database insert error: " . $dbError->getMessage());
-            error_log("Admission levels data: " . substr($admissionLevelsJson, 0, 500));
+            if ($db->inTransaction()) {
+                $db->rollback();
+            }
             throw new Exception('Database error: ' . $dbError->getMessage());
         }
-        
-        echo json_encode(['success' => true, 'message' => 'Admission content saved successfully']);
+
+        $saved = $db->fetchOne("SELECT * FROM admission_content WHERE id = ?", [$savedId]);
+        $saved = admissionPrepareRow($saved ?: []);
+        echo json_encode([
+            'success' => true,
+            'message' => 'Admission content saved successfully',
+            'admission' => $saved,
+            'admissionLevels' => $saved['admission_levels'] ?? []
+        ]);
     } catch (Exception $e) {
         http_response_code(500);
         $errorMessage = $e->getMessage();

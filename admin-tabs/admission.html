@@ -10,6 +10,7 @@
     </div>
     
     <form method="POST" action="api/content/admission.php" id="admissionForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <input type="hidden" name="admission_levels_present" value="1">
         <!-- Hero Image Section -->
         <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 25px; border-radius: 12px; border: 2px solid #0ea5e9; margin-bottom: 30px;">
             <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">🎯 Page Header (Hero Section)</h3>
@@ -64,24 +65,46 @@ let levelCounter = 0;
     await loadAdmission();
 })();
 
+function parseAdmissionValue(value, fallback) {
+    if (value == null || value === '') return fallback;
+    if (typeof value === 'object') return value;
+    try {
+        const parsed = JSON.parse(value);
+        return parsed && typeof parsed === 'object' ? parsed : fallback;
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function escapeAdmissionText(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
 async function loadAdmission() {
     try {
-        const response = await fetch('api/content/admission.php');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.admission) {
-                admissionData = data.admission;
-                admissionLevels = data.admissionLevels || [];
-                
-                document.getElementById('admission_hero_image').value = admissionData.hero_image || '';
-                updateAdmissionHeroPreview(admissionData.hero_image || '');
-                
-                const feeStructure = admissionData.fee_structure ? (typeof admissionData.fee_structure === 'string' ? JSON.parse(admissionData.fee_structure) : admissionData.fee_structure) : {};
-                document.getElementById('fee_structure').value = feeStructure.content || feeStructure || '';
-                
-                displayAdmissionLevels();
-            }
-        }
+        const response = await fetch('api/content/admission.php', { cache: 'no-store' });
+        if (!response.ok) return;
+        const data = await response.json();
+        const row = (data && data.admission && !Array.isArray(data.admission))
+            ? data.admission
+            : ((data && data.id) ? data : {});
+        admissionData = row;
+        const levels = parseAdmissionValue(row.admission_levels, data.admissionLevels || []);
+        admissionLevels = Array.isArray(levels) ? levels : [];
+
+        const heroInput = document.getElementById('admission_hero_image');
+        if (heroInput) heroInput.value = row.hero_image || '';
+        updateAdmissionHeroPreview(row.hero_image || '');
+
+        const fee = parseAdmissionValue(row.fee_structure, {});
+        const feeText = typeof fee === 'string' ? fee : (fee && fee.content ? fee.content : '');
+        const feeInput = document.getElementById('fee_structure');
+        if (feeInput) feeInput.value = feeText;
+        displayAdmissionLevels();
     } catch (error) {
         console.error('Error loading admission:', error);
     }
@@ -102,19 +125,19 @@ function displayAdmissionLevels() {
             </div>
             <div class="form-group">
                 <label class="form-label">Icon</label>
-                <input type="text" name="admission_levels[${index}][icon]" class="form-input" value="${level.icon || '📚'}" maxlength="10">
+                <input type="text" name="admission_levels[${index}][icon]" class="form-input" value="${escapeAdmissionText(level.icon || '📚')}" maxlength="10">
             </div>
             <div class="form-group">
                 <label class="form-label">Heading</label>
-                <input type="text" name="admission_levels[${index}][heading]" class="form-input" value="${level.heading || ''}">
+                <input type="text" name="admission_levels[${index}][heading]" class="form-input" value="${escapeAdmissionText(level.heading || '')}">
             </div>
             <div class="form-group">
                 <label class="form-label">Title</label>
-                <input type="text" name="admission_levels[${index}][title]" class="form-input" value="${level.title || ''}">
+                <input type="text" name="admission_levels[${index}][title]" class="form-input" value="${escapeAdmissionText(level.title || '')}">
             </div>
             <div class="form-group">
                 <label class="form-label">Description</label>
-                <textarea name="admission_levels[${index}][description]" class="form-input" rows="3">${level.description || ''}</textarea>
+                <textarea name="admission_levels[${index}][description]" class="form-input" rows="3">${escapeAdmissionText(level.description || '')}</textarea>
             </div>
         </div>
     `).join('');
@@ -129,8 +152,30 @@ function updateAdmissionHeroPreview(url) {
     }
 }
 
+function readAdmissionLevelsFromForm() {
+    const icons = document.querySelectorAll('[name^="admission_levels["][name$="[icon]"]');
+    if (!icons.length) return;
+    const items = [];
+    icons.forEach((iconInput) => {
+        const match = iconInput.name.match(/admission_levels\[(\d+)\]/);
+        if (!match) return;
+        const index = match[1];
+        const field = (name) => {
+            const input = document.querySelector('[name="admission_levels[' + index + '][' + name + ']"]');
+            return input ? input.value : '';
+        };
+        items.push({
+            icon: field('icon') || '📚',
+            heading: field('heading'),
+            title: field('title'),
+            description: field('description')
+        });
+    });
+    admissionLevels = items;
+}
+
 function addAdmissionLevel() {
-    const levelId = 'new_' + (++levelCounter);
+    readAdmissionLevelsFromForm();
     admissionLevels.push({
         icon: '📚',
         heading: '',
@@ -142,6 +187,7 @@ function addAdmissionLevel() {
 
 function removeAdmissionLevel(index) {
     if (confirm('Remove this admission level?')) {
+        readAdmissionLevelsFromForm();
         admissionLevels.splice(index, 1);
         displayAdmissionLevels();
     }

@@ -83,12 +83,26 @@ if ($method === 'DELETE' || $method === 'POST') {
 }
 
 try {
-    ensureImageColumns($db);
-    syncSavedImagesIntoMedia($db);
-    $media = $db->fetchAll("SELECT m.*, ms.name as section_name, ms.color as section_color 
-                           FROM media m 
-                           LEFT JOIN media_sections ms ON m.section_id = ms.id 
-                           ORDER BY m.created_at DESC");
+    try {
+        $db->query("SET statement_timeout = '8s'");
+    } catch (Exception $timeoutError) {
+        error_log('Media list timeout was not set: ' . $timeoutError->getMessage());
+    }
+
+    try {
+        $media = $db->fetchAll("SELECT m.id, m.filename, m.original_name, m.file_path, m.file_size, m.section_id,
+                                       ms.name as section_name, ms.color as section_color
+                                FROM media m
+                                LEFT JOIN media_sections ms ON m.section_id = ms.id
+                                ORDER BY m.id DESC
+                                LIMIT 200");
+    } catch (Exception $queryError) {
+        error_log('Media join skipped: ' . $queryError->getMessage());
+        $media = $db->fetchAll("SELECT id, filename, original_name, file_path, file_size, section_id
+                                FROM media
+                                ORDER BY id DESC
+                                LIMIT 200");
+    }
     
     // Format media items
     $formatted = [];
@@ -147,37 +161,29 @@ try {
         $known[basename(parse_url($item['file_url'], PHP_URL_PATH) ?: '')] = true;
     }
 
-    try {
-        foreach (listSupabaseImages() as $object) {
-            $base = basename($object['name']);
-            if (isset($known[$object['name']]) || isset($known[$base]) || isset($known[$object['url']])) {
-                continue;
+    if (count($formatted) === 0) {
+        try {
+            foreach (listSupabaseImagesPage() as $object) {
+                $base = basename($object['name']);
+                if (isset($known[$object['name']]) || isset($known[$base]) || isset($known[$object['url']])) {
+                    continue;
+                }
+                $known[$base] = true;
+                $formatted[] = [
+                    'id' => null,
+                    'filename' => $base,
+                    'original_name' => $base,
+                    'file_path' => $object['url'],
+                    'file_url' => $object['url'],
+                    'file_size' => $object['size'],
+                    'section_id' => null,
+                    'section_name' => null,
+                    'section_color' => null,
+                ];
             }
-            $known[$base] = true;
-            $rowId = null;
-            try {
-                $rowId = $db->insert(
-                    "INSERT INTO media (section_id, filename, original_name, file_path, file_size, file_type, created_at)
-                     VALUES (?, ?, ?, ?, ?, ?, NOW())",
-                    [null, $base, $base, $object['url'], $object['size'], $object['mime']]
-                );
-            } catch (Exception $insertError) {
-                error_log('Could not record storage file ' . $base . ': ' . $insertError->getMessage());
-            }
-            $formatted[] = [
-                'id' => $rowId,
-                'filename' => $base,
-                'original_name' => $base,
-                'file_path' => $object['url'],
-                'file_url' => $object['url'],
-                'file_size' => $object['size'],
-                'section_id' => null,
-                'section_name' => null,
-                'section_color' => null,
-            ];
+        } catch (Exception $storageError) {
+            error_log('Storage list failed: ' . $storageError->getMessage());
         }
-    } catch (Exception $storageError) {
-        error_log('Storage list failed: ' . $storageError->getMessage());
     }
     
     echo json_encode(['success' => true, 'media' => $formatted], JSON_UNESCAPED_SLASHES);

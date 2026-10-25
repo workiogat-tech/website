@@ -9,7 +9,7 @@
         <h2>👥 Clubs Page Management</h2>
         <p style="margin-bottom: 30px; color: #666;">Manage school clubs and organizations.</p>
         
-        <form method="POST" action="api/content/clubs.php" id="clubsForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <form method="POST" action="api/content/clubs.php" id="clubsForm" onsubmit="if (typeof updateClubsJson === 'function') updateClubsJson(); return handleAdminFormSubmit(event, this);">
             <!-- Basic Content Section -->
             <div style="background: white; border-radius: 8px; padding: 24px; margin-bottom: 24px; border: 1px solid #e0e0e0;">
                 <h3 style="font-size: 20px; font-weight: bold; margin-bottom: 16px; color: #333;">Basic Content</h3>

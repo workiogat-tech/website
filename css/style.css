@@ -990,8 +990,7 @@ body {
 }
 
 .school-bg-history-image .embedded-photo,
-.school-bg-journey-image .embedded-photo,
-.why-choose-image .embedded-photo {
+.school-bg-journey-image .embedded-photo {
     width: 100%;
     height: 100%;
     min-height: 400px;
@@ -2229,7 +2228,7 @@ p {
 .values-title {
     font-size: 32px;
     font-weight: bold;
-    color: var(--text-color);
+    color: var(--core-values-title, var(--text-color));
     text-align: center;
     margin-bottom: 40px;
 }
@@ -2244,12 +2243,17 @@ p {
     padding: 30px 20px;
     border-radius: 12px;
     text-align: center;
-    transition: transform 0.3s, box-shadow 0.3s;
+    background: var(--core-values-card, #f3f4f6);
+    color: var(--core-values-text, #1f2937);
+    font-weight: 700;
+    transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
 }
 
 .value-card-item:hover {
     transform: scale(1.1);
     box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    background: var(--core-values-hover, #e5e7eb);
+    color: var(--core-values-text, #1f2937);
 }
 
 .value-faith {
@@ -3258,32 +3262,36 @@ svg {
 
 .testimonials-slider-wrapper {
     overflow: hidden;
-    margin: 40px 0;
+    margin: 40px auto;
     position: relative;
+    width: 100%;
 }
 
 .testimonials-slider {
     display: flex;
     gap: 30px;
-    animation: slideTestimonials 60s linear infinite;
+    width: max-content;
     will-change: transform;
 }
 
-@keyframes slideTestimonials {
-    0% {
-        transform: translateX(0);
-    }
-    100% {
-        transform: translateX(-33.333%);
-    }
+@keyframes testimonialsMoveLeft {
+    from { transform: translateX(0); }
+    to { transform: translateX(-33.333%); }
+}
+
+@keyframes testimonialsMoveRight {
+    from { transform: translateX(-33.333%); }
+    to { transform: translateX(0); }
 }
 
 .testimonial-card-slide {
-    flex: 0 0 350px;
+    flex: 0 0 280px;
+    width: 280px;
     background: #fef3c7;
     border-radius: 12px;
     padding: 30px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    box-sizing: border-box;
 }
 
 .testimonial-quote-icon {
@@ -4365,14 +4373,21 @@ svg {
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    min-height: 400px;
+    background: #f7f4ef;
     position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.why-choose-image img {
+.why-choose-image img,
+.why-choose-image .embedded-photo {
     width: 100%;
-    height: 400px;
-    object-fit: cover;
+    height: auto;
+    max-height: none;
+    min-height: 0;
+    object-fit: contain;
+    object-position: center center;
     display: block;
 }
 
@@ -6549,12 +6564,12 @@ svg {
 
     .site-header,
     .header-main {
-        background: #fff;
+        background: transparent;
+        box-shadow: none;
     }
 
     .header-main {
         padding: 6px 0 8px;
-        box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
     }
 
     .header-top-content {
@@ -6692,10 +6707,10 @@ svg {
 
     .hero-section,
     .hero-content {
-        height: 460px;
-        min-height: 460px;
+        height: 540px;
+        min-height: 540px;
         max-height: none;
-        margin-top: 0;
+        margin-top: -80px;
     }
 
     .hero-overlay {
@@ -6754,9 +6769,9 @@ svg {
     .admission-hero-section {
         width: 100%;
         margin-left: 0;
-        margin-top: 0;
+        margin-top: -80px;
         min-height: 280px;
-        padding: 36px 0;
+        padding: 108px 0 36px;
     }
 
     .page-hero-title {

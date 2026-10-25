@@ -16,6 +16,7 @@ ob_clean();
 
 // Set JSON header
 header('Content-Type: application/json');
+header('Cache-Control: no-store, no-cache, must-revalidate');
 
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
@@ -27,9 +28,19 @@ if ($method === 'GET') {
         );
         
         if ($content) {
+            $clubs = $content['clubs'] ?? [];
+            if (is_string($clubs)) {
+                $decoded = json_decode($clubs, true);
+                if (is_string($decoded)) {
+                    $decoded = json_decode($decoded, true);
+                }
+                $content['clubs'] = is_array($decoded) ? $decoded : [];
+            } elseif (!is_array($clubs)) {
+                $content['clubs'] = [];
+            }
             echo json_encode($content);
         } else {
-            echo json_encode([]);
+            echo json_encode(['clubs' => []]);
         }
     } catch (Exception $e) {
         http_response_code(500);
@@ -45,21 +56,25 @@ if ($method === 'GET') {
             exit;
         }
         
-        // Ensure table has color columns
+        // Ensure table has the columns the clubs form saves
         try {
             $tableExists = $db->fetchOne("SHOW TABLES LIKE 'clubs_content'");
             if ($tableExists !== false && $tableExists !== null) {
                 $columns = $db->fetchAll("SHOW COLUMNS FROM clubs_content");
-                $columnNames = array_column($columns, 'Field');
-                
-                // Add title_color column if it doesn't exist
-                if (!in_array('title_color', $columnNames)) {
-                    $db->query("ALTER TABLE clubs_content ADD COLUMN title_color VARCHAR(7) DEFAULT '#ffffff'");
-                }
-                
-                // Add subtitle_color column if it doesn't exist
-                if (!in_array('subtitle_color', $columnNames)) {
-                    $db->query("ALTER TABLE clubs_content ADD COLUMN subtitle_color VARCHAR(7) DEFAULT '#ffffff'");
+                $columnNames = array_map('strtolower', array_column($columns, 'Field'));
+                $needed = [
+                    'title' => 'TEXT',
+                    'subtitle' => 'TEXT',
+                    'hero_image' => 'TEXT',
+                    'content' => 'TEXT',
+                    'clubs' => 'TEXT',
+                    'title_color' => "VARCHAR(7) DEFAULT '#ffffff'",
+                    'subtitle_color' => "VARCHAR(7) DEFAULT '#ffffff'",
+                ];
+                foreach ($needed as $name => $type) {
+                    if (!in_array($name, $columnNames, true)) {
+                        $db->query("ALTER TABLE clubs_content ADD COLUMN {$name} {$type}");
+                    }
                 }
             }
         } catch (Exception $e) {
