@@ -214,6 +214,14 @@ class Database {
             return;
         }
 
+        // Public page views only need the saved rows. Column checks and
+        // alterations run on a save, so opening a page is one database read.
+        $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+        if ($method === 'GET') {
+            $ready = true;
+            return;
+        }
+
         // The full schema is dozens of statements. Running it on every request
         // made the whole site wait on the database. Skip it once the tables exist.
         $readyRow = $this->conn->query(

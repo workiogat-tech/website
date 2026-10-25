@@ -20,7 +20,7 @@ header('Content-Type: application/json');
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Check if table exists, if not create it
+if ($method !== 'GET') {
 try {
     $tableExists = $db->fetchOne("SHOW TABLES LIKE 'facilities_settings'");
     if (!$tableExists) {
@@ -46,6 +46,7 @@ try {
 } catch (Exception $e) {
     error_log("Facilities settings table check error: " . $e->getMessage());
 }
+}
 
 if ($method === 'GET') {
     try {
@@ -53,20 +54,22 @@ if ($method === 'GET') {
             "SELECT * FROM facilities_settings WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"
         );
         
-        if ($content) {
-            // Decode features JSON if it exists
-            if (!empty($content['features'])) {
-                $decoded = json_decode($content['features'], true);
-                if (json_last_error() === JSON_ERROR_NONE) {
-                    $content['features'] = $decoded;
-                }
-            } else {
-                $content['features'] = [];
+        if (!$content) {
+            $content = ['features' => []];
+        } elseif (!empty($content['features'])) {
+            $decoded = json_decode($content['features'], true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $content['features'] = $decoded;
             }
-            echo json_encode($content);
         } else {
-            echo json_encode(['features' => []]);
+            $content['features'] = [];
         }
+        try {
+            $content['facilities'] = $db->fetchAll("SELECT * FROM facilities WHERE is_active = 1 ORDER BY created_at DESC");
+        } catch (Exception $listError) {
+            $content['facilities'] = [];
+        }
+        echo json_encode($content);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch facilities settings: ' . $e->getMessage()]);

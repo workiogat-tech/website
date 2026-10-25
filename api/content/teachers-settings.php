@@ -20,7 +20,8 @@ header('Content-Type: application/json');
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Check if table exists, if not create it
+// Check if table exists, if not create it. Page views skip this and just read.
+if ($method !== 'GET') {
 try {
     $tableExists = $db->fetchOne("SHOW TABLES LIKE 'teachers_settings'");
     if (!$tableExists) {
@@ -37,6 +38,7 @@ try {
 } catch (Exception $e) {
     error_log("Teachers settings table check error: " . $e->getMessage());
 }
+}
 
 if ($method === 'GET') {
     try {
@@ -44,11 +46,15 @@ if ($method === 'GET') {
             "SELECT * FROM teachers_settings WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"
         );
         
-        if ($content) {
-            echo json_encode($content);
-        } else {
-            echo json_encode([]);
+        if (!$content) {
+            $content = [];
         }
+        try {
+            $content['teachers'] = $db->fetchAll("SELECT * FROM teachers WHERE is_active = 1 ORDER BY created_at DESC");
+        } catch (Exception $listError) {
+            $content['teachers'] = [];
+        }
+        echo json_encode($content);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch teachers settings: ' . $e->getMessage()]);

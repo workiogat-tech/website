@@ -20,7 +20,7 @@ header('Content-Type: application/json');
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Check if table exists, if not create it
+if ($method !== 'GET') {
 try {
     $tableExists = $db->fetchOne("SHOW TABLES LIKE 'announcements_settings'");
     if (!$tableExists) {
@@ -37,6 +37,7 @@ try {
 } catch (Exception $e) {
     error_log("Announcements settings table check error: " . $e->getMessage());
 }
+}
 
 if ($method === 'GET') {
     try {
@@ -44,11 +45,15 @@ if ($method === 'GET') {
             "SELECT * FROM announcements_settings WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"
         );
         
-        if ($content) {
-            echo json_encode($content);
-        } else {
-            echo json_encode([]);
+        if (!$content) {
+            $content = [];
         }
+        try {
+            $content['announcements'] = $db->fetchAll("SELECT * FROM announcements WHERE is_active = 1 ORDER BY created_at DESC");
+        } catch (Exception $listError) {
+            $content['announcements'] = [];
+        }
+        echo json_encode($content);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch announcements settings: ' . $e->getMessage()]);

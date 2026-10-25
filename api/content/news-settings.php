@@ -20,7 +20,7 @@ header('Content-Type: application/json');
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Check if table exists, if not create it
+if ($method !== 'GET') {
 try {
     $tableExists = $db->fetchOne("SHOW TABLES LIKE 'news_settings'");
     if (!$tableExists) {
@@ -37,6 +37,7 @@ try {
 } catch (Exception $e) {
     error_log("News settings table check error: " . $e->getMessage());
 }
+}
 
 if ($method === 'GET') {
     try {
@@ -44,11 +45,15 @@ if ($method === 'GET') {
             "SELECT * FROM news_settings WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1"
         );
         
-        if ($content) {
-            echo json_encode($content);
-        } else {
-            echo json_encode([]);
+        if (!$content) {
+            $content = [];
         }
+        try {
+            $content['news'] = $db->fetchAll("SELECT * FROM news WHERE is_active = 1 ORDER BY created_at DESC");
+        } catch (Exception $listError) {
+            $content['news'] = [];
+        }
+        echo json_encode($content);
     } catch (Exception $e) {
         http_response_code(500);
         echo json_encode(['error' => 'Failed to fetch news settings: ' . $e->getMessage()]);

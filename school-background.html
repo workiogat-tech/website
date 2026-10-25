@@ -73,23 +73,24 @@
     <div id="footer-placeholder"></div>
     
     <script src="js/static-pages.js?v=20261022g"></script>
-    <script src="js/page-data-loader.js?v=20261025f"></script>
+    <script src="js/page-data-loader.js?v=20261025g"></script>
     <script>
         (async function() {
+            try {
             const data = await PageDataLoader.loadSchoolBackgroundData();
                 
                 // Update hero
                 if (data.backgroundContent) {
                     const hero = document.querySelector('.page-hero-section');
-                    if (data.backgroundContent.subtitle) {
+                    if (hero && data.backgroundContent.subtitle) {
                         const caption = hero.querySelector('.page-hero-caption');
                         if (caption) caption.textContent = data.backgroundContent.subtitle;
                     }
-                    if (data.backgroundContent.title) {
+                    if (hero && data.backgroundContent.title) {
                         const title = hero.querySelector('.page-hero-title');
                         if (title) title.textContent = data.backgroundContent.title;
                     }
-                    if (data.backgroundContent.hero_image) {
+                    if (hero && data.backgroundContent.hero_image) {
                         const bg = hero.querySelector('.page-hero-background');
                         if (bg) {
                             const heroImageUrl = data.backgroundContent.hero_image.replace(/'/g, "\\'");

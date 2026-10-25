@@ -310,10 +310,97 @@ async function deleteFacility(id) {
 }
 
 function editFacility(id) {
-    showToast('Edit functionality - use the API to update', 'info');
+    const facility = facilities.find(function(item) { return String(item.id) === String(id); });
+    if (!facility) {
+        showToast('This facility could not be opened.', 'error');
+        return;
+    }
+    document.getElementById('editFacilityForm').reset();
+    document.getElementById('edit_facility_id').value = facility.id;
+    document.getElementById('edit_facility_name').value = facility.name || '';
+    document.getElementById('edit_facility_label').value = facility.label || '';
+    document.getElementById('edit_facility_description').value = facility.description || '';
+    document.getElementById('edit_facility_capacity').value = facility.capacity || '';
+    document.getElementById('edit_facility_image').value = facility.image || '';
+    document.getElementById('editFacilityModal').style.display = 'flex';
+}
+
+function closeEditFacilityModal() {
+    document.getElementById('editFacilityModal').style.display = 'none';
+}
+
+async function handleEditFacility(event) {
+    event.preventDefault();
+    const form = event.target;
+    const data = {};
+    new FormData(form).forEach(function(value, key) {
+        data[key] = value;
+    });
+    const submitBtn = form.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.disabled = true;
+    try {
+        const response = await fetch('api/content/facilities.php', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
+        if (!response.ok || result.error) {
+            throw new Error(result.error || 'The facility was not updated.');
+        }
+        showToast(result.message || 'Facility updated successfully!', 'success');
+        closeEditFacilityModal();
+        await loadFacilities();
+    } catch (error) {
+        showToast(error.message || 'The facility was not updated.', 'error');
+    } finally {
+        if (submitBtn) submitBtn.disabled = false;
+    }
 }
 
 document.getElementById('addFacilityModal')?.addEventListener('click', function(e) {
     if (e.target === this) closeAddFacilityModal();
 });
+document.getElementById('editFacilityModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeEditFacilityModal();
+});
 </script>
+
+<div id="editFacilityModal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10000; align-items: center; justify-content: center;">
+    <div style="background: white; border-radius: 12px; padding: 30px; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="font-size: 24px; font-weight: bold; margin: 0;">Edit Facility</h3>
+            <button type="button" onclick="closeEditFacilityModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">✕</button>
+        </div>
+        <form id="editFacilityForm" onsubmit="handleEditFacility(event); return false;">
+            <input type="hidden" id="edit_facility_id" name="id">
+            <div class="form-group">
+                <label class="form-label">Name *</label>
+                <input type="text" id="edit_facility_name" name="name" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image label</label>
+                <input type="text" id="edit_facility_label" name="label" class="form-input" placeholder="Shown on the photo">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Description</label>
+                <textarea id="edit_facility_description" name="description" class="form-input" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Capacity</label>
+                <input type="number" id="edit_facility_capacity" name="capacity" class="form-input" min="1" placeholder="Number of people">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Image</label>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <input type="text" id="edit_facility_image" name="image" class="form-input" placeholder="Select image from media library" readonly>
+                    <button type="button" onclick="openMediaLibrary('edit_facility_image')" class="btn btn-primary">Select</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Save changes</button>
+                <button type="button" onclick="closeEditFacilityModal()" class="btn" style="background: #6b7280; color: white; flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -43,6 +43,7 @@ const PageDataLoader = {
             return response.json();
         };
         try {
+            const listPath = lists[key];
             const row = await read(endpoints[key] || (key + '.php'));
             let settings = (row && !row.error && !Array.isArray(row)) ? row : {};
             if (settings.data && typeof settings.data === 'object' && !Array.isArray(settings.data)) {
@@ -55,9 +56,10 @@ const PageDataLoader = {
                 if (!trimmed || (trimmed.charAt(0) !== '[' && trimmed.charAt(0) !== '{')) return;
                 try { settings[name] = JSON.parse(trimmed); } catch (parseError) {}
             });
-            if (lists[key]) {
-                const list = await read(lists[key]);
+            if (listPath && !Array.isArray(settings[key])) {
+                const list = await read(listPath);
                 if (list && Array.isArray(list.data)) settings[key] = list.data;
+                else if (list && Array.isArray(list[key])) settings[key] = list[key];
             }
             return settings;
         } catch (error) {

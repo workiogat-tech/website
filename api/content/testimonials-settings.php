@@ -33,6 +33,8 @@ try {
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 
+// Column setup runs on save. A page view only reads the saved row.
+if ($method !== 'GET') {
 // Check if table exists, if not create it
 try {
     $tableExists = $db->fetchOne("SHOW TABLES LIKE 'testimonials_settings'");
@@ -75,6 +77,7 @@ try {
 } catch (Exception $e) {
     error_log("Testimonials settings table check error: " . $e->getMessage());
 }
+}
 
 function testimonialsSliderFlag($value): int {
     if ($value === false || $value === 0 || $value === '0' || $value === 'f' || $value === 'false' || $value === 'off') {
@@ -99,9 +102,17 @@ if ($method === 'GET') {
         );
         
         if ($content) {
-            echo json_encode(testimonialsSettingsRow($content));
+            $content = testimonialsSettingsRow($content);
+            try {
+                $content['testimonials'] = $db->fetchAll(
+                    "SELECT id, name, position, content, image, rating FROM testimonials WHERE is_active = 1 ORDER BY created_at DESC"
+                );
+            } catch (Exception $listError) {
+                $content['testimonials'] = [];
+            }
+            echo json_encode($content);
         } else {
-            echo json_encode([]);
+            echo json_encode(['testimonials' => []]);
         }
     } catch (Exception $e) {
         http_response_code(500);
