@@ -21,7 +21,7 @@
     })();
     </script>
     <title>Give Back - Excellence Academy</title>
-    <link rel="stylesheet" href="css/style.css?v=20261025b">
+    <link rel="stylesheet" href="css/style.css?v=20261025h">
 </head>
 <body>
     <div id="header-placeholder"><header class="site-header" id="mainHeader"><div class="header-top"><div class="container"><div class="header-top-content"><div class="contact-info"></div><nav class="top-nav-desktop"><a href="index.html" class="top-nav-link">Home</a><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="top-nav-link">Contact</a></nav></div></div></div><div class="header-main"><div class="container"><div class="header-content"><div class="logo"><a href="index.html" class="logo-link"><div class="logo-placeholder"><span>S</span></div></a></div><div class="header-actions"><button type="button" class="search-button" id="searchButton" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></button><button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false"><span class="menu-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button></div></div><nav class="main-nav mobile-nav" id="mainNav"><a href="index.html" class="nav-link">Home</a><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="nav-link">Contact</a></nav></div></div></header></div>
@@ -94,6 +94,10 @@
                         <p class="contact-info"><strong>Phone:</strong> <span id="giveback-phone">+256 705666621</span></p>
                         <p class="contact-info"><strong>Email:</strong> <span id="giveback-email">info@sjs.edu</span></p>
                     </div>
+                    <div class="contact-card" id="giveback-payment" style="display: none;">
+                        <h3 class="contact-card-title">How to Give</h3>
+                        <div id="giveback-payment-details"></div>
+                    </div>
                     <div class="contact-card contact-card-white">
                         <h3 class="contact-card-title">Get in Touch</h3>
                         <p class="contact-card-text">Have questions about how to contribute? Contact us to learn more about our needs and how your donation can make a difference.</p>
@@ -115,42 +119,42 @@
                 // Update hero
                 if (data.giveback) {
                     const hero = document.querySelector('.page-hero-section');
-                    if (data.giveback.title) {
+                    if (hero && data.giveback.title) {
                         const title = hero.querySelector('.page-hero-title');
                         if (title) title.textContent = data.giveback.title;
                     }
-                    if (data.giveback.subtitle) {
+                    if (hero && data.giveback.subtitle) {
                         const subtitle = hero.querySelector('.page-hero-subtitle');
                         if (subtitle) subtitle.textContent = data.giveback.subtitle;
                     }
                     if (data.giveback.hero_image) {
-                        const bg = hero.querySelector('.page-hero-background');
-                        if (bg) {
-                            const heroImageUrl = data.giveback.hero_image.replace(/'/g, "\\'");
-                            PageDataLoader.paintHero(heroImageUrl);
-                        }
+                        PageDataLoader.paintHero(data.giveback.hero_image);
                     }
                 }
                 
                 // Render needs
                 if (data.needs && data.needs.length > 0) {
                     const container = document.getElementById('needs-container');
+                    const accordion = document.getElementById('accordion-list');
                     let needsHtml = '<div class="needs-grid">';
+                    let accordionHtml = '';
                     data.needs.forEach(need => {
                         const needImage = need.image || '';
-                        const needTitle = (need.title || '').toLowerCase();
+                        const needTitle = need.title || '';
+                        const needTitleKey = needTitle.toLowerCase();
+                        const needDescription = need.description || '';
                         let iconSvg = '';
-                        if (needTitle.includes('sport')) {
+                        if (needTitleKey.includes('sport')) {
                             iconSvg = '<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>';
-                        } else if (needTitle.includes('library') || needTitle.includes('book')) {
+                        } else if (needTitleKey.includes('library') || needTitleKey.includes('book')) {
                             iconSvg = '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>';
-                        } else if (needTitle.includes('internet') || needTitle.includes('wifi')) {
+                        } else if (needTitleKey.includes('internet') || needTitleKey.includes('wifi')) {
                             iconSvg = '<path d="M12 20h.01"></path><path d="M8.5 12.859a5 5 0 1 1 7 0"></path><path d="M5 8.859a9 9 0 1 1 14 0"></path><path d="M2 4.859a13 13 0 0 1 20 0"></path>';
                         } else {
                             iconSvg = '<path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2v-5"></path>';
                         }
                         needsHtml += `
-                            <div class="need-card" data-need="${escapeHtml(need.id || '')}">
+                            <div class="need-card">
                                 <div class="need-image"${needImage ? ` style="background-image: url('${escapeHtml(needImage)}');"` : ''}>
                                     <div class="need-overlay"></div>
                                 </div>
@@ -159,12 +163,41 @@
                                         ${iconSvg}
                                     </svg>
                                 </div>
-                                <h3 class="need-title">${escapeHtml(need.title || '')}</h3>
+                                ${needDescription ? `<p class="need-copy">${escapeHtml(needDescription)}</p>` : ''}
+                                <h3 class="need-title">${escapeHtml(needTitle)}</h3>
+                            </div>
+                        `;
+                        accordionHtml += `
+                            <div class="giveback-accordion-item">
+                                <div class="accordion-header" onclick="toggleAccordion(this)">
+                                    <div class="accordion-chevron">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    </div>
+                                    <div class="accordion-icon">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#800020" stroke-width="2.5">${iconSvg}</svg>
+                                    </div>
+                                    <span class="accordion-text">${escapeHtml(needTitle)}</span>
+                                </div>
+                                <div class="accordion-content">
+                                    <div class="accordion-description"><p>${escapeHtml(needDescription)}</p></div>
+                                    <button class="accordion-donate-btn" onclick="event.stopPropagation(); openDonationModal('${escapeHtml(needTitle).replace(/'/g, '')}')">Donate to ${escapeHtml(needTitle)}</button>
+                                </div>
                             </div>
                         `;
                     });
                     needsHtml += '</div>';
-                    container.innerHTML = needsHtml;
+                    if (container) container.innerHTML = needsHtml;
+                    if (accordion) {
+                        accordion.innerHTML = accordionHtml;
+                        const firstAccordion = accordion.querySelector('.giveback-accordion-item');
+                        if (firstAccordion) {
+                            firstAccordion.classList.add('expanded');
+                            const firstContent = firstAccordion.querySelector('.accordion-content');
+                            if (firstContent) firstContent.style.maxHeight = firstContent.scrollHeight + 'px';
+                            const firstChevron = firstAccordion.querySelector('.accordion-chevron svg');
+                            if (firstChevron) firstChevron.style.transform = 'rotate(180deg)';
+                        }
+                    }
                 }
                 
                 // Update contact info
@@ -177,6 +210,26 @@
                         const emailEl = document.getElementById('giveback-email');
                         if (emailEl) emailEl.textContent = data.giveback.contact_email;
                     }
+                }
+
+                const payment = data.paymentDetails && typeof data.paymentDetails === 'object' ? data.paymentDetails : null;
+                const paymentLines = [];
+                if (payment) {
+                    if (payment.bank_name || payment.account_name || payment.account_number) {
+                        paymentLines.push('<p class="contact-info"><strong>Bank:</strong> ' + escapeHtml([payment.bank_name, payment.account_name, payment.account_number].filter(Boolean).join(' · ')) + '</p>');
+                    }
+                    if (payment.mobile_money_name || payment.mobile_money_phone) {
+                        paymentLines.push('<p class="contact-info"><strong>Mobile money:</strong> ' + escapeHtml([payment.mobile_money_name, payment.mobile_money_phone].filter(Boolean).join(' · ')) + '</p>');
+                    }
+                    if (payment.instructions) {
+                        paymentLines.push('<p class="contact-info">' + escapeHtml(payment.instructions) + '</p>');
+                    }
+                }
+                const paymentCard = document.getElementById('giveback-payment');
+                const paymentDetails = document.getElementById('giveback-payment-details');
+                if (paymentCard && paymentDetails && paymentLines.length) {
+                    paymentDetails.innerHTML = paymentLines.join('');
+                    paymentCard.style.display = '';
                 }
         })();
         

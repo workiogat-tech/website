@@ -431,7 +431,11 @@ function handleGivebackFormSubmit(event, form) {
             result = JSON.parse(text);
         } catch (e) {
             console.error('Failed to parse response:', text);
-            throw new Error('Server returned invalid response');
+            const detail = (text || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+            throw new Error(detail ? detail.slice(0, 180) : 'Server returned invalid response');
+        }
+        if (!response.ok && result && result.error) {
+            throw new Error(result.error);
         }
         return result;
     })
@@ -444,7 +448,7 @@ function handleGivebackFormSubmit(event, form) {
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Failed to save content. Please try again.', 'error');
+        showToast(error.message || 'Failed to save content. Please try again.', 'error');
     })
     .finally(() => {
         submitBtn.textContent = originalText;
