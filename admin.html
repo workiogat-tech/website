@@ -659,38 +659,67 @@
             }
             const requestId = (window.__mediaLibraryRequest || 0) + 1;
             window.__mediaLibraryRequest = requestId;
+
+            // Show cached photos immediately while a fresh list loads
             if (window.adminMediaItems && window.adminMediaItems.length) {
                 displayMedia();
+            } else {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">Loading media...</div>';
             }
+
             const controller = typeof AbortController === 'function' ? new AbortController() : null;
             const timer = setTimeout(function () {
-                if (controller) controller.abort();
+                if (controller) {
+                    try { controller.abort(); } catch (e) {}
+                }
                 if (window.__mediaLibraryRequest !== requestId) return;
-                if ((container.textContent || '').indexOf('Loading media') === -1) return;
-                showMediaLibraryMessage(container, 'The photo list did not open', 'Close this window and click Select again.');
-            }, 8000);
+                if (window.adminMediaItems && window.adminMediaItems.length) {
+                    displayMedia();
+                    return;
+                }
+                showMediaLibraryMessage(container, 'The photo list did not open', 'Close this window and click Select again. Or open the Media tab and refresh.');
+            }, 5000);
 
-            fetch('/api/media/list.php', {
-                credentials: 'same-origin',
-                cache: 'no-store',
-                signal: controller ? controller.signal : undefined
-            })
-                .then(function (response) {
-                    if (!response.ok) throw new Error('The photo list did not open');
+            const endpoints = ['/api/media/list.php', 'api/media/list.php'];
+            let endpointIndex = 0;
+
+            function requestList() {
+                const url = endpoints[endpointIndex];
+                return fetch(url, {
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    signal: controller ? controller.signal : undefined
+                }).then(function (response) {
+                    if (!response.ok) throw new Error('status ' + response.status);
                     return response.json();
-                })
-                .then(data => {
+                }).then(function (data) {
                     clearTimeout(timer);
                     if (window.__mediaLibraryRequest !== requestId) return;
+                    if (data && data.error) throw new Error(data.error);
                     const remote = (data && Array.isArray(data.media)) ? data.media.filter(usableMediaUrl) : [];
                     finishMediaLibrary(container, remote);
-                })
-                .catch(() => {
-                    clearTimeout(timer);
+                }).catch(function (err) {
                     if (window.__mediaLibraryRequest !== requestId) return;
-                    if ((container.textContent || '').indexOf('Loading media') === -1) return;
-                    showMediaLibraryMessage(container, 'The photo list did not open', 'Close this window and click Select again.');
+                    if (endpointIndex < endpoints.length - 1) {
+                        endpointIndex += 1;
+                        return requestList();
+                    }
+                    clearTimeout(timer);
+                    if (window.adminMediaItems && window.adminMediaItems.length) {
+                        displayMedia();
+                        return;
+                    }
+                    showMediaLibraryMessage(
+                        container,
+                        'The photo list did not open',
+                        (err && err.name === 'AbortError')
+                            ? 'The request timed out. Close and try again.'
+                            : 'Close this window and click Select again.'
+                    );
                 });
+            }
+
+            requestList();
         }
         
         // Make sure MediaStorage is available globally
