@@ -535,6 +535,64 @@ const HomepageLoader = {
         }
     },
 
+    countStat(node, raw) {
+        const text = String(raw).trim();
+        const match = text.match(/^(\D*?)(\d[\d,]*(?:\.\d+)?)(.*)$/);
+        if (!match) {
+            node.textContent = text;
+            return;
+        }
+        const prefix = match[1];
+        const digits = match[2].replace(/,/g, '');
+        const suffix = match[3];
+        const target = Number(digits);
+        if (!Number.isFinite(target)) {
+            node.textContent = text;
+            return;
+        }
+        const decimals = (digits.split('.')[1] || '').length;
+        const grouped = match[2].indexOf(',') !== -1;
+        const format = (value) => {
+            const fixed = decimals ? value.toFixed(decimals) : String(Math.round(value));
+            const parts = fixed.split('.');
+            if (grouped) parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return prefix + parts.join('.') + suffix;
+        };
+        const paintFinal = () => {
+            node.textContent = text;
+        };
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const run = () => {
+            if (node.dataset.counted === '1') return;
+            node.dataset.counted = '1';
+            if (reduced) {
+                paintFinal();
+                return;
+            }
+            const duration = 1600;
+            const begun = performance.now();
+            const step = (now) => {
+                const progress = Math.min(1, (now - begun) / duration);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                node.textContent = progress >= 1 ? text : format(target * eased);
+                if (progress < 1) requestAnimationFrame(step);
+            };
+            node.textContent = format(0);
+            requestAnimationFrame(step);
+        };
+        node.textContent = format(0);
+        if (!('IntersectionObserver' in window)) {
+            run();
+            return;
+        }
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+            observer.disconnect();
+            run();
+        }, { threshold: 0.5 });
+        observer.observe(node);
+    },
+
     renderAcademics(content) {
         const section = document.getElementById('home-academics');
         if (!section) return;
@@ -555,7 +613,7 @@ const HomepageLoader = {
                 stat.className = 'stat-item';
                 const number = document.createElement('div');
                 number.className = 'stat-number';
-                number.textContent = item[pair[0]];
+                this.countStat(number, item[pair[0]]);
                 const label = document.createElement('div');
                 label.className = 'stat-label';
                 label.textContent = pair[1];
@@ -590,10 +648,13 @@ const HomepageLoader = {
             const title = document.createElement('h2');
             title.className = 'vision-mission-title';
             title.textContent = item.vision_title || '';
-            const text = document.createElement('p');
-            text.className = 'vision-mission-text';
-            text.textContent = item.vision_text || '';
-            card.append(title, text);
+            card.appendChild(title);
+            if (this.filled(item.vision_text)) {
+                const text = document.createElement('p');
+                text.className = 'vision-mission-text';
+                text.textContent = item.vision_text;
+                card.appendChild(text);
+            }
             cards.appendChild(card);
         }
         if (this.filled(item.mission_title) || this.filled(item.mission_text)) {
@@ -602,10 +663,13 @@ const HomepageLoader = {
             const title = document.createElement('h2');
             title.className = 'vision-mission-title';
             title.textContent = item.mission_title || '';
-            const text = document.createElement('p');
-            text.className = 'vision-mission-text';
-            text.textContent = item.mission_text || '';
-            card.append(title, text);
+            card.appendChild(title);
+            if (this.filled(item.mission_text)) {
+                const text = document.createElement('p');
+                text.className = 'vision-mission-text';
+                text.textContent = item.mission_text;
+                card.appendChild(text);
+            }
             cards.appendChild(card);
         }
         const valuesWrap = document.getElementById('home-values');
@@ -616,6 +680,8 @@ const HomepageLoader = {
             valuesTitle.textContent = item.core_values_title || '';
             valuesTitle.hidden = !this.filled(item.core_values_title);
             grid.innerHTML = '';
+            const columns = list.length <= 3 ? list.length : (list.length === 6 ? 3 : 4);
+            grid.style.setProperty('--value-columns', String(columns || 1));
             list.forEach((value) => {
                 const card = document.createElement('div');
                 card.className = 'value-card-item';

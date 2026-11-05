@@ -49,7 +49,8 @@ const StaticPages = {
                 { label: 'Sponsorship', url: 'sponsorship.html' },
                 { label: 'Give Back', url: 'give-back.html' },
                 { label: 'People Behind the School', url: 'people-behind-school.html' },
-                { label: 'Parent Portal', url: 'parents.html' }
+                { label: 'Parent Portal', url: 'parents.html' },
+                { label: 'Resources', url: 'resources.html' }
             ]
         },
         { label: 'Contact', url: 'contact.html' }
@@ -186,12 +187,25 @@ const StaticPages = {
         return String(url).replace(/\.php(?=($|\?|#))/i, '.html');
     },
 
+    renderNavLink(item, className) {
+        const label = item.label || '';
+        const url = this.pageUrl(item.url);
+        if (item.onclick) {
+            const handler = String(item.onclick).replace(/[^a-zA-Z0-9_]/g, '');
+            return `<a href="#" class="${className}" onclick="event.preventDefault(); if (typeof window.${handler} === 'function') { window.${handler}(); } else { setTimeout(function(){ if (typeof window.${handler} === 'function') window.${handler}(); }, 50); } return false;">${label}</a>`;
+        }
+        return `<a href="${url}" class="${className}">${label}</a>`;
+    },
+
     renderNav(items, isMobile) {
         return items.map(item => {
             if (item.children && item.children.length > 0) {
-                const childHtml = item.children.map(child => 
-                    `<a href="${this.pageUrl(child.url)}">${child.label}</a>`
-                ).join('');
+                const childHtml = item.children.map(child => {
+                    if (child.onclick) {
+                        return this.renderNavLink(child, '');
+                    }
+                    return `<a href="${this.pageUrl(child.url)}">${child.label}</a>`;
+                }).join('');
                 return `
                     <div class="${isMobile ? 'nav-dropdown' : 'top-nav-dropdown'}">
                         <a href="${this.pageUrl(item.url)}" class="${isMobile ? 'nav-link dropdown-trigger' : 'top-nav-link'}" ${isMobile ? 'role="button"' : ''}>
@@ -206,7 +220,7 @@ const StaticPages = {
                     </div>
                 `;
             } else {
-                return `<a href="${this.pageUrl(item.url)}" class="${isMobile ? 'nav-link' : 'top-nav-link'}">${item.label}</a>`;
+                return this.renderNavLink(item, isMobile ? 'nav-link' : 'top-nav-link');
             }
         }).join('');
     },
@@ -264,6 +278,43 @@ const StaticPages = {
                     <div class="container">${branding.school_name ? `&copy; ${branding.school_name}. All rights reserved.` : ''}</div>
                 </div>
             </footer>
+            <div id="newsletterModal" class="newsletter-modal" style="display: none;">
+                <div class="newsletter-modal-overlay"></div>
+                <div class="newsletter-modal-content">
+                    <div class="newsletter-modal-header">
+                        <div class="newsletter-header-left">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                                <polyline points="22,6 12,13 2,6"></polyline>
+                            </svg>
+                            <h3>Subscribe to Newsletter</h3>
+                        </div>
+                        <button class="newsletter-close" id="newsletterClose" aria-label="Close" type="button">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="newsletter-modal-body">
+                        <p class="newsletter-description">Stay updated with the latest news, events, and achievements from our school.</p>
+                        <form id="newsletterForm" class="newsletter-form">
+                            <div class="newsletter-form-group">
+                                <label for="newsletterName">Your Name (Optional)</label>
+                                <input type="text" id="newsletterName" name="name" placeholder="Enter your name">
+                            </div>
+                            <div class="newsletter-form-group">
+                                <label for="newsletterEmail">Email Address <span class="required">*</span></label>
+                                <input type="email" id="newsletterEmail" name="email" placeholder="Enter your email address" required>
+                            </div>
+                            <div class="newsletter-form-actions">
+                                <button type="button" class="newsletter-btn-cancel" id="newsletterCancel">Cancel</button>
+                                <button type="submit" class="newsletter-btn-subscribe">Subscribe Now</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
             <button id="backToTop" class="back-to-top" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: #800020; color: white; border: none; cursor: pointer; align-items: center; justify-content: center;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
                     <line x1="12" y1="19" x2="12" y2="5"></line>
@@ -346,10 +397,16 @@ const StaticPages = {
                     this.navigation = items.map(item => ({
                         label: item.label,
                         url: this.pageUrl(item.url),
-                        children: (children[item.id] || children[String(item.id)] || []).map(child => ({
-                            label: child.label,
-                            url: this.pageUrl(child.url)
-                        }))
+                        children: (children[item.id] || children[String(item.id)] || []).map(child => {
+                            const label = child.label || '';
+                            const url = this.pageUrl(child.url);
+                            const isNewsletter = /newsletter/i.test(label) || /newsletter/i.test(String(child.url || ''));
+                            return {
+                                label,
+                                url: isNewsletter ? '#' : url,
+                                onclick: isNewsletter ? 'openNewsletterModal' : (child.onclick || undefined)
+                            };
+                        })
                     }));
                 }
             }

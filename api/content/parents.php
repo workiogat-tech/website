@@ -117,9 +117,27 @@ if ($method === 'GET') {
             }
         }
         $resourceDetailSectionsJson = !empty($resourceDetailSections) ? json_encode($resourceDetailSections) : null;
+
+        $encodeJsonField = function ($value) {
+            if (is_string($value)) {
+                $decoded = json_decode($value, true);
+                if (json_last_error() === JSON_ERROR_NONE) {
+                    return json_encode($decoded);
+                }
+                return $value !== '' ? $value : null;
+            }
+            if (is_array($value)) {
+                return json_encode($value);
+            }
+            return null;
+        };
+
+        $upcomingEventsJson = isset($input['upcoming_events']) ? $encodeJsonField($input['upcoming_events']) : (isset($input['upcomingEvents']) ? $encodeJsonField($input['upcomingEvents']) : null);
+        $resourcesJson = isset($input['resources']) ? $encodeJsonField($input['resources']) : null;
+        $contactInfoJson = isset($input['contact_info']) ? $encodeJsonField($input['contact_info']) : (isset($input['contactInfo']) ? $encodeJsonField($input['contactInfo']) : null);
         
         // Allowed fields
-        $allowedFields = ['title', 'subtitle', 'description', 'hero_image', 'additional_slides', 'resource_detail_sections'];
+        $allowedFields = ['title', 'subtitle', 'description', 'hero_image', 'additional_slides', 'resource_detail_sections', 'upcoming_events', 'resources', 'contact_info'];
         
         // Filter and validate input
         $fields = ['is_active'];
@@ -129,12 +147,22 @@ if ($method === 'GET') {
             if ($key === 'additional_slides') {
                 $fields[] = 'additional_slides';
                 $values[] = $additionalSlidesJson;
-            } elseif (in_array($key, ['resource_section_title', 'resource_section_image', 'resource_section_description'])) {
-                // Skip the individual array inputs as we've already processed them into resource_detail_sections
+            } elseif (in_array($key, ['resource_section_title', 'resource_section_image', 'resource_section_description', 'upcomingEvents', 'contactInfo'])) {
+                // Skip aliases / individual array inputs already processed
                 continue;
             } elseif ($key !== 'id' && $key !== 'is_active' && in_array($key, $allowedFields)) {
                 $fields[] = $key;
-                $values[] = ($value === '' || $value === null) ? null : $value;
+                if ($key === 'resource_detail_sections') {
+                    $values[] = $resourceDetailSectionsJson;
+                } elseif ($key === 'upcoming_events') {
+                    $values[] = $upcomingEventsJson;
+                } elseif ($key === 'resources') {
+                    $values[] = $resourcesJson;
+                } elseif ($key === 'contact_info') {
+                    $values[] = $contactInfoJson;
+                } else {
+                    $values[] = ($value === '' || $value === null) ? null : $value;
+                }
             }
         }
         
@@ -142,6 +170,18 @@ if ($method === 'GET') {
         if (!in_array('resource_detail_sections', $fields) && !empty($resourceDetailSectionsJson)) {
             $fields[] = 'resource_detail_sections';
             $values[] = $resourceDetailSectionsJson;
+        }
+        if (!in_array('upcoming_events', $fields) && $upcomingEventsJson !== null) {
+            $fields[] = 'upcoming_events';
+            $values[] = $upcomingEventsJson;
+        }
+        if (!in_array('resources', $fields) && $resourcesJson !== null) {
+            $fields[] = 'resources';
+            $values[] = $resourcesJson;
+        }
+        if (!in_array('contact_info', $fields) && $contactInfoJson !== null) {
+            $fields[] = 'contact_info';
+            $values[] = $contactInfoJson;
         }
         
         if (count($fields) <= 1) {

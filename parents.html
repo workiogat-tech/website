@@ -21,7 +21,7 @@
     })();
     </script>
     <title>Parents Portal - Excellence Academy</title>
-    <link rel="stylesheet" href="css/style.css?v=20261025b">
+    <link rel="stylesheet" href="css/style.css?v=20261105fix">
 </head>
 <body>
     <div id="header-placeholder"><header class="site-header" id="mainHeader"><div class="header-top"><div class="container"><div class="header-top-content"><div class="contact-info"></div><nav class="top-nav-desktop"><a href="index.html" class="top-nav-link">Home</a><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="top-nav-link">Contact</a></nav></div></div></div><div class="header-main"><div class="container"><div class="header-content"><div class="logo"><a href="index.html" class="logo-link"><div class="logo-placeholder"><span>S</span></div></a></div><div class="header-actions"><button type="button" class="search-button" id="searchButton" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></button><button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false"><span class="menu-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button></div></div><nav class="main-nav mobile-nav" id="mainNav"><a href="index.html" class="nav-link">Home</a><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="nav-link">Contact</a></nav></div></div></header></div>
@@ -129,10 +129,10 @@
                         </ul>
                     </div>
                     <div>
-                        <form id="newsletterForm" style="background: #f9fafb; padding: 1.5rem; border-radius: 0.75rem;">
+                        <form id="parentsNewsletterForm" style="background: #f9fafb; padding: 1.5rem; border-radius: 0.75rem;">
                             <div style="margin-bottom: 1rem;">
                                 <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">Name</label>
-                                <input type="text" name="name" required style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
+                                <input type="text" name="name" style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 0.5rem;">
                             </div>
                             <div style="margin-bottom: 1rem;">
                                 <label style="display: block; font-weight: 500; color: #374151; margin-bottom: 0.5rem;">Email Address</label>
@@ -149,8 +149,8 @@
     
     <div id="footer-placeholder"></div>
     
-    <script src="js/static-pages.js?v=20261022g"></script>
-    <script src="js/page-data-loader.js?v=20261025g"></script>
+    <script src="js/static-pages.js?v=20261105fix"></script>
+    <script src="js/page-data-loader.js?v=20261105fix"></script>
     <script>
         (async function() {
             const data = await PageDataLoader.loadParentsData();
@@ -277,10 +277,100 @@
                 }
         })();
         
-        function addToCalendar(event, title, dateStr, timeStr, location) {
-            event.preventDefault();
-            alert('Add to calendar functionality - to be implemented');
+        function pad2(n) { return String(n).padStart(2, '0'); }
+
+        function parseEventDateParts(dateStr, timeStr) {
+            const rawDate = String(dateStr || '').trim();
+            const rawTime = String(timeStr || '').trim();
+            let start = new Date(rawDate);
+            if (isNaN(start.getTime())) {
+                const cleaned = rawDate.replace(/(\d+)(st|nd|rd|th)/gi, '$1');
+                start = new Date(cleaned);
+            }
+            if (isNaN(start.getTime())) {
+                start = new Date();
+            }
+
+            const timeMatch = rawTime.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
+            let end = new Date(start.getTime() + 60 * 60 * 1000);
+            if (timeMatch) {
+                let hours = parseInt(timeMatch[1], 10);
+                const minutes = parseInt(timeMatch[2] || '0', 10);
+                const meridiem = (timeMatch[3] || '').toUpperCase();
+                if (meridiem === 'PM' && hours < 12) hours += 12;
+                if (meridiem === 'AM' && hours === 12) hours = 0;
+                start.setHours(hours, minutes, 0, 0);
+
+                const rangeMatch = rawTime.match(/-\s*(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
+                if (rangeMatch) {
+                    let endHours = parseInt(rangeMatch[1], 10);
+                    const endMinutes = parseInt(rangeMatch[2] || '0', 10);
+                    const endMeridiem = (rangeMatch[3] || meridiem || '').toUpperCase();
+                    if (endMeridiem === 'PM' && endHours < 12) endHours += 12;
+                    if (endMeridiem === 'AM' && endHours === 12) endHours = 0;
+                    end = new Date(start);
+                    end.setHours(endHours, endMinutes, 0, 0);
+                } else {
+                    end = new Date(start.getTime() + 60 * 60 * 1000);
+                }
+            }
+            return { start, end };
         }
+
+        function toIcsDate(date) {
+            return date.getUTCFullYear()
+                + pad2(date.getUTCMonth() + 1)
+                + pad2(date.getUTCDate())
+                + 'T'
+                + pad2(date.getUTCHours())
+                + pad2(date.getUTCMinutes())
+                + pad2(date.getUTCSeconds())
+                + 'Z';
+        }
+
+        function addToCalendar(evt, title, dateStr, timeStr, location) {
+            if (evt && typeof evt.preventDefault === 'function') evt.preventDefault();
+            const { start, end } = parseEventDateParts(dateStr, timeStr);
+            const safeTitle = String(title || 'School Event');
+            const safeLocation = String(location || '');
+            const description = [safeTitle, dateStr, timeStr, safeLocation].filter(Boolean).join(' | ');
+            const ics = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//School Website//EN',
+                'CALSCALE:GREGORIAN',
+                'METHOD:PUBLISH',
+                'BEGIN:VEVENT',
+                'UID:' + Date.now() + '@school-website',
+                'DTSTAMP:' + toIcsDate(new Date()),
+                'DTSTART:' + toIcsDate(start),
+                'DTEND:' + toIcsDate(end),
+                'SUMMARY:' + safeTitle.replace(/[\r\n]+/g, ' '),
+                'LOCATION:' + safeLocation.replace(/[\r\n]+/g, ' '),
+                'DESCRIPTION:' + description.replace(/[\r\n]+/g, ' '),
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+
+            const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = (safeTitle.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'event') + '.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            // Also offer Google Calendar in a new tab
+            const googleUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+                + '&text=' + encodeURIComponent(safeTitle)
+                + '&dates=' + toIcsDate(start).replace(/Z$/, '') + '/' + toIcsDate(end).replace(/Z$/, '')
+                + '&details=' + encodeURIComponent(description)
+                + '&location=' + encodeURIComponent(safeLocation);
+            window.open(googleUrl, '_blank', 'noopener');
+        }
+        window.addToCalendar = addToCalendar;
         
         function escapeHtml(text) {
             if (!text) return '';
@@ -289,12 +379,40 @@
             return div.innerHTML;
         }
         
-        // Newsletter subscription
-        document.getElementById('newsletterForm')?.addEventListener('submit', function(e) {
+        // Newsletter subscription on parents portal
+        document.getElementById('parentsNewsletterForm')?.addEventListener('submit', function(e) {
             e.preventDefault();
-            alert('Newsletter subscription - to be implemented');
+            const form = e.target;
+            const email = form.querySelector('input[name="email"]')?.value.trim() || '';
+            const name = form.querySelector('input[name="name"]')?.value.trim() || '';
+            const message = document.getElementById('newsletterMessage');
+            fetch('api/forms/newsletter-subscription.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, name })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (message) {
+                    message.style.display = 'block';
+                    message.style.background = data.error ? '#fee2e2' : '#dcfce7';
+                    message.style.color = data.error ? '#991b1b' : '#166534';
+                    message.textContent = data.error || data.message || 'Subscribed successfully!';
+                } else {
+                    alert(data.error || data.message || 'Subscribed successfully!');
+                }
+                if (!data.error) form.reset();
+            })
+            .catch(() => {
+                if (message) {
+                    message.style.display = 'block';
+                    message.style.background = '#fee2e2';
+                    message.style.color = '#991b1b';
+                    message.textContent = 'Could not subscribe. Please try again.';
+                }
+            });
         });
     </script>
-<script src="js/main.js?v=20261025b"></script>
+<script src="js/main.js?v=20261105fix"></script>
 </body>
 </html>

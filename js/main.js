@@ -337,6 +337,29 @@ window.refreshScrollReveal = function () {
     });
 };
 
+function colorChannel(value) {
+    const channel = value / 255;
+    return channel <= 0.03928 ? channel / 12.92 : Math.pow((channel + 0.055) / 1.055, 2.4);
+}
+
+function colorContrast(foreground, background) {
+    const read = function (hex) {
+        const raw = String(hex || '').trim().replace('#', '');
+        const full = raw.length === 3 ? raw.split('').map(function (part) { return part + part; }).join('') : raw;
+        if (!/^[0-9a-fA-F]{6}$/.test(full)) return null;
+        return [parseInt(full.slice(0, 2), 16), parseInt(full.slice(2, 4), 16), parseInt(full.slice(4, 6), 16)];
+    };
+    const front = read(foreground);
+    const back = read(background);
+    if (!front || !back) return 0;
+    const luminance = function (rgb) {
+        return 0.2126 * colorChannel(rgb[0]) + 0.7152 * colorChannel(rgb[1]) + 0.0722 * colorChannel(rgb[2]);
+    };
+    const lighter = Math.max(luminance(front), luminance(back));
+    const darker = Math.min(luminance(front), luminance(back));
+    return (lighter + 0.05) / (darker + 0.05);
+}
+
 function applySavedAppearance() {
     const pageSections = {
         'index.html': 'index',
@@ -402,8 +425,11 @@ function applySavedAppearance() {
             const coreValues = byName['core-values'];
             if (coreValues) {
                 const root = document.documentElement;
+                const cardColor = coreValues.background_color || '#800020';
                 if (coreValues.background_color) root.style.setProperty('--core-values-card', coreValues.background_color);
-                if (coreValues.text_color) root.style.setProperty('--core-values-text', coreValues.text_color);
+                const chosenText = coreValues.text_color || '';
+                const readableText = colorContrast(chosenText, cardColor) >= 4.5 ? chosenText : (colorContrast('#ffffff', cardColor) >= colorContrast('#1f2937', cardColor) ? '#ffffff' : '#1f2937');
+                root.style.setProperty('--core-values-text', readableText);
                 if (coreValues.primary_color) root.style.setProperty('--core-values-title', coreValues.primary_color);
                 if (coreValues.hover_color) root.style.setProperty('--core-values-hover', coreValues.hover_color);
             }
@@ -534,14 +560,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Newsletter Modal
-    const newsletterModal = document.getElementById('newsletterModal');
-    const newsletterClose = document.getElementById('newsletterClose');
-    const newsletterCancel = document.getElementById('newsletterCancel');
-    const newsletterForm = document.getElementById('newsletterForm');
-    const newsletterOverlay = newsletterModal ? newsletterModal.querySelector('.newsletter-modal-overlay') : null;
-    
+    // Newsletter Modal (works even if modal is injected later by static-pages/footer)
     function openNewsletterModal() {
+        const newsletterModal = document.getElementById('newsletterModal');
         if (newsletterModal) {
             newsletterModal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
@@ -549,57 +570,55 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function closeNewsletterModal() {
+        const newsletterModal = document.getElementById('newsletterModal');
         if (newsletterModal) {
             newsletterModal.style.display = 'none';
             document.body.style.overflow = '';
         }
     }
     
-    // Make functions globally accessible
     window.openNewsletterModal = openNewsletterModal;
     window.closeNewsletterModal = closeNewsletterModal;
-    
-    if (newsletterClose) {
-        newsletterClose.addEventListener('click', closeNewsletterModal);
-    }
-    
-    if (newsletterCancel) {
-        newsletterCancel.addEventListener('click', closeNewsletterModal);
-    }
-    
-    if (newsletterOverlay) {
-        newsletterOverlay.addEventListener('click', closeNewsletterModal);
-    }
-    
-    if (newsletterForm) {
-        newsletterForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('newsletterEmail').value;
-            const name = document.getElementById('newsletterName').value;
-            
-            fetch('api/forms/newsletter-subscription.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email: email, name: name })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    alert(data.error);
-                } else {
-                    alert('Successfully subscribed to newsletter!');
-                    newsletterForm.reset();
-                    closeNewsletterModal();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            });
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#newsletterClose') || e.target.closest('#newsletterCancel') || e.target.closest('.newsletter-modal-overlay')) {
+            closeNewsletterModal();
+        }
+    });
+
+    document.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (!form || form.id !== 'newsletterForm') return;
+        e.preventDefault();
+        const emailInput = form.querySelector('#newsletterEmail, input[name="email"]');
+        const nameInput = form.querySelector('#newsletterName, input[name="name"]');
+        const email = emailInput ? emailInput.value.trim() : '';
+        const name = nameInput ? nameInput.value.trim() : '';
+        if (!email) {
+            alert('Please enter your email address.');
+            return;
+        }
+
+        fetch('api/forms/newsletter-subscription.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, name: name })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                alert(data.message || 'Successfully subscribed to newsletter!');
+                form.reset();
+                closeNewsletterModal();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred. Please try again.');
         });
-    }
+    });
     
     // Give Back Accordion (only for .accordion-item, not .giveback-accordion-item)
     document.querySelectorAll('.accordion-item .accordion-header').forEach(header => {

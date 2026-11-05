@@ -484,6 +484,87 @@ Sponsorship Type: " . ($data['sponsorship_type'] ?? 'N/A') . "
 " . (!empty($data['message']) ? "Message: " . $data['message'] . "\n" : "") . "
 Submitted At: $submittedAt";
     }
+
+    /**
+     * Send newsletter broadcast to a single subscriber
+     */
+    public function sendNewsletterEmail($to, $news, $subscriberName = '') {
+        $title = $news['title'] ?? 'School News Update';
+        $excerpt = $news['excerpt'] ?? '';
+        if (!$excerpt && !empty($news['content'])) {
+            $excerpt = substr(strip_tags($news['content']), 0, 240);
+        }
+        $siteUrl = defined('SITE_URL') ? rtrim(SITE_URL, '/') : '';
+        $newsUrl = $siteUrl ? ($siteUrl . '/news.html') : 'news.html';
+        $greeting = $subscriberName ? ('Hello ' . htmlspecialchars($subscriberName) . ',') : 'Hello,';
+        $html = '<div style="font-family:Arial,sans-serif;max-width:640px;margin:0 auto;color:#111827;">'
+            . '<div style="background:#800020;color:#fff;padding:20px 24px;"><h1 style="margin:0;font-size:22px;">School Newsletter</h1></div>'
+            . '<div style="padding:24px;border:1px solid #e5e7eb;border-top:none;">'
+            . '<p>' . $greeting . '</p>'
+            . '<h2 style="color:#800020;margin:0 0 12px;">' . htmlspecialchars($title) . '</h2>'
+            . '<p style="line-height:1.6;color:#374151;">' . nl2br(htmlspecialchars($excerpt)) . '</p>'
+            . '<p style="margin-top:24px;"><a href="' . htmlspecialchars($newsUrl) . '" style="background:#800020;color:#fff;padding:12px 18px;text-decoration:none;border-radius:6px;display:inline-block;">Read full story</a></p>'
+            . '<p style="margin-top:28px;font-size:12px;color:#6b7280;">You are receiving this because you subscribed to school updates.</p>'
+            . '</div></div>';
+        $text = strip_tags(str_replace(['<br>', '<br/>', '<br />'], "\n", $html));
+        return $this->sendEmail($to, $title . ' - School Newsletter', $html, $text);
+    }
+
+    /**
+     * Broadcast a news item to all active newsletter subscribers
+     */
+    public function broadcastNewsletter($news) {
+        try {
+            $db = getDB();
+            $subscribers = [];
+            try {
+                $subscribers = $db->fetchAll(
+                    "SELECT email, name FROM newsletter_subscribers WHERE is_active = 1"
+                ) ?: [];
+            } catch (Exception $e) {
+                // Fall back to form_submissions if dedicated table is unavailable
+                $rows = $db->fetchAll(
+                    "SELECT data FROM form_submissions WHERE submission_type = 'newsletter-subscription' ORDER BY id DESC LIMIT 500"
+                ) ?: [];
+                $seen = [];
+                foreach ($rows as $row) {
+                    $payload = is_string($row['data'] ?? null) ? json_decode($row['data'], true) : ($row['data'] ?? []);
+                    $email = strtolower(trim($payload['email'] ?? ''));
+                    if (!$email || isset($seen[$email]) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                        continue;
+                    }
+                    $seen[$email] = true;
+                    $subscribers[] = ['email' => $email, 'name' => $payload['name'] ?? ''];
+                }
+            }
+
+            $sent = 0;
+            $failed = 0;
+            foreach ($subscribers as $subscriber) {
+                $email = $subscriber['email'] ?? '';
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    continue;
+                }
+                $result = $this->sendNewsletterEmail($email, $news, $subscriber['name'] ?? '');
+                if (!empty($result['success'])) {
+                    $sent++;
+                } else {
+                    $failed++;
+                }
+            }
+
+            return [
+                'success' => true,
+                'sent' => $sent,
+                'failed' => $failed,
+                'total' => count($subscribers),
+                'message' => "Newsletter sent to {$sent} subscriber(s)"
+            ];
+        } catch (Exception $e) {
+            error_log('Newsletter broadcast error: ' . $e->getMessage());
+            return ['success' => false, 'error' => $e->getMessage()];
+        }
+    }
 }
 
 // Helper function

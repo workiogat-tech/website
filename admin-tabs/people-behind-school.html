@@ -497,7 +497,8 @@ function handlePeopleFormSubmit(event, form) {
         hero_image: form.querySelector('input[name="hero_image"]')?.value || '',
         video_url: form.querySelector('input[name="video_url"]')?.value || '',
         video_embed_code: form.querySelector('textarea[name="video_embed_code"]')?.value || '',
-        people: people
+        people: people,
+        people_json: JSON.stringify(people)
     };
     
     const submitBtn = form.querySelector('button[type="submit"]');

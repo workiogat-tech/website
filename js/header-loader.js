@@ -135,9 +135,14 @@ const HeaderLoader = {
             const icon = item.icon ? this.escapeHtml(item.icon) + ' ' : '';
             
             if (hasChildren) {
-                const childHtml = children[item.id].map(child => 
-                    `<a href="${this.escapeHtml(child.url || '#')}">${this.escapeHtml(child.icon || '')} ${this.escapeHtml(child.label)}</a>`
-                ).join('');
+                const childHtml = children[item.id].map(child => {
+                    const label = child.label || '';
+                    const isNewsletter = /newsletter/i.test(label) || /newsletter/i.test(String(child.url || ''));
+                    if (isNewsletter) {
+                        return `<a href="#" onclick="event.preventDefault(); if (typeof window.openNewsletterModal === 'function') window.openNewsletterModal(); return false;">${this.escapeHtml(child.icon || '')} ${this.escapeHtml(label)}</a>`;
+                    }
+                    return `<a href="${this.escapeHtml(child.url || '#')}">${this.escapeHtml(child.icon || '')} ${this.escapeHtml(label)}</a>`;
+                }).join('');
                 
                 return `
                     <div class="${isMobile ? 'nav-dropdown' : 'top-nav-dropdown'}">
@@ -174,6 +179,7 @@ const HeaderLoader = {
                     <a href="teachers.html">Meet Our Staff</a>
                     <a href="testimonials.html">Testimonials</a>
                     <a href="gallery.html">School Gallery</a>
+                    <a href="#" onclick="event.preventDefault(); if (typeof window.openNewsletterModal === 'function') window.openNewsletterModal(); return false;">Newsletter</a>
                 </div>
             </div>
             <div class="${prefix}nav-dropdown">
@@ -186,6 +192,20 @@ const HeaderLoader = {
                     <a href="events.html">Events</a>
                     <a href="clubs.html">Clubs</a>
                     <a href="facilities.html">School Facilities</a>
+                </div>
+            </div>
+            <div class="${prefix}nav-dropdown">
+                <a href="#" class="${prefix}nav-link">Support Our Work
+                    <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                </a>
+                <div class="${prefix}dropdown-menu">
+                    <a href="sponsorship.html">Sponsorship</a>
+                    <a href="give-back.html">Give Back</a>
+                    <a href="people-behind-school.html">People Behind the School</a>
+                    <a href="parents.html">Parent Portal</a>
+                    <a href="resources.html">Resources</a>
                 </div>
             </div>
             <a href="contact.html" class="${prefix}nav-link">Contact</a>

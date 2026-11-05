@@ -367,39 +367,20 @@ try {
             exit;
         }
         
-        // Process people_json with validation
+        // Process people_json / people array with validation
         $peopleJson = '[]';
-        if (isset($input['people_json']) && !empty($input['people_json'])) {
-            if (is_string($input['people_json'])) {
-                $decoded = json_decode($input['people_json'], true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    // Validate each person has required fields
-                    $validatedPeople = [];
-                    foreach ($decoded as $index => $person) {
-                        $fullName = trim($person['full_name'] ?? '');
-                        $title = trim($person['title'] ?? '');
-                        $biography = trim($person['biography'] ?? '');
-                        
-                        if (empty($fullName) || empty($title) || empty($biography)) {
-                            error_log("Person at index $index missing required fields: full_name=" . (!empty($fullName) ? 'set' : 'empty') . ", title=" . (!empty($title) ? 'set' : 'empty') . ", biography=" . (!empty($biography) ? 'set' : 'empty'));
-                            continue; // Skip invalid person
-                        }
-                        
-                        $validatedPeople[] = $person;
-                    }
-                    
-                    if (empty($validatedPeople) && !empty($decoded)) {
-                        while (ob_get_level() > 0) {
-                            ob_end_clean();
-                        }
-                        http_response_code(400);
-                        echo json_encode(['error' => 'All people entries are missing required fields (Full Name, Title/Role, or Biography). Please fill in all required fields.']);
-                        exit;
-                    }
-                    
-                    $peopleJson = json_encode($validatedPeople);
-                } else {
-                    error_log("Invalid JSON in people_json: " . json_last_error_msg());
+        $rawPeople = null;
+        if (isset($input['people_json']) && $input['people_json'] !== '' && $input['people_json'] !== null) {
+            $rawPeople = $input['people_json'];
+        } elseif (isset($input['people']) && $input['people'] !== '' && $input['people'] !== null) {
+            $rawPeople = $input['people'];
+        }
+
+        if ($rawPeople !== null) {
+            if (is_string($rawPeople)) {
+                $decoded = json_decode($rawPeople, true);
+                if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded)) {
+                    error_log("Invalid JSON in people data: " . json_last_error_msg());
                     while (ob_get_level() > 0) {
                         ob_end_clean();
                     }
@@ -407,12 +388,43 @@ try {
                     echo json_encode(['error' => 'Invalid people data format. Please try refreshing the page and adding people again.']);
                     exit;
                 }
+            } elseif (is_array($rawPeople)) {
+                $decoded = $rawPeople;
             } else {
-                $peopleJson = json_encode($input['people_json']);
+                $decoded = [];
             }
-        } else {
-            // No people_json provided - this is okay, just save empty array
-            $peopleJson = '[]';
+
+            $validatedPeople = [];
+            foreach ($decoded as $index => $person) {
+                if (!is_array($person)) {
+                    continue;
+                }
+                $fullName = trim($person['full_name'] ?? $person['name'] ?? '');
+                $title = trim($person['title'] ?? $person['position'] ?? '');
+                $biography = trim($person['biography'] ?? $person['description'] ?? '');
+
+                // Name + role are required; biography is optional so saved people still appear
+                if (empty($fullName) || empty($title)) {
+                    error_log("Person at index $index missing required fields: full_name=" . (!empty($fullName) ? 'set' : 'empty') . ", title=" . (!empty($title) ? 'set' : 'empty'));
+                    continue;
+                }
+
+                $person['full_name'] = $fullName;
+                $person['title'] = $title;
+                $person['biography'] = $biography;
+                $validatedPeople[] = $person;
+            }
+
+            if (empty($validatedPeople) && !empty($decoded)) {
+                while (ob_get_level() > 0) {
+                    ob_end_clean();
+                }
+                http_response_code(400);
+                echo json_encode(['error' => 'All people entries are missing required fields (Full Name or Title/Role). Please fill in name and role.']);
+                exit;
+            }
+
+            $peopleJson = json_encode($validatedPeople);
         }
         
         // Build fields and values

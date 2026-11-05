@@ -1,124 +1,244 @@
 <div class="content-card" style="padding: 0;">
     <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; border: 1px solid #0ea5e9; margin-bottom: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-            <h2 style="font-size: 24px; font-weight: bold; color: #111827; margin: 0;">📚 Resources & Information</h2>
-            <button onclick="window.open('resources.html', '_blank')" style="padding: 8px 16px; background: #4b5563; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 8px; transition: background 0.2s;" onmouseover="this.style.background='#374151'" onmouseout="this.style.background='#4b5563'">
-                <span>🔗</span> Preview Page
-            </button>
+            <h2 style="font-size: 24px; font-weight: bold; color: #111827; margin: 0;">Resources & Information</h2>
+            <button onclick="window.open('resources.html', '_blank')" style="padding: 8px 16px; background: #4b5563; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 14px;">Preview Page</button>
         </div>
-        <p style="font-size: 14px; color: #6b7280; margin: 0;">Manage the Resources page content, including hero section, section headers, and resource detail sections.</p>
+        <p style="font-size: 14px; color: #6b7280; margin: 0;">Manage the Resources page content, including hero section and detail sections.</p>
     </div>
     
-    <form method="POST" action="api/content/resources.php" id="resourcesForm" onsubmit="return handleAdminFormSubmit(event, this);">
-        <!-- Hero Section -->
+    <form method="POST" action="api/content/resources.php" id="resourcesForm" onsubmit="return handleResourcesFormSubmit(event, this);">
         <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 25px; border-radius: 12px; border: 2px solid #f59e0b; margin-bottom: 30px;">
-            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">🎯 Page Header (Hero Section)</h3>
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">Page Header (Hero Section)</h3>
             
             <div class="form-group">
                 <label class="form-label">Hero Caption</label>
-                <input type="text" name="hero_caption" class="form-input" 
-                       id="hero_caption"
-                       value=""
-                       placeholder="Resources & Information">
-                <small style="color: #6b7280; display: block; margin-top: 5px;">This appears as the caption above the main title in the hero section</small>
+                <input type="text" name="hero_caption" class="form-input" id="hero_caption" value="" placeholder="Resources & Information">
             </div>
             
             <div class="form-group">
                 <label class="form-label">Hero Title</label>
-                <input type="text" name="hero_title" class="form-input" 
-                       id="hero_title"
-                       value=""
-                       placeholder="Resources">
-                <small style="color: #6b7280; display: block; margin-top: 5px;">This appears as the main title in the hero section</small>
+                <input type="text" name="hero_title" class="form-input" id="hero_title" value="" placeholder="Resources">
             </div>
             
             <div class="form-group">
                 <label class="form-label">Hero Image</label>
-                <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">This image appears in the header/hero section of the Resources page</p>
                 <div style="display: flex; align-items: center; gap: 15px;">
                     <div id="resourcesHeroPreview" style="flex-shrink: 0;"></div>
                     <div style="flex: 1;">
-                        <input type="text" name="hero_image" id="resources_hero_image" class="form-input" 
-                               value="" 
-                               placeholder="Select image from media library" readonly>
+                        <input type="text" name="hero_image" id="resources_hero_image" class="form-input" value="" placeholder="Select image from media library" readonly>
                     </div>
-                    <button type="button" onclick="openMediaLibrary('resources_hero_image')" 
-                            class="btn btn-primary">🖼️ Select Image</button>
+                    <button type="button" onclick="openMediaLibrary('resources_hero_image')" class="btn btn-primary">Select Image</button>
                 </div>
             </div>
         </div>
         
-        <!-- Main Content Section Header -->
         <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 25px; border-radius: 12px; border: 2px solid #0ea5e9; margin-bottom: 30px;">
-            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">📋 Main Content Section</h3>
+            <h3 style="font-size: 20px; font-weight: 600; color: #333; margin-bottom: 20px;">Main Content Section</h3>
             
             <div class="form-group">
                 <label class="form-label">Section Title</label>
-                <input type="text" name="section_title" class="form-input" 
-                       id="section_title"
-                       value=""
-                       placeholder="Resources & Information">
+                <input type="text" name="section_title" class="form-input" id="section_title" value="" placeholder="Resources & Information">
             </div>
             
             <div class="form-group">
                 <label class="form-label">Section Subtitle</label>
-                <textarea name="section_subtitle" class="form-input" rows="3"
-                          id="section_subtitle"
-                          placeholder="Comprehensive resources and information for parents and students..."></textarea>
+                <textarea name="section_subtitle" class="form-input" rows="3" id="section_subtitle" placeholder="Comprehensive resources and information for parents and students..."></textarea>
             </div>
         </div>
+
+        <div style="background: white; border-radius: 12px; padding: 24px; border: 2px solid #9333ea; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="font-size: 20px; font-weight: 600; color: #333; margin: 0;">Resource Detail Sections</h3>
+                <button type="button" onclick="addResourceSection()" class="btn btn-primary">Add Resource Section</button>
+            </div>
+            <p style="color: #6b7280; margin-bottom: 20px; font-size: 14px;">These sections appear on the Resources page with alternating image/text layout.</p>
+            <div id="resourceSectionsList"></div>
+            <input type="hidden" name="resource_detail_sections" id="resourceSectionsJson" value="[]">
+        </div>
         
-        <!-- Action Buttons -->
         <div style="display: flex; gap: 12px; margin-top: 30px; padding-top: 24px; border-top: 1px solid #e5e7eb;">
-            <button type="submit" 
-                    style="padding: 12px 24px; background: linear-gradient(135deg, #9333ea, #7e22ce); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
-                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(147, 51, 234, 0.4)'"
-                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                <span>💾</span> Save Changes
-            </button>
-            <button type="button" 
-                    onclick="window.open('resources.html', '_blank')"
-                    style="padding: 12px 24px; background: #4b5563; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;"
-                    onmouseover="this.style.background='#374151'; this.style.transform='translateY(-2px)'"
-                    onmouseout="this.style.background='#4b5563'; this.style.transform='translateY(0)'">
-                <span>👁️</span> Preview
-            </button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <button type="button" onclick="window.open('resources.html', '_blank')" class="btn">Preview</button>
         </div>
     </form>
 </div>
 
 <script>
-// Load resources data on page load
-(async function() {
-    try {
-        const response = await fetch('api/content/resources.php');
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.resources) {
-                const resources = data.resources;
-                document.getElementById('hero_caption').value = resources.hero_caption || 'Resources & Information';
-                document.getElementById('hero_title').value = resources.hero_title || 'Resources';
-                document.getElementById('resources_hero_image').value = resources.hero_image || '';
-                document.getElementById('section_title').value = resources.section_title || 'Resources & Information';
-                document.getElementById('section_subtitle').value = resources.section_subtitle || '';
-                updateResourcesHeroPreview(resources.hero_image || '');
+var resourceSections = [];
+var currentResourceImageField = null;
+
+window.handleAdminMediaPick = function(fieldId, imageUrl) {
+    if (fieldId === 'resources_hero_image') {
+        document.getElementById('resources_hero_image').value = imageUrl;
+        updateResourcesHeroPreview(imageUrl);
+        return true;
+    }
+    if (fieldId && String(fieldId).indexOf('resource_section_image_') === 0) {
+        const index = parseInt(String(fieldId).replace('resource_section_image_', ''), 10);
+        if (!isNaN(index) && resourceSections[index]) {
+            resourceSections[index].image = imageUrl;
+            renderResourceSections();
+            return true;
+        }
+    }
+    if (currentResourceImageField) {
+        currentResourceImageField.value = imageUrl;
+        const entry = currentResourceImageField.closest('.resource-section-entry');
+        if (entry) {
+            const idx = Array.from(document.querySelectorAll('.resource-section-entry')).indexOf(entry);
+            if (idx >= 0 && resourceSections[idx]) {
+                resourceSections[idx].image = imageUrl;
+                renderResourceSections();
             }
         }
-    } catch (error) {
-        console.error('Error loading resources:', error);
+        currentResourceImageField = null;
+        return true;
     }
-})();
+    return false;
+};
+
+function escapeAttr(text) {
+    return String(text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+}
+function escapeHtml(text) {
+    return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function syncResourceSectionsJson() {
+    document.getElementById('resourceSectionsJson').value = JSON.stringify(resourceSections);
+}
+
+function renderResourceSections() {
+    const list = document.getElementById('resourceSectionsList');
+    if (!list) return;
+    if (!resourceSections.length) {
+        list.innerHTML = '<p style="color:#6b7280;">No resource sections yet. Add Parent Handbook, Academic Support, etc.</p>';
+        syncResourceSectionsJson();
+        return;
+    }
+    list.innerHTML = resourceSections.map(function(section, index) {
+        return '<div class="resource-section-entry" style="border:2px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;background:#f9fafb;position:relative;">'
+            + '<button type="button" onclick="removeResourceSection(' + index + ')" style="position:absolute;top:12px;right:12px;background:#dc2626;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Remove</button>'
+            + '<div class="form-group" style="padding-right:100px;"><label class="form-label">Section Title</label>'
+            + '<input class="form-input" value="' + escapeAttr(section.title || '') + '" onchange="resourceSections[' + index + '].title=this.value;syncResourceSectionsJson();"></div>'
+            + '<div class="form-group"><label class="form-label">Section ID (anchor)</label>'
+            + '<input class="form-input" value="' + escapeAttr(section.id || '') + '" placeholder="parent-handbook" onchange="resourceSections[' + index + '].id=this.value;syncResourceSectionsJson();"></div>'
+            + '<div class="form-group"><label class="form-label">Image</label><div style="display:flex;gap:12px;align-items:center;">'
+            + (section.image ? '<img src="' + escapeAttr(section.image) + '" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">' : '')
+            + '<input class="form-input resource-section-image-input" id="resource_section_image_' + index + '" value="' + escapeAttr(section.image || '') + '" readonly placeholder="Select image">'
+            + '<button type="button" class="btn btn-primary" onclick="openResourceSectionImage(' + index + ')">Select Image</button></div></div>'
+            + '<div class="form-group"><label class="form-label">Description</label>'
+            + '<textarea class="form-input" rows="5" onchange="resourceSections[' + index + '].description=this.value;syncResourceSectionsJson();">' + escapeHtml(section.description || '') + '</textarea></div>'
+            + '</div>';
+    }).join('');
+    syncResourceSectionsJson();
+}
+
+function openResourceSectionImage(index) {
+    currentResourceImageField = document.getElementById('resource_section_image_' + index);
+    if (typeof openMediaLibrary === 'function') {
+        openMediaLibrary('resource_section_image_' + index);
+    }
+}
+
+function addResourceSection() {
+    resourceSections.push({
+        title: '',
+        id: '',
+        image: '',
+        description: ''
+    });
+    renderResourceSections();
+}
+
+function removeResourceSection(index) {
+    resourceSections.splice(index, 1);
+    renderResourceSections();
+}
 
 function updateResourcesHeroPreview(url) {
     const preview = document.getElementById('resourcesHeroPreview');
     if (url && url.trim()) {
-        preview.innerHTML = `<img src="${url}" alt="Hero image preview" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.style.display='none'">`;
+        preview.innerHTML = '<img src="' + escapeAttr(url) + '" alt="Hero image preview" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.style.display=\'none\'">';
     } else {
         preview.innerHTML = '';
     }
 }
 
-// Update preview when image changes
+function parseMaybeJson(value, fallback) {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string' && value.trim()) {
+        try { return JSON.parse(value); } catch (e) { return fallback; }
+    }
+    return fallback;
+}
+
+function handleResourcesFormSubmit(event, form) {
+    event.preventDefault();
+    syncResourceSectionsJson();
+    const payload = {
+        hero_caption: document.getElementById('hero_caption').value,
+        hero_title: document.getElementById('hero_title').value,
+        hero_image: document.getElementById('resources_hero_image').value,
+        section_title: document.getElementById('section_title').value,
+        section_subtitle: document.getElementById('section_subtitle').value,
+        resource_detail_sections: resourceSections.map(function(section) {
+            const id = (section.id || section.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            return {
+                title: section.title || '',
+                id: id,
+                image: section.image || '',
+                description: section.description || ''
+            };
+        })
+    };
+
+    fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(result => {
+        if (result.error) {
+            if (typeof showToast === 'function') showToast(result.error, 'error');
+            else alert(result.error);
+        } else {
+            if (typeof showToast === 'function') showToast(result.message || 'Resources saved', 'success');
+            else alert(result.message || 'Resources saved');
+        }
+    })
+    .catch(() => {
+        if (typeof showToast === 'function') showToast('Failed to save resources', 'error');
+        else alert('Failed to save resources');
+    });
+    return false;
+}
+
+(async function() {
+    try {
+        const response = await fetch('api/content/resources.php');
+        if (response.ok) {
+            const data = await response.json();
+            const resources = (data && data.success && data.resources)
+                ? data.resources
+                : ((data && !data.error && !Array.isArray(data)) ? data : {});
+            document.getElementById('hero_caption').value = resources.hero_caption || 'Resources & Information';
+            document.getElementById('hero_title').value = resources.hero_title || 'Resources';
+            document.getElementById('resources_hero_image').value = resources.hero_image || '';
+            document.getElementById('section_title').value = resources.section_title || 'Resources & Information';
+            document.getElementById('section_subtitle').value = resources.section_subtitle || '';
+            updateResourcesHeroPreview(resources.hero_image || '');
+            resourceSections = parseMaybeJson(resources.resource_detail_sections, []);
+            renderResourceSections();
+        }
+    } catch (error) {
+        console.error('Error loading resources:', error);
+        renderResourceSections();
+    }
+})();
+
 document.getElementById('resources_hero_image').addEventListener('change', function() {
     updateResourcesHeroPreview(this.value);
 });

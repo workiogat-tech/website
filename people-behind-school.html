@@ -21,7 +21,7 @@
     })();
     </script>
     <title>People Behind School - Excellence Academy</title>
-    <link rel="stylesheet" href="css/style.css?v=20261025b">
+    <link rel="stylesheet" href="css/style.css?v=20261105fix">
 </head>
 <body>
     <div id="header-placeholder"><header class="site-header" id="mainHeader"><div class="header-top"><div class="container"><div class="header-top-content"><div class="contact-info"></div><nav class="top-nav-desktop"><a href="index.html" class="top-nav-link">Home</a><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="top-nav-dropdown"><a href="#" class="top-nav-link">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="top-dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="top-nav-link">Contact</a></nav></div></div></div><div class="header-main"><div class="container"><div class="header-content"><div class="logo"><a href="index.html" class="logo-link"><div class="logo-placeholder"><span>S</span></div></a></div><div class="header-actions"><button type="button" class="search-button" id="searchButton" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg></button><button type="button" class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Menu" aria-expanded="false"><span class="menu-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></button></div></div><nav class="main-nav mobile-nav" id="mainNav"><a href="index.html" class="nav-link">Home</a><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Who We Are <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="about.html">About Us</a><a href="school-background.html">School Background</a><a href="teachers.html">Meet Our Staff</a><a href="testimonials.html">Testimonials</a><a href="gallery.html">School Gallery</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">School Life <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="events.html">Events</a><a href="clubs.html">Clubs</a><a href="facilities.html">School Facilities</a></div></div><div class="nav-dropdown"><a href="#" class="nav-link dropdown-trigger">Support Our Work <svg class="icon-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg></a><div class="dropdown-menu"><a href="sponsorship.html">Sponsorship</a><a href="give-back.html">Give Back</a><a href="people-behind-school.html">People Behind the School</a><a href="parents.html">Parent Portal</a></div></div><a href="contact.html" class="nav-link">Contact</a></nav></div></div></header></div>
@@ -59,8 +59,8 @@
     
     <div id="footer-placeholder"></div>
     
-    <script src="js/static-pages.js?v=20261022g"></script>
-    <script src="js/page-data-loader.js?v=20261025g"></script>
+    <script src="js/static-pages.js?v=20261105fix"></script>
+    <script src="js/page-data-loader.js?v=20261105fix"></script>
     <script>
         (async function() {
             try {
@@ -103,7 +103,7 @@
                     const container = document.getElementById('people-container');
                     let peopleHtml = '<div class="people-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 320px)); gap: 30px; max-width: 1400px; margin: 0 auto; justify-content: center;">';
                     data.people.forEach(person => {
-                        const personPhoto = person.photo || person.image || '';
+                        const personPhoto = normalizeMediaUrl(person.photo || person.image || '');
                         const personName = person.full_name || person.name || '';
                         const personTitle = person.title || person.position || '';
                         const personBio = person.biography || person.description || '';
@@ -111,7 +111,8 @@
                             <div class="person-card card-gradient-purple" style="overflow: hidden; width: 100%; max-width: 320px; margin: 0 auto;">
                                 ${personPhoto ? `
                                     <div class="person-image" style="width: 100%; height: 240px; position: relative; overflow: hidden; border-radius: 24px 24px 0 0;">
-                                        <img src="${escapeHtml(personPhoto)}" alt="${escapeHtml(personName)}" style="width: 100%; height: 100%; object-fit: cover;">
+                                        <img src="${escapeHtml(personPhoto)}" alt="${escapeHtml(personName)}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling && (this.nextElementSibling.style.display='flex');">
+                                        <div class="person-image-placeholder" style="display:none;width:100%;height:100%;background:linear-gradient(135deg,var(--primary-color),#a00028);align-items:center;justify-content:center;color:white;font-size:64px;position:absolute;inset:0;">${escapeHtml((personName || '?').charAt(0))}</div>
                                         <div style="position: absolute; top: 15px; left: 15px; width: 50px; height: 50px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
                                             <div style="width: 40px; height: 40px; background: var(--primary-color); border-radius: 50%;"></div>
                                         </div>
@@ -216,6 +217,15 @@
             `;
         }
         
+        function normalizeMediaUrl(url) {
+            if (!url) return '';
+            const value = String(url).trim();
+            if (!value || value.indexOf('data:') === 0 || /^https?:/i.test(value) || value.charAt(0) === '/') {
+                return value;
+            }
+            return '/' + value.replace(/^\.?\//, '');
+        }
+
         function escapeHtml(text) {
             if (!text) return '';
             const div = document.createElement('div');
@@ -223,6 +233,6 @@
             return div.innerHTML;
         }
     </script>
-<script src="js/main.js?v=20261025b"></script>
+<script src="js/main.js?v=20261105fix"></script>
 </body>
 </html>

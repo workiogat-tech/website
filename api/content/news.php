@@ -77,8 +77,30 @@ if ($method === 'GET') {
         if (!$id) {
             throw new Exception('Failed to create news');
         }
+
+        $newsletterResult = null;
+        $shouldNotify = !isset($input['notify_subscribers']) || !empty($input['notify_subscribers']);
+        if ($shouldNotify) {
+            try {
+                require_once __DIR__ . '/../../includes/emailService.php';
+                $emailService = getEmailService();
+                $newsletterResult = $emailService->broadcastNewsletter([
+                    'title' => trim($input['title']),
+                    'excerpt' => $excerpt,
+                    'content' => $input['content'] ?? ''
+                ]);
+            } catch (Exception $mailError) {
+                error_log('News newsletter broadcast failed: ' . $mailError->getMessage());
+                $newsletterResult = ['success' => false, 'error' => $mailError->getMessage()];
+            }
+        }
         
-        echo json_encode(['success' => true, 'id' => $id, 'message' => 'News created successfully']);
+        echo json_encode([
+            'success' => true,
+            'id' => $id,
+            'message' => 'News created successfully',
+            'newsletter' => $newsletterResult
+        ]);
     } catch (Exception $e) {
         error_log("News API Error: " . $e->getMessage());
         http_response_code(500);

@@ -5,6 +5,62 @@
 
 const PageDataLoader = {
     baseURL: '/api/content',
+
+    animateCount(node, raw) {
+        if (!node) return;
+        const text = String(raw == null ? node.textContent : raw).trim();
+        const match = text.match(/^(\D*?)(\d[\d,]*(?:\.\d+)?)(.*)$/);
+        if (!match) {
+            node.textContent = text;
+            return;
+        }
+        const prefix = match[1];
+        const digits = match[2].replace(/,/g, '');
+        const suffix = match[3];
+        const target = Number(digits);
+        if (!Number.isFinite(target)) {
+            node.textContent = text;
+            return;
+        }
+        const decimals = (digits.split('.')[1] || '').length;
+        const grouped = match[2].indexOf(',') !== -1;
+        const format = (value) => {
+            const fixed = decimals ? value.toFixed(decimals) : String(Math.round(value));
+            const parts = fixed.split('.');
+            if (grouped) parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return prefix + parts.join('.') + suffix;
+        };
+        const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const run = () => {
+            if (node.dataset.counted === '1') return;
+            node.dataset.counted = '1';
+            if (reduced) {
+                node.textContent = text;
+                return;
+            }
+            const duration = 1600;
+            const begun = performance.now();
+            const step = (now) => {
+                const progress = Math.min(1, (now - begun) / duration);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                node.textContent = progress >= 1 ? text : format(target * eased);
+                if (progress < 1) requestAnimationFrame(step);
+            };
+            node.textContent = format(0);
+            requestAnimationFrame(step);
+        };
+        node.textContent = format(0);
+        if (!('IntersectionObserver' in window)) {
+            run();
+            return;
+        }
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) return;
+            observer.disconnect();
+            run();
+        }, { threshold: 0.45 });
+        observer.observe(node);
+    },
     
     async loadDb(key) {
         const endpoints = {
@@ -844,8 +900,8 @@ const PageDataLoader = {
                     hero_image: settings.hero_image || ''
                 },
                 upcomingEvents: this.asList(settings.upcomingEvents || settings.upcoming_events).length ? this.asList(settings.upcomingEvents || settings.upcoming_events) : defaultData.upcomingEvents,
-                resources: settings.resources || defaultData.resources,
-                contactInfo: settings.contactInfo || defaultData.contactInfo
+                resources: this.asList(settings.resources).length ? this.asList(settings.resources) : defaultData.resources,
+                contactInfo: this.asList(settings.contactInfo || settings.contact_info).length ? this.asList(settings.contactInfo || settings.contact_info) : defaultData.contactInfo
             };
         } catch (error) {
             return this.getDefaultParentsData();

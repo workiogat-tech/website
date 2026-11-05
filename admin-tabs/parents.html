@@ -6,10 +6,10 @@
 </head>
 <body>
     <div class="content-card">
-        <h2>👥 Parents Portal</h2>
-        <p style="margin-bottom: 30px; color: #666;">Manage parents portal content.</p>
+        <h2>Parents Portal</h2>
+        <p style="margin-bottom: 30px; color: #666;">Manage parents portal content, upcoming events, resources, and contact cards.</p>
         
-        <form method="POST" action="api/content/parents.php" id="parentsForm" onsubmit="return handleAdminFormSubmit(event, this);">
+        <form method="POST" action="api/content/parents.php" id="parentsForm" onsubmit="return handleParentsFormSubmit(event, this);">
             <div class="form-group">
                 <label class="form-label">Title</label>
                 <input type="text" name="title" id="parents_title" class="form-input">
@@ -38,26 +38,55 @@
                                placeholder="Select image from media library" readonly>
                     </div>
                     <button type="button" onclick="openMediaLibrary('parents_hero_image')" 
-                            class="btn btn-primary">🖼️ Select Image</button>
+                            class="btn btn-primary">Select Image</button>
                 </div>
             </div>
             
             <div class="form-group">
                 <label class="form-label">Additional Slide Images</label>
-                <button type="button" onclick="openMediaLibrary('parents_slides')" class="btn btn-primary" style="margin-bottom: 15px;">➕ Add Slide Image</button>
+                <button type="button" onclick="openMediaLibrary('parents_slides')" class="btn btn-primary" style="margin-bottom: 15px;">Add Slide Image</button>
                 <div id="parentsSlidesContainer" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;"></div>
             </div>
 
-            <!-- Hidden field for resource_detail_sections -->
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:24px 0;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h3 style="margin:0;">Upcoming Events</h3>
+                    <button type="button" class="btn btn-primary" onclick="addParentsEvent()">Add Event</button>
+                </div>
+                <div id="parentsEventsList"></div>
+            </div>
+
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:24px 0;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h3 style="margin:0;">Resource Cards</h3>
+                    <button type="button" class="btn btn-primary" onclick="addParentsResource()">Add Resource</button>
+                </div>
+                <div id="parentsResourcesList"></div>
+            </div>
+
+            <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:20px;margin:24px 0;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h3 style="margin:0;">Contact Cards</h3>
+                    <button type="button" class="btn btn-primary" onclick="addParentsContact()">Add Contact</button>
+                </div>
+                <div id="parentsContactsList"></div>
+            </div>
+
             <input type="hidden" name="resource_detail_sections" id="resourceSectionsJson" value='[]'>
             <input type="hidden" name="additional_slides" id="additional_slides_json" value='[]'>
+            <input type="hidden" name="upcoming_events" id="upcoming_events_json" value='[]'>
+            <input type="hidden" name="resources" id="resources_json" value='[]'>
+            <input type="hidden" name="contact_info" id="contact_info_json" value='[]'>
             
-            <button type="submit" class="btn btn-primary" style="margin-top: 30px;">💾 Save Changes</button>
+            <button type="submit" class="btn btn-primary" style="margin-top: 30px;">Save Changes</button>
         </form>
     </div>
 
     <script>
         var parentsSlides = [];
+        var parentsEvents = [];
+        var parentsResources = [];
+        var parentsContacts = [];
 
         window.handleAdminMediaPick = function(fieldId, imageUrl) {
             if (fieldId !== 'parents_slides') return false;
@@ -98,7 +127,108 @@
             });
         }
 
-        // Load existing parents data
+        function syncParentsJsonFields() {
+            document.getElementById('upcoming_events_json').value = JSON.stringify(parentsEvents);
+            document.getElementById('resources_json').value = JSON.stringify(parentsResources);
+            document.getElementById('contact_info_json').value = JSON.stringify(parentsContacts);
+        }
+
+        function renderParentsEvents() {
+            const container = document.getElementById('parentsEventsList');
+            if (!container) return;
+            if (!parentsEvents.length) {
+                container.innerHTML = '<p style="color:#6b7280;">No events yet. Add upcoming parent events.</p>';
+                syncParentsJsonFields();
+                return;
+            }
+            container.innerHTML = parentsEvents.map(function(event, index) {
+                return '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:12px;background:white;">'
+                    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">'
+                    + '<input class="form-input" placeholder="Title" value="' + escapeAttr(event.title || '') + '" onchange="parentsEvents[' + index + '].title=this.value;syncParentsJsonFields();">'
+                    + '<input class="form-input" placeholder="Type (Meeting/Event)" value="' + escapeAttr(event.type || '') + '" onchange="parentsEvents[' + index + '].type=this.value;syncParentsJsonFields();">'
+                    + '<input class="form-input" placeholder="Date (e.g. March 15, 2026)" value="' + escapeAttr(event.date || '') + '" onchange="parentsEvents[' + index + '].date=this.value;syncParentsJsonFields();">'
+                    + '<input class="form-input" placeholder="Time (e.g. 2:00 PM - 4:00 PM)" value="' + escapeAttr(event.time || '') + '" onchange="parentsEvents[' + index + '].time=this.value;syncParentsJsonFields();">'
+                    + '</div>'
+                    + '<input class="form-input" style="margin-top:10px;" placeholder="Location" value="' + escapeAttr(event.location || '') + '" onchange="parentsEvents[' + index + '].location=this.value;syncParentsJsonFields();">'
+                    + '<button type="button" class="btn" style="margin-top:10px;background:#dc2626;color:white;" onclick="parentsEvents.splice(' + index + ',1);renderParentsEvents();">Remove</button>'
+                    + '</div>';
+            }).join('');
+            syncParentsJsonFields();
+        }
+
+        function renderParentsResources() {
+            const container = document.getElementById('parentsResourcesList');
+            if (!container) return;
+            if (!parentsResources.length) {
+                container.innerHTML = '<p style="color:#6b7280;">No resource cards yet.</p>';
+                syncParentsJsonFields();
+                return;
+            }
+            container.innerHTML = parentsResources.map(function(resource, index) {
+                return '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:12px;background:white;">'
+                    + '<div style="display:grid;grid-template-columns:1fr 120px;gap:10px;">'
+                    + '<input class="form-input" placeholder="Title" value="' + escapeAttr(resource.title || '') + '" onchange="parentsResources[' + index + '].title=this.value;syncParentsJsonFields();">'
+                    + '<input class="form-input" placeholder="Icon" value="' + escapeAttr(resource.icon || '') + '" onchange="parentsResources[' + index + '].icon=this.value;syncParentsJsonFields();">'
+                    + '</div>'
+                    + '<textarea class="form-input" rows="2" style="margin-top:10px;" placeholder="Description" onchange="parentsResources[' + index + '].description=this.value;syncParentsJsonFields();">' + escapeHtml(resource.description || '') + '</textarea>'
+                    + '<input class="form-input" style="margin-top:10px;" placeholder="Link (e.g. resources.html#parent-handbook)" value="' + escapeAttr(resource.link || '') + '" onchange="parentsResources[' + index + '].link=this.value;syncParentsJsonFields();">'
+                    + '<button type="button" class="btn" style="margin-top:10px;background:#dc2626;color:white;" onclick="parentsResources.splice(' + index + ',1);renderParentsResources();">Remove</button>'
+                    + '</div>';
+            }).join('');
+            syncParentsJsonFields();
+        }
+
+        function renderParentsContacts() {
+            const container = document.getElementById('parentsContactsList');
+            if (!container) return;
+            if (!parentsContacts.length) {
+                container.innerHTML = '<p style="color:#6b7280;">No contact cards yet.</p>';
+                syncParentsJsonFields();
+                return;
+            }
+            container.innerHTML = parentsContacts.map(function(contact, index) {
+                return '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin-bottom:12px;background:white;">'
+                    + '<div style="display:grid;grid-template-columns:1fr 120px;gap:10px;">'
+                    + '<input class="form-input" placeholder="Title" value="' + escapeAttr(contact.title || '') + '" onchange="parentsContacts[' + index + '].title=this.value;syncParentsJsonFields();">'
+                    + '<input class="form-input" placeholder="Icon" value="' + escapeAttr(contact.icon || '') + '" onchange="parentsContacts[' + index + '].icon=this.value;syncParentsJsonFields();">'
+                    + '</div>'
+                    + '<input class="form-input" style="margin-top:10px;" placeholder="Value" value="' + escapeAttr(contact.value || '') + '" onchange="parentsContacts[' + index + '].value=this.value;syncParentsJsonFields();">'
+                    + '<input class="form-input" style="margin-top:10px;" placeholder="Description" value="' + escapeAttr(contact.description || '') + '" onchange="parentsContacts[' + index + '].description=this.value;syncParentsJsonFields();">'
+                    + '<input class="form-input" style="margin-top:10px;" placeholder="Link (tel:, mailto:, or URL)" value="' + escapeAttr(contact.link || '') + '" onchange="parentsContacts[' + index + '].link=this.value;syncParentsJsonFields();">'
+                    + '<button type="button" class="btn" style="margin-top:10px;background:#dc2626;color:white;" onclick="parentsContacts.splice(' + index + ',1);renderParentsContacts();">Remove</button>'
+                    + '</div>';
+            }).join('');
+            syncParentsJsonFields();
+        }
+
+        function addParentsEvent() {
+            parentsEvents.push({ title: '', date: '', time: '', location: '', type: 'Event' });
+            renderParentsEvents();
+        }
+        function addParentsResource() {
+            parentsResources.push({ title: '', description: '', icon: '📘', link: 'resources.html' });
+            renderParentsResources();
+        }
+        function addParentsContact() {
+            parentsContacts.push({ title: '', value: '', description: '', icon: '📞', link: '' });
+            renderParentsContacts();
+        }
+
+        function escapeAttr(text) {
+            return String(text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+        }
+        function escapeHtml(text) {
+            return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+
+        function parseMaybeJson(value, fallback) {
+            if (Array.isArray(value)) return value;
+            if (typeof value === 'string' && value.trim()) {
+                try { return JSON.parse(value); } catch (e) { return fallback; }
+            }
+            return fallback;
+        }
+
         async function loadParentsData() {
             try {
                 const response = await fetch('api/content/parents.php');
@@ -115,28 +245,69 @@
                         document.getElementById('parents_hero_preview').style.display = 'block';
                     }
                     
-                    // Load resource_detail_sections
                     if (data.resource_detail_sections) {
-                        const sections = typeof data.resource_detail_sections === 'string' ? JSON.parse(data.resource_detail_sections) : data.resource_detail_sections;
+                        const sections = parseMaybeJson(data.resource_detail_sections, []);
                         document.getElementById('resourceSectionsJson').value = JSON.stringify(sections);
                     }
                     
-                    // Load additional slides
                     if (data.additional_slides) {
-                        const slides = typeof data.additional_slides === 'string' ? JSON.parse(data.additional_slides) : data.additional_slides;
+                        const slides = parseMaybeJson(data.additional_slides, []);
                         parentsSlides = Array.isArray(slides) ? slides.filter(function (slide) { return typeof slide === 'string' && slide; }) : [];
                         renderParentsSlides();
                     }
+
+                    parentsEvents = parseMaybeJson(data.upcoming_events || data.upcomingEvents, []);
+                    parentsResources = parseMaybeJson(data.resources, []);
+                    parentsContacts = parseMaybeJson(data.contact_info || data.contactInfo, []);
+                    renderParentsEvents();
+                    renderParentsResources();
+                    renderParentsContacts();
                 }
             } catch (error) {
                 console.error('Error loading parents data:', error);
             }
         }
 
+        function handleParentsFormSubmit(event, form) {
+            event.preventDefault();
+            syncParentsJsonFields();
+            const payload = {
+                title: document.getElementById('parents_title').value,
+                subtitle: document.getElementById('parents_subtitle').value,
+                description: document.getElementById('parents_description').value,
+                hero_image: document.getElementById('parents_hero_image').value,
+                additional_slides: parentsSlides,
+                resource_detail_sections: parseMaybeJson(document.getElementById('resourceSectionsJson').value, []),
+                upcoming_events: parentsEvents,
+                resources: parentsResources,
+                contact_info: parentsContacts
+            };
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+            .then(r => r.json())
+            .then(result => {
+                if (result.error) {
+                    if (typeof showToast === 'function') showToast(result.error, 'error');
+                    else alert(result.error);
+                } else {
+                    if (typeof showToast === 'function') showToast(result.message || 'Parents portal saved', 'success');
+                    else alert(result.message || 'Parents portal saved');
+                }
+            })
+            .catch(() => {
+                if (typeof showToast === 'function') showToast('Failed to save parents portal', 'error');
+                else alert('Failed to save parents portal');
+            });
+            return false;
+        }
+
         function initParentsTab() {
             loadParentsData();
             
-            // Watch for hero image changes
             const heroInput = document.getElementById('parents_hero_image');
             if (heroInput) {
                 heroInput.addEventListener('change', function() {

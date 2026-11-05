@@ -128,10 +128,11 @@ async function loadTeachers() {
         const response = await fetch('api/content/teachers.php');
         if (response.ok) {
             const data = await response.json();
-            if (data.success && data.teachers) {
-                teachers = data.teachers;
-                displayTeachers();
-            }
+            const list = (data && data.success && Array.isArray(data.data))
+                ? data.data
+                : (data && Array.isArray(data.teachers) ? data.teachers : []);
+            teachers = list;
+            displayTeachers();
         }
     } catch (error) {
         console.error('Error loading teachers:', error);
@@ -143,12 +144,17 @@ async function loadTeachersSettings() {
         const response = await fetch('api/content/teachers-settings.php');
         if (response.ok) {
             const data = await response.json();
-            if (data.success && data.settings) {
-                teachersSettings = data.settings;
-                document.getElementById('teachers_page_title').value = teachersSettings.title || 'Our Teachers';
-                document.getElementById('teachers_page_subtitle').value = teachersSettings.subtitle || '';
-                document.getElementById('teachers_hero_image').value = teachersSettings.hero_image || '';
-                updateTeachersHeroPreview(teachersSettings.hero_image || '');
+            const settings = (data && data.settings)
+                ? data.settings
+                : ((data && !data.error) ? data : {});
+            teachersSettings = settings;
+            document.getElementById('teachers_page_title').value = teachersSettings.title || 'Our Teachers';
+            document.getElementById('teachers_page_subtitle').value = teachersSettings.subtitle || '';
+            document.getElementById('teachers_hero_image').value = teachersSettings.hero_image || '';
+            updateTeachersHeroPreview(teachersSettings.hero_image || '');
+            if (Array.isArray(teachersSettings.teachers) && teachersSettings.teachers.length && !teachers.length) {
+                teachers = teachersSettings.teachers;
+                displayTeachers();
             }
         }
     } catch (error) {

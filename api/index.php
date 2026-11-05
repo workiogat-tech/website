@@ -131,6 +131,14 @@ switch ($route) {
             echo json_encode(['error' => 'Method not allowed']);
         }
         break;
+    case '/forms/newsletter-unsubscribe':
+        if ($method === 'POST') {
+            require __DIR__ . '/forms/newsletter-unsubscribe.php';
+        } else {
+            http_response_code(405);
+            echo json_encode(['error' => 'Method not allowed']);
+        }
+        break;
     case '/forms/parent-registration':
         if ($method === 'POST') {
             require __DIR__ . '/forms/parent-registration.php';
