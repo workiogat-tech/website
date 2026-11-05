@@ -315,7 +315,7 @@ const StaticPages = {
                     </div>
                 </div>
             </div>
-            <button id="backToTop" class="back-to-top" style="display: none; position: fixed; bottom: 20px; right: 20px; width: 50px; height: 50px; border-radius: 50%; background: #800020; color: white; border: none; cursor: pointer; align-items: center; justify-content: center;">
+            <button id="backToTop" class="back-to-top" type="button" aria-label="Back to top">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
                     <line x1="12" y1="19" x2="12" y2="5"></line>
                     <polyline points="5 12 12 5 19 12"></polyline>
@@ -509,20 +509,8 @@ const StaticPages = {
     },
     
     initFooter() {
-        // Back to top button
-        const backToTop = document.getElementById('backToTop');
-        if (backToTop) {
-            window.addEventListener('scroll', () => {
-                if (window.pageYOffset > 300) {
-                    backToTop.style.display = 'flex';
-                } else {
-                    backToTop.style.display = 'none';
-                }
-            });
-            
-            backToTop.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
+        if (typeof window.initBackToTop === 'function') {
+            window.initBackToTop();
         }
     }
 };

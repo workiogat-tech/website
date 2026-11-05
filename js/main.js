@@ -471,26 +471,30 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Back to Top Button
-    const backToTopButton = document.getElementById('backToTop');
-    if (backToTopButton) {
-        // Show/hide button based on scroll position
-        window.addEventListener('scroll', function() {
+    // Back to Top Button (works even if footer injects the button later)
+    window.initBackToTop = function initBackToTop() {
+        const backToTopButton = document.getElementById('backToTop');
+        if (!backToTopButton || backToTopButton.dataset.bound === '1') return;
+        backToTopButton.dataset.bound = '1';
+
+        const syncVisibility = function() {
             if (window.pageYOffset > 300) {
                 backToTopButton.classList.add('show');
             } else {
                 backToTopButton.classList.remove('show');
             }
-        });
-        
-        // Smooth scroll to top when clicked
+        };
+
+        window.addEventListener('scroll', syncVisibility, { passive: true });
         backToTopButton.addEventListener('click', function() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         });
-    }
+        syncVisibility();
+    };
+    window.initBackToTop();
+    // Re-check shortly in case the footer/button is injected asynchronously
+    setTimeout(window.initBackToTop, 300);
+    setTimeout(window.initBackToTop, 1200);
     
     // Smooth page transitions
     document.querySelectorAll('a[href$=".php"]').forEach(link => {
