@@ -40,6 +40,11 @@ html {
     scroll-behavior: smooth;
 }
 
+html,
+body {
+    scroll-behavior: smooth;
+}
+
 /* Add smooth transitions to all interactive elements */
 a, button, .btn, .card, .nav-link {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -2213,7 +2218,7 @@ p {
     height: 320px;
     max-height: 320px;
     object-fit: cover;
-    object-position: center top;
+    object-position: center 30%;
     display: block;
 }
 
@@ -4562,7 +4567,7 @@ svg {
     max-height: 340px;
     min-height: 0;
     object-fit: cover;
-    object-position: center top;
+    object-position: center 30%;
     display: block;
 }
 
@@ -4628,7 +4633,7 @@ svg {
     height: 320px;
     max-height: 320px;
     object-fit: cover;
-    object-position: center top;
+    object-position: center 30%;
 }
 
 /* News Section */
@@ -5661,6 +5666,7 @@ svg {
     #about-why .why-choose-image .embedded-photo {
         height: 260px;
         max-height: 260px;
+        object-position: center 30%;
     }
     
     .hero-title {

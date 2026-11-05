@@ -471,6 +471,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
+    // Smooth animated scroll used by Back to Top
+    window.smoothScrollToTop = function smoothScrollToTop() {
+        if (window.__backToTopAnimating) return;
+        const start = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        if (start <= 0) return;
+
+        const prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReduced) {
+            window.scrollTo(0, 0);
+            return;
+        }
+
+        // Duration scales with distance so long pages still feel smooth, not abrupt
+        const duration = Math.min(1400, Math.max(550, Math.round(start * 0.45)));
+        const startTime = performance.now();
+        window.__backToTopAnimating = true;
+
+        const easeOutCubic = function(t) {
+            return 1 - Math.pow(1 - t, 3);
+        };
+
+        const step = function(now) {
+            const progress = Math.min(1, (now - startTime) / duration);
+            const y = Math.round(start * (1 - easeOutCubic(progress)));
+            window.scrollTo(0, y);
+            if (progress < 1) {
+                requestAnimationFrame(step);
+            } else {
+                window.scrollTo(0, 0);
+                window.__backToTopAnimating = false;
+            }
+        };
+        requestAnimationFrame(step);
+    };
+
     // Back to Top Button (works even if footer injects the button later)
     window.initBackToTop = function initBackToTop() {
         const backToTopButton = document.getElementById('backToTop');
@@ -486,8 +521,10 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         window.addEventListener('scroll', syncVisibility, { passive: true });
-        backToTopButton.addEventListener('click', function() {
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        backToTopButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.smoothScrollToTop();
         });
         syncVisibility();
     };
