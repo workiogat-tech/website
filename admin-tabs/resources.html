@@ -2,7 +2,7 @@
     <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; border: 1px solid #0ea5e9; margin-bottom: 24px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
             <h2 style="font-size: 24px; font-weight: bold; color: #111827; margin: 0;">Resources & Information</h2>
-            <button onclick="window.open('resources.html', '_blank')" style="padding: 8px 16px; background: #4b5563; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 14px;">Preview Page</button>
+            <button type="button" onclick="window.open('resources.html', '_blank')" style="padding: 8px 16px; background: #4b5563; color: white; border-radius: 8px; border: none; cursor: pointer; font-size: 14px;">Preview Page</button>
         </div>
         <p style="font-size: 14px; color: #6b7280; margin: 0;">Manage the Resources page content, including hero section and detail sections.</p>
     </div>
@@ -28,7 +28,7 @@
                     <div style="flex: 1;">
                         <input type="text" name="hero_image" id="resources_hero_image" class="form-input" value="" placeholder="Select image from media library" readonly>
                     </div>
-                    <button type="button" onclick="openMediaLibrary('resources_hero_image')" class="btn btn-primary">Select Image</button>
+                    <button type="button" onclick="if(typeof openMediaLibrary==='function')openMediaLibrary('resources_hero_image')" class="btn btn-primary">Select Image</button>
                 </div>
             </div>
         </div>
@@ -65,126 +65,101 @@
 </div>
 
 <script>
-var resourceSections = [];
-var currentResourceImageField = null;
+window.resourceSections = window.resourceSections || [];
 
-window.handleAdminMediaPick = function(fieldId, imageUrl) {
-    if (fieldId === 'resources_hero_image') {
-        document.getElementById('resources_hero_image').value = imageUrl;
-        updateResourcesHeroPreview(imageUrl);
-        return true;
-    }
-    if (fieldId && String(fieldId).indexOf('resource_section_image_') === 0) {
-        const index = parseInt(String(fieldId).replace('resource_section_image_', ''), 10);
-        if (!isNaN(index) && resourceSections[index]) {
-            resourceSections[index].image = imageUrl;
-            renderResourceSections();
-            return true;
-        }
-    }
-    if (currentResourceImageField) {
-        currentResourceImageField.value = imageUrl;
-        const entry = currentResourceImageField.closest('.resource-section-entry');
-        if (entry) {
-            const idx = Array.from(document.querySelectorAll('.resource-section-entry')).indexOf(entry);
-            if (idx >= 0 && resourceSections[idx]) {
-                resourceSections[idx].image = imageUrl;
-                renderResourceSections();
-            }
-        }
-        currentResourceImageField = null;
-        return true;
-    }
-    return false;
+window.escapeResourcesAttr = function(text) {
+    return String(text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+};
+window.escapeResourcesHtml = function(text) {
+    return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 };
 
-function escapeAttr(text) {
-    return String(text || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
-}
-function escapeHtml(text) {
-    return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+window.syncResourceSectionsJson = function() {
+    var hidden = document.getElementById('resourceSectionsJson');
+    if (hidden) hidden.value = JSON.stringify(window.resourceSections || []);
+};
 
-function syncResourceSectionsJson() {
-    document.getElementById('resourceSectionsJson').value = JSON.stringify(resourceSections);
-}
+window.updateResourcesHeroPreview = function(url) {
+    var preview = document.getElementById('resourcesHeroPreview');
+    if (!preview) return;
+    if (url && String(url).trim()) {
+        preview.innerHTML = '<img src="' + window.escapeResourcesAttr(url) + '" alt="Hero image preview" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.style.display=\'none\'">';
+    } else {
+        preview.innerHTML = '';
+    }
+};
 
-function renderResourceSections() {
-    const list = document.getElementById('resourceSectionsList');
+window.renderResourceSections = function() {
+    var list = document.getElementById('resourceSectionsList');
     if (!list) return;
-    if (!resourceSections.length) {
+    var sections = window.resourceSections || [];
+    if (!sections.length) {
         list.innerHTML = '<p style="color:#6b7280;">No resource sections yet. Add Parent Handbook, Academic Support, etc.</p>';
-        syncResourceSectionsJson();
+        window.syncResourceSectionsJson();
         return;
     }
-    list.innerHTML = resourceSections.map(function(section, index) {
-        return '<div class="resource-section-entry" style="border:2px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;background:#f9fafb;position:relative;">'
+    list.innerHTML = sections.map(function(section, index) {
+        var title = window.escapeResourcesAttr(section.title || '');
+        var id = window.escapeResourcesAttr(section.id || '');
+        var image = window.escapeResourcesAttr(section.image || '');
+        var description = window.escapeResourcesHtml(section.description || '');
+        var preview = section.image
+            ? '<img src="' + image + '" alt="" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;flex-shrink:0;" onerror="this.style.display=\'none\'">'
+            : '';
+        return ''
+            + '<div class="resource-section-entry" style="border:2px solid #e5e7eb;border-radius:12px;padding:20px;margin-bottom:16px;background:#f9fafb;position:relative;">'
             + '<button type="button" onclick="removeResourceSection(' + index + ')" style="position:absolute;top:12px;right:12px;background:#dc2626;color:white;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">Remove</button>'
             + '<div class="form-group" style="padding-right:100px;"><label class="form-label">Section Title</label>'
-            + '<input class="form-input" value="' + escapeAttr(section.title || '') + '" onchange="resourceSections[' + index + '].title=this.value;syncResourceSectionsJson();"></div>'
+            + '<input class="form-input" value="' + title + '" onchange="resourceSections[' + index + '].title=this.value;syncResourceSectionsJson();"></div>'
             + '<div class="form-group"><label class="form-label">Section ID (anchor)</label>'
-            + '<input class="form-input" value="' + escapeAttr(section.id || '') + '" placeholder="parent-handbook" onchange="resourceSections[' + index + '].id=this.value;syncResourceSectionsJson();"></div>'
-            + '<div class="form-group"><label class="form-label">Image</label><div style="display:flex;gap:12px;align-items:center;">'
-            + (section.image ? '<img src="' + escapeAttr(section.image) + '" style="width:90px;height:90px;object-fit:cover;border-radius:8px;border:1px solid #e5e7eb;">' : '')
-            + '<input class="form-input resource-section-image-input" id="resource_section_image_' + index + '" value="' + escapeAttr(section.image || '') + '" readonly placeholder="Select image">'
-            + '<button type="button" class="btn btn-primary" onclick="openResourceSectionImage(' + index + ')">Select Image</button></div></div>'
+            + '<input class="form-input" value="' + id + '" placeholder="parent-handbook" onchange="resourceSections[' + index + '].id=this.value;syncResourceSectionsJson();"></div>'
+            + '<div class="form-group"><label class="form-label">Image</label>'
+            + '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">'
+            + preview
+            + '<input class="form-input resource-section-image-input" id="resource_section_image_' + index + '" value="' + image + '" readonly placeholder="Select image from media library" style="flex:1;min-width:180px;">'
+            + '<button type="button" class="btn btn-primary" onclick="if(typeof openMediaLibrary===\'function\')openMediaLibrary(\'resource_section_image_' + index + '\')">Select Image</button>'
+            + '</div></div>'
             + '<div class="form-group"><label class="form-label">Description</label>'
-            + '<textarea class="form-input" rows="5" onchange="resourceSections[' + index + '].description=this.value;syncResourceSectionsJson();">' + escapeHtml(section.description || '') + '</textarea></div>'
+            + '<textarea class="form-input" rows="4" onchange="resourceSections[' + index + '].description=this.value;syncResourceSectionsJson();">' + description + '</textarea></div>'
             + '</div>';
     }).join('');
-    syncResourceSectionsJson();
-}
+    window.syncResourceSectionsJson();
+};
 
-function openResourceSectionImage(index) {
-    currentResourceImageField = document.getElementById('resource_section_image_' + index);
-    if (typeof openMediaLibrary === 'function') {
-        openMediaLibrary('resource_section_image_' + index);
-    }
-}
-
-function addResourceSection() {
-    resourceSections.push({
+window.addResourceSection = function() {
+    window.resourceSections.push({
         title: '',
         id: '',
         image: '',
         description: ''
     });
-    renderResourceSections();
-}
+    window.renderResourceSections();
+};
 
-function removeResourceSection(index) {
-    resourceSections.splice(index, 1);
-    renderResourceSections();
-}
+window.removeResourceSection = function(index) {
+    window.resourceSections.splice(index, 1);
+    window.renderResourceSections();
+};
 
-function updateResourcesHeroPreview(url) {
-    const preview = document.getElementById('resourcesHeroPreview');
-    if (url && url.trim()) {
-        preview.innerHTML = '<img src="' + escapeAttr(url) + '" alt="Hero image preview" style="width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 2px solid #e0e0e0;" onerror="this.style.display=\'none\'">';
-    } else {
-        preview.innerHTML = '';
-    }
-}
-
-function parseMaybeJson(value, fallback) {
+window.parseMaybeJson = function(value, fallback) {
     if (Array.isArray(value)) return value;
     if (typeof value === 'string' && value.trim()) {
         try { return JSON.parse(value); } catch (e) { return fallback; }
     }
     return fallback;
-}
+};
 
-function handleResourcesFormSubmit(event, form) {
+window.handleResourcesFormSubmit = function(event, form) {
     event.preventDefault();
-    syncResourceSectionsJson();
-    const payload = {
-        hero_caption: document.getElementById('hero_caption').value,
-        hero_title: document.getElementById('hero_title').value,
-        hero_image: document.getElementById('resources_hero_image').value,
-        section_title: document.getElementById('section_title').value,
-        section_subtitle: document.getElementById('section_subtitle').value,
-        resource_detail_sections: resourceSections.map(function(section) {
-            const id = (section.id || section.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    window.syncResourceSectionsJson();
+    var payload = {
+        hero_caption: (document.getElementById('hero_caption') || {}).value || '',
+        hero_title: (document.getElementById('hero_title') || {}).value || '',
+        hero_image: (document.getElementById('resources_hero_image') || {}).value || '',
+        section_title: (document.getElementById('section_title') || {}).value || '',
+        section_subtitle: (document.getElementById('section_subtitle') || {}).value || '',
+        resource_detail_sections: (window.resourceSections || []).map(function(section) {
+            var id = (section.id || section.title || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
             return {
                 title: section.title || '',
                 id: id,
@@ -197,10 +172,11 @@ function handleResourcesFormSubmit(event, form) {
     fetch(form.action, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify(payload)
     })
-    .then(r => r.json())
-    .then(result => {
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
         if (result.error) {
             if (typeof showToast === 'function') showToast(result.error, 'error');
             else alert(result.error);
@@ -209,37 +185,78 @@ function handleResourcesFormSubmit(event, form) {
             else alert(result.message || 'Resources saved');
         }
     })
-    .catch(() => {
+    .catch(function() {
         if (typeof showToast === 'function') showToast('Failed to save resources', 'error');
         else alert('Failed to save resources');
     });
     return false;
-}
+};
 
-(async function() {
+// Let the shared admin media picker fill inputs, then keep section data in sync
+window.handleAdminMediaPick = function(fieldId, imageUrl) {
+    if (!fieldId || !imageUrl) return false;
+
+    if (fieldId === 'resources_hero_image') {
+        var heroInput = document.getElementById('resources_hero_image');
+        if (heroInput) heroInput.value = imageUrl;
+        window.updateResourcesHeroPreview(imageUrl);
+        return true;
+    }
+
+    if (String(fieldId).indexOf('resource_section_image_') === 0) {
+        var index = parseInt(String(fieldId).replace('resource_section_image_', ''), 10);
+        if (!isNaN(index) && window.resourceSections[index]) {
+            window.resourceSections[index].image = imageUrl;
+            var input = document.getElementById(fieldId);
+            if (input) input.value = imageUrl;
+            window.renderResourceSections();
+            return true;
+        }
+    }
+    return false;
+};
+
+window.initResourcesTab = async function() {
     try {
-        const response = await fetch('api/content/resources.php');
+        var response = await fetch('api/content/resources.php', {
+            credentials: 'same-origin',
+            cache: 'no-store'
+        });
         if (response.ok) {
-            const data = await response.json();
-            const resources = (data && data.success && data.resources)
-                ? data.resources
-                : ((data && !data.error && !Array.isArray(data)) ? data : {});
-            document.getElementById('hero_caption').value = resources.hero_caption || 'Resources & Information';
-            document.getElementById('hero_title').value = resources.hero_title || 'Resources';
-            document.getElementById('resources_hero_image').value = resources.hero_image || '';
-            document.getElementById('section_title').value = resources.section_title || 'Resources & Information';
-            document.getElementById('section_subtitle').value = resources.section_subtitle || '';
-            updateResourcesHeroPreview(resources.hero_image || '');
-            resourceSections = parseMaybeJson(resources.resource_detail_sections, []);
-            renderResourceSections();
+            var data = await response.json();
+            var resources = (data && !data.error && !Array.isArray(data)) ? data : {};
+            var heroCaption = document.getElementById('hero_caption');
+            var heroTitle = document.getElementById('hero_title');
+            var heroImage = document.getElementById('resources_hero_image');
+            var sectionTitle = document.getElementById('section_title');
+            var sectionSubtitle = document.getElementById('section_subtitle');
+            if (heroCaption) heroCaption.value = resources.hero_caption || 'Resources & Information';
+            if (heroTitle) heroTitle.value = resources.hero_title || 'Resources';
+            if (heroImage) heroImage.value = resources.hero_image || '';
+            if (sectionTitle) sectionTitle.value = resources.section_title || 'Resources & Information';
+            if (sectionSubtitle) sectionSubtitle.value = resources.section_subtitle || '';
+            window.updateResourcesHeroPreview(resources.hero_image || '');
+            window.resourceSections = window.parseMaybeJson(resources.resource_detail_sections, []);
+            if (!Array.isArray(window.resourceSections)) window.resourceSections = [];
         }
     } catch (error) {
         console.error('Error loading resources:', error);
-        renderResourceSections();
+        window.resourceSections = window.resourceSections || [];
     }
-})();
+    window.renderResourceSections();
 
-document.getElementById('resources_hero_image').addEventListener('change', function() {
-    updateResourcesHeroPreview(this.value);
-});
+    var heroInput = document.getElementById('resources_hero_image');
+    if (heroInput && heroInput.dataset.bound !== '1') {
+        heroInput.dataset.bound = '1';
+        heroInput.addEventListener('change', function() {
+            window.updateResourcesHeroPreview(this.value);
+        });
+    }
+};
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() { window.initResourcesTab(); });
+} else {
+    setTimeout(function() { window.initResourcesTab(); }, 50);
+}
 </script>
