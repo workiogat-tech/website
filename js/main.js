@@ -506,14 +506,44 @@ document.addEventListener('DOMContentLoaded', function() {
         requestAnimationFrame(step);
     };
 
-    // Back to Top Button (works even if footer injects the button later)
+    // Ensure a single Back to Top button exists on every content page
+    window.ensureBackToTopButton = function ensureBackToTopButton() {
+        const existing = Array.from(document.querySelectorAll('#backToTop, .back-to-top'));
+        let button = existing[0] || null;
+
+        // Remove accidental duplicates from footer/page markup
+        existing.slice(1).forEach(function(node) {
+            if (node && node.parentNode) node.parentNode.removeChild(node);
+        });
+
+        if (!button) {
+            button = document.createElement('button');
+            button.id = 'backToTop';
+            button.type = 'button';
+            button.className = 'back-to-top';
+            button.setAttribute('aria-label', 'Back to top');
+            button.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>';
+            document.body.appendChild(button);
+        } else {
+            button.id = 'backToTop';
+            button.classList.add('back-to-top');
+            button.setAttribute('aria-label', 'Back to top');
+            if (button.parentElement !== document.body) {
+                document.body.appendChild(button);
+            }
+        }
+        return button;
+    };
+
+    // Back to Top Button (creates itself if footer has not injected it yet)
     window.initBackToTop = function initBackToTop() {
-        const backToTopButton = document.getElementById('backToTop');
+        const backToTopButton = window.ensureBackToTopButton();
         if (!backToTopButton || backToTopButton.dataset.bound === '1') return;
         backToTopButton.dataset.bound = '1';
 
         const syncVisibility = function() {
-            if (window.pageYOffset > 300) {
+            const y = window.pageYOffset || document.documentElement.scrollTop || 0;
+            if (y > 280) {
                 backToTopButton.classList.add('show');
             } else {
                 backToTopButton.classList.remove('show');
@@ -521,6 +551,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         window.addEventListener('scroll', syncVisibility, { passive: true });
+        window.addEventListener('resize', syncVisibility, { passive: true });
         backToTopButton.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
@@ -529,9 +560,10 @@ document.addEventListener('DOMContentLoaded', function() {
         syncVisibility();
     };
     window.initBackToTop();
-    // Re-check shortly in case the footer/button is injected asynchronously
+    // Re-check in case the footer replaces the placeholder later
     setTimeout(window.initBackToTop, 300);
     setTimeout(window.initBackToTop, 1200);
+    setTimeout(window.initBackToTop, 2500);
     
     // Smooth page transitions
     document.querySelectorAll('a[href$=".php"]').forEach(link => {
