@@ -7005,13 +7005,20 @@ svg {
     }
 
     .hero-buttons .btn-primary {
-        background: #ffffff;
-        color: var(--primary-color);
+        background: var(--hero-cta-bg, var(--primary-color, #800020)) !important;
+        color: var(--hero-cta-color, #ffffff) !important;
+        border: 2px solid var(--hero-cta-bg, var(--primary-color, #800020)) !important;
     }
 
     .hero-buttons .btn-primary:hover {
-        background: #f7e8ec;
-        color: var(--primary-color);
+        background: var(--hero-cta-bg-hover, var(--secondary-color, #6B0000)) !important;
+        color: var(--hero-cta-color, #ffffff) !important;
+    }
+
+    .hero-buttons .btn-outline-white {
+        color: var(--hero-cta2-color, #ffffff) !important;
+        border-color: var(--hero-cta2-color, #ffffff) !important;
+        background: var(--hero-cta2-bg, transparent) !important;
     }
 
     .btn-outline-white {

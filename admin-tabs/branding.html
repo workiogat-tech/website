@@ -4,20 +4,29 @@
             <span style="font-size: 28px;">🎨</span>
             <h2 style="font-size: 28px; font-weight: bold; color: #111827; margin: 0;">Branding & Identity</h2>
         </div>
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px 18px; margin-bottom: 28px; color: #1e3a8a; font-size: 14px; line-height: 1.55;">
+            <strong>How to edit the browser tab & school name</strong>
+            <ol style="margin: 10px 0 0 18px; padding: 0;">
+                <li><strong>School Name</strong> sets the browser tab title (example: <em>ZION SCHOOLS - Home</em>) and the name used across the site.</li>
+                <li><strong>Favicon</strong> is the small icon next to the tab title — pick an image from the media library.</li>
+                <li>For the bottom line <em>© ZION SCHOOLS. All rights reserved.</em>, open the <strong>Footer</strong> tab and edit Copyright Text.</li>
+            </ol>
+        </div>
         
         <form method="POST" id="brandingForm" onsubmit="return handleBrandingFormSubmit(event, this);">
             <!-- School Name -->
             <div class="form-group" style="margin-bottom: 24px;">
-                <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">School Name</label>
+                <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">School Name <span style="font-weight: 400; color: #6b7280;">(browser tab title)</span></label>
                 <input type="text" 
                        name="school_name" 
                        class="form-input" 
                        style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; transition: all 0.2s;"
                        id="school_name"
                        value="" 
-                       placeholder="SJS ACADEMY"
+                       placeholder="ZION SCHOOLS"
                        onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
                        onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'">
+                <p style="font-size: 12px; color: #6b7280; margin: 6px 0 0;">Shows as “Your Name - Home” in the browser tab.</p>
             </div>
             
             <!-- Tagline -->
@@ -62,6 +71,48 @@
                 </div>
             </div>
             
+            <!-- Favicon -->
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Favicon <span style="font-weight: 400; color: #6b7280;">(browser tab icon)</span></label>
+                <div style="display: flex; align-items: center; gap: 16px;">
+                    <div id="faviconPreview" style="width: 48px; height: 48px; border-radius: 8px; border: 2px solid #e5e7eb; background: #f3f4f6; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <span style="font-size: 20px; color: #9ca3af;">🎓</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="text"
+                               name="favicon"
+                               id="branding_favicon"
+                               class="form-input"
+                               style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: #f9fafb; color: #6b7280;"
+                               value=""
+                               placeholder="Select favicon from media library"
+                               readonly
+                               onchange="updateFaviconPreview(this.value)">
+                    </div>
+                    <button type="button"
+                            onclick="openMediaLibrary('branding_favicon')"
+                            style="width: 48px; height: 48px; background: #2563eb; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0;"
+                            onmouseover="this.style.background='#1d4ed8'"
+                            onmouseout="this.style.background='#2563eb'">
+                        <span style="font-size: 20px; color: white;">🖼️</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Site Font -->
+            <div class="form-group" style="margin-bottom: 24px;">
+                <label class="form-label" style="display: block; font-size: 14px; font-weight: 500; color: #374151; margin-bottom: 8px;">Site Font Family</label>
+                <select name="font_family" id="font_family" class="form-input"
+                        style="width: 100%; padding: 12px 16px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; background: white;">
+                    <option value="">Site default</option>
+                    <option value="Georgia, 'Times New Roman', serif">Georgia (serif)</option>
+                    <option value="'Trebuchet MS', 'Segoe UI', sans-serif">Trebuchet</option>
+                    <option value="'Palatino Linotype', Palatino, serif">Palatino</option>
+                    <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                    <option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option>
+                </select>
+            </div>
+
             <!-- Colors Section -->
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; margin-bottom: 30px;">
                 <!-- Primary Color -->
@@ -172,11 +223,16 @@
         document.getElementById('school_name').value = branding.school_name || 'SJS ACADEMY';
         document.getElementById('tagline').value = branding.tagline || 'Shaping Tomorrows Leaders Today';
         document.getElementById('branding_logo').value = branding.logo || '';
+        const faviconInput = document.getElementById('branding_favicon');
+        if (faviconInput) faviconInput.value = branding.favicon || '';
+        const fontFamily = document.getElementById('font_family');
+        if (fontFamily) fontFamily.value = branding.font_family || '';
         document.getElementById('primary_color_picker').value = branding.primary_color || '#800020';
         document.getElementById('primary_color_text').value = branding.primary_color || '#800020';
         document.getElementById('secondary_color_picker').value = branding.secondary_color || '#6B0000';
         document.getElementById('secondary_color_text').value = branding.secondary_color || '#6B0000';
         updateLogoPreview(branding.logo || '');
+        updateFaviconPreview(branding.favicon || '');
     } catch (error) {
         if (window.ErrorHandler) {
             window.ErrorHandler.handle(error, 'branding-load', true);
@@ -199,6 +255,8 @@ async function handleBrandingFormSubmit(event, form) {
             school_name: form.querySelector('[name="school_name"]').value || '',
             tagline: form.querySelector('[name="tagline"]').value || '',
             logo: form.querySelector('[name="logo"]').value || '',
+            favicon: (form.querySelector('[name="favicon"]') || {}).value || '',
+            font_family: (form.querySelector('[name="font_family"]') || {}).value || '',
             primary_color: form.querySelector('[name="primary_color"]').value || '#800020',
             secondary_color: form.querySelector('[name="secondary_color"]').value || '#6B0000'
         };
@@ -253,6 +311,16 @@ function updateLogoPreview(url) {
         preview.innerHTML = `<img src="${url}" alt="School Logo" style="width: 80px; height: 80px; object-fit: contain; border-radius: 50%; border: 2px solid #e5e7eb; padding: 4px; background: white;" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\\'font-size: 32px; color: #9ca3af;\\'>🖼️</span>'">`;
     } else {
         preview.innerHTML = '<span style="font-size: 32px; color: #9ca3af;">🖼️</span>';
+    }
+}
+
+function updateFaviconPreview(url) {
+    const preview = document.getElementById('faviconPreview');
+    if (!preview) return;
+    if (url && url.trim()) {
+        preview.innerHTML = `<img src="${url}" alt="Favicon" style="width: 32px; height: 32px; object-fit: contain;" onerror="this.onerror=null; this.parentElement.innerHTML='<span style=\\'font-size: 20px; color: #9ca3af;\\'>🎓</span>'">`;
+    } else {
+        preview.innerHTML = '<span style="font-size: 20px; color: #9ca3af;">🎓</span>';
     }
 }
 </script>

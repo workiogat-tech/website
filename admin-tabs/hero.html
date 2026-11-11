@@ -1,6 +1,14 @@
 <div class="content-card" style="padding: 0;">
     <div style="padding: 30px;">
         <h2 style="font-size: 28px; font-weight: bold; color: #111827; margin: 0 0 30px 0;">Hero Section Management</h2>
+        <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px 18px; margin-bottom: 28px; color: #1e3a8a; font-size: 14px; line-height: 1.55;">
+            <strong>How to edit the homepage hero</strong>
+            <ol style="margin: 10px 0 0 18px; padding: 0;">
+                <li>Change <strong>Welcome to SJS</strong> and the subtitle under Main / Sub Headline below. Pick font and font color next to each.</li>
+                <li>Edit <strong>Explore Events</strong> and <strong>Schedule a Visit</strong> under Hero Buttons (label, link, background color, text color).</li>
+                <li>Click <strong>Save Changes</strong>, then refresh the homepage. On phones the Explore Events text stays white on the school maroon so it stays readable.</li>
+            </ol>
+        </div>
         
         <form method="POST" action="#" id="heroForm" onsubmit="event.preventDefault(); handleHeroFormSubmit(event, this); return false;">
             <!-- Main Headline -->
@@ -17,8 +25,22 @@
                            onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
                            onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
                            oninput="updateHeadlinePreview()">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <div style="flex: 1;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 500; color: #6b7280; margin-bottom: 4px;">Headline Font</label>
+                            <select name="headline_font" id="headline_font" class="form-input"
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white;"
+                                    onchange="updateHeadlinePreview()">
+                                <option value="inherit">Site default</option>
+                                <option value="Georgia, 'Times New Roman', serif">Georgia (serif)</option>
+                                <option value="'Trebuchet MS', 'Segoe UI', sans-serif">Trebuchet</option>
+                                <option value="'Palatino Linotype', Palatino, serif">Palatino</option>
+                                <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                                <option value="'Courier New', Courier, monospace">Courier</option>
+                                <option value="Impact, Haettenschweiler, sans-serif">Impact</option>
+                            </select>
+                        </div>
+                        <div>
                             <label style="display: block; font-size: 12px; font-weight: 500; color: #6b7280; margin-bottom: 4px;">Headline Color</label>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <input type="color" 
@@ -38,12 +60,12 @@
                                        placeholder="#ffffff">
                             </div>
                         </div>
-                        <div style="margin-top: 24px;">
-                            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Preview</div>
-                            <div id="headlinePreview" 
-                                 style="padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #1a1a1a; color: #ffffff; font-size: 18px; font-weight: 600; min-width: 200px;">
-                                Welcome to SJS
-                            </div>
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Preview</div>
+                        <div id="headlinePreview" 
+                             style="padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #1a1a1a; color: #ffffff; font-size: 18px; font-weight: 600;">
+                            Welcome to SJS
                         </div>
                     </div>
                 </div>
@@ -63,8 +85,21 @@
                            onfocus="this.style.borderColor='#9333ea'; this.style.boxShadow='0 0 0 3px rgba(147, 51, 234, 0.1)'"
                            onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='none'"
                            oninput="updateSubHeadlinePreview()">
-                    <div style="display: flex; align-items: center; gap: 16px;">
-                        <div style="flex: 1;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                        <div>
+                            <label style="display: block; font-size: 12px; font-weight: 500; color: #6b7280; margin-bottom: 4px;">Sub Headline Font</label>
+                            <select name="subheadline_font" id="subheadline_font" class="form-input"
+                                    style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 13px; background: white;"
+                                    onchange="updateSubHeadlinePreview()">
+                                <option value="inherit">Site default</option>
+                                <option value="Georgia, 'Times New Roman', serif">Georgia (serif)</option>
+                                <option value="'Trebuchet MS', 'Segoe UI', sans-serif">Trebuchet</option>
+                                <option value="'Palatino Linotype', Palatino, serif">Palatino</option>
+                                <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                                <option value="'Courier New', Courier, monospace">Courier</option>
+                            </select>
+                        </div>
+                        <div>
                             <label style="display: block; font-size: 12px; font-weight: 500; color: #6b7280; margin-bottom: 4px;">Sub Headline Color</label>
                             <div style="display: flex; align-items: center; gap: 8px;">
                                 <input type="color" 
@@ -84,13 +119,102 @@
                                        placeholder="#ffffff">
                             </div>
                         </div>
-                        <div style="margin-top: 24px;">
-                            <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Preview</div>
-                            <div id="subheadlinePreview" 
-                                 style="padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #1a1a1a; color: #ffffff; font-size: 16px; font-weight: 500; min-width: 200px;">
-                                Empowering minds, shaping futures
+                    </div>
+                    <div>
+                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">Preview</div>
+                        <div id="subheadlinePreview" 
+                             style="padding: 12px 16px; border-radius: 8px; border: 1px solid #e5e7eb; background: #1a1a1a; color: #ffffff; font-size: 16px; font-weight: 500;">
+                            Empowering minds, shaping futures
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Buttons -->
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 24px; margin-bottom: 24px;">
+                <h3 style="font-size: 18px; font-weight: 600; color: #111827; margin: 0 0 8px 0;">Hero Buttons</h3>
+                <p style="font-size: 13px; color: #6b7280; margin: 0 0 20px 0;">These are the two buttons under the hero text (Explore Events / Schedule a Visit). Use a dark button background with light text so the label stays visible on mobile.</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: white; border-radius: 10px; padding: 16px; border: 1px solid #e5e7eb;">
+                        <div style="font-size: 13px; font-weight: 600; color: #991b1b; margin-bottom: 12px;">Primary — Explore Events</div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Button text</label>
+                            <input type="text" name="cta_text" id="cta_text" class="form-input" placeholder="Explore Events"
+                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;"
+                                   oninput="updateCtaPreview()">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Link URL</label>
+                            <input type="text" name="cta_link" id="cta_link" class="form-input" placeholder="events.html"
+                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Background</label>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <input type="color" id="cta_bg_color_picker" name="cta_bg_color" value="#800020"
+                                           style="width: 40px; height: 36px; padding: 0; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;"
+                                           onchange="document.getElementById('cta_bg_color_text').value=this.value; updateCtaPreview();">
+                                    <input type="text" id="cta_bg_color_text" name="cta_bg_color_text" value="#800020"
+                                           style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; font-family: monospace;"
+                                           onchange="document.getElementById('cta_bg_color_picker').value=this.value; updateCtaPreview();">
+                                </div>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Text color</label>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <input type="color" id="cta_text_color_picker" name="cta_text_color" value="#ffffff"
+                                           style="width: 40px; height: 36px; padding: 0; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;"
+                                           onchange="document.getElementById('cta_text_color_text').value=this.value; updateCtaPreview();">
+                                    <input type="text" id="cta_text_color_text" name="cta_text_color_text" value="#ffffff"
+                                           style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; font-family: monospace;"
+                                           onchange="document.getElementById('cta_text_color_picker').value=this.value; updateCtaPreview();">
+                                </div>
                             </div>
                         </div>
+                        <div id="ctaPreview" style="margin-top: 14px; display: inline-block; padding: 10px 18px; border-radius: 4px; background: #800020; color: #fff; font-size: 14px; font-weight: 500;">Explore Events</div>
+                    </div>
+
+                    <div style="background: white; border-radius: 10px; padding: 16px; border: 1px solid #e5e7eb;">
+                        <div style="font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 12px;">Secondary — Schedule a Visit</div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Button text</label>
+                            <input type="text" name="cta2_text" id="cta2_text" class="form-input" placeholder="Schedule a Visit"
+                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;"
+                                   oninput="updateCtaPreview()">
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Link URL</label>
+                            <input type="text" name="cta2_link" id="cta2_link" class="form-input" placeholder="contact.html"
+                                   style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Background</label>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <input type="color" id="cta2_bg_color_picker" name="cta2_bg_color" value="#000000"
+                                           style="width: 40px; height: 36px; padding: 0; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;"
+                                           onchange="document.getElementById('cta2_bg_color_text').value=this.value; updateCtaPreview();">
+                                    <input type="text" id="cta2_bg_color_text" name="cta2_bg_color_text" value="transparent"
+                                           style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; font-family: monospace;"
+                                           onchange="updateCtaPreview();">
+                                </div>
+                                <p style="font-size: 11px; color: #9ca3af; margin: 4px 0 0;">Use <code>transparent</code> for outline style.</p>
+                            </div>
+                            <div>
+                                <label style="display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px;">Text color</label>
+                                <div style="display: flex; gap: 6px; align-items: center;">
+                                    <input type="color" id="cta2_text_color_picker" name="cta2_text_color" value="#ffffff"
+                                           style="width: 40px; height: 36px; padding: 0; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer;"
+                                           onchange="document.getElementById('cta2_text_color_text').value=this.value; updateCtaPreview();">
+                                    <input type="text" id="cta2_text_color_text" name="cta2_text_color_text" value="#ffffff"
+                                           style="flex: 1; padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; font-family: monospace;"
+                                           onchange="document.getElementById('cta2_text_color_picker').value=this.value; updateCtaPreview();">
+                                </div>
+                            </div>
+                        </div>
+                        <div id="cta2Preview" style="margin-top: 14px; display: inline-block; padding: 10px 18px; border-radius: 4px; background: transparent; color: #fff; border: 2px solid #fff; font-size: 14px; font-weight: 500;">Schedule a Visit</div>
                     </div>
                 </div>
             </div>
@@ -471,6 +595,37 @@ async function loadHeroData() {
             document.getElementById('headline_color_text').value = headlineColor;
             document.getElementById('subheadline_color_picker').value = subHeadlineColor;
             document.getElementById('subheadline_color_text').value = subHeadlineColor;
+            const headlineFont = document.getElementById('headline_font');
+            const subheadlineFont = document.getElementById('subheadline_font');
+            if (headlineFont) headlineFont.value = heroData.headline_font || 'inherit';
+            if (subheadlineFont) subheadlineFont.value = heroData.subheadline_font || 'inherit';
+
+            const ctaText = document.getElementById('cta_text');
+            const ctaLink = document.getElementById('cta_link');
+            const cta2Text = document.getElementById('cta2_text');
+            const cta2Link = document.getElementById('cta2_link');
+            if (ctaText) ctaText.value = heroData.cta_text || 'Explore Events';
+            if (ctaLink) ctaLink.value = heroData.cta_link || 'events.html';
+            if (cta2Text) cta2Text.value = heroData.cta2_text || 'Schedule a Visit';
+            if (cta2Link) cta2Link.value = heroData.cta2_link || 'contact.html';
+
+            const ctaBg = heroData.cta_bg_color || '#800020';
+            const ctaFg = heroData.cta_text_color || '#ffffff';
+            const cta2Bg = heroData.cta2_bg_color || 'transparent';
+            const cta2Fg = heroData.cta2_text_color || '#ffffff';
+            const setColorPair = function(pickerId, textId, value, fallbackHex) {
+                const picker = document.getElementById(pickerId);
+                const text = document.getElementById(textId);
+                if (text) text.value = value;
+                if (picker && /^#[0-9A-Fa-f]{6}$/.test(value)) picker.value = value;
+                else if (picker && fallbackHex) picker.value = fallbackHex;
+            };
+            setColorPair('cta_bg_color_picker', 'cta_bg_color_text', ctaBg, '#800020');
+            setColorPair('cta_text_color_picker', 'cta_text_color_text', ctaFg, '#ffffff');
+            setColorPair('cta2_bg_color_picker', 'cta2_bg_color_text', cta2Bg === 'transparent' ? '#000000' : cta2Bg, '#000000');
+            const cta2BgText = document.getElementById('cta2_bg_color_text');
+            if (cta2BgText) cta2BgText.value = cta2Bg;
+            setColorPair('cta2_text_color_picker', 'cta2_text_color_text', cta2Fg, '#ffffff');
             
             showSavedSlideSpeed(heroData.slide_interval_ms || 5000);
             document.getElementById('slide_direction').value = heroData.slide_direction || 'left';
@@ -490,6 +645,7 @@ async function loadHeroData() {
             
             updateHeadlinePreview();
             updateSubHeadlinePreview();
+            updateCtaPreview();
             updateSlidesDisplay();
             updateSliderPreview();
     } catch (error) {
@@ -500,30 +656,60 @@ async function loadHeroData() {
 function updateHeadlinePreview() {
     const headline = document.getElementById('hero_headline').value || 'Welcome to SJS';
     const color = document.getElementById('headline_color_text').value || '#ffffff';
+    const fontEl = document.getElementById('headline_font');
+    const font = fontEl ? fontEl.value : 'inherit';
     const preview = document.getElementById('headlinePreview');
     const previewHeadline = document.getElementById('previewHeadline');
     if (preview) {
         preview.textContent = headline;
         preview.style.color = color;
+        preview.style.fontFamily = font;
     }
     if (previewHeadline) {
         previewHeadline.textContent = headline;
         previewHeadline.style.color = color;
+        previewHeadline.style.fontFamily = font;
     }
 }
 
 function updateSubHeadlinePreview() {
     const subheadline = document.getElementById('hero_subheadline').value || 'Empowering minds, shaping futures';
     const color = document.getElementById('subheadline_color_text').value || '#ffffff';
+    const fontEl = document.getElementById('subheadline_font');
+    const font = fontEl ? fontEl.value : 'inherit';
     const preview = document.getElementById('subheadlinePreview');
     const previewSubheadline = document.getElementById('previewSubheadline');
     if (preview) {
         preview.textContent = subheadline;
         preview.style.color = color;
+        preview.style.fontFamily = font;
     }
     if (previewSubheadline) {
         previewSubheadline.textContent = subheadline;
         previewSubheadline.style.color = color;
+        previewSubheadline.style.fontFamily = font;
+    }
+}
+
+function updateCtaPreview() {
+    const ctaPreview = document.getElementById('ctaPreview');
+    const cta2Preview = document.getElementById('cta2Preview');
+    const ctaText = (document.getElementById('cta_text') || {}).value || 'Explore Events';
+    const ctaBg = (document.getElementById('cta_bg_color_text') || {}).value || '#800020';
+    const ctaFg = (document.getElementById('cta_text_color_text') || {}).value || '#ffffff';
+    const cta2Text = (document.getElementById('cta2_text') || {}).value || 'Schedule a Visit';
+    const cta2Bg = (document.getElementById('cta2_bg_color_text') || {}).value || 'transparent';
+    const cta2Fg = (document.getElementById('cta2_text_color_text') || {}).value || '#ffffff';
+    if (ctaPreview) {
+        ctaPreview.textContent = ctaText;
+        ctaPreview.style.background = ctaBg;
+        ctaPreview.style.color = ctaFg;
+    }
+    if (cta2Preview) {
+        cta2Preview.textContent = cta2Text;
+        cta2Preview.style.background = cta2Bg === 'transparent' ? 'transparent' : cta2Bg;
+        cta2Preview.style.color = cta2Fg;
+        cta2Preview.style.border = '2px solid ' + cta2Fg;
     }
 }
 
@@ -767,19 +953,33 @@ async function handleHeroFormSubmit(event, form) {
     const uniqueSlides = collectHeroSlides();
     const backgroundImage = form.querySelector('input[name="background_image"]').value || '';
     
+    const val = function(selector, fallback) {
+        const el = form.querySelector(selector);
+        return el && el.value !== undefined && el.value !== '' ? el.value : (fallback || '');
+    };
     const data = {
-        headline: form.querySelector('input[name="headline"]').value || '',
-        subheadline: form.querySelector('input[name="subheadline"]').value || '',
-        description: form.querySelector('textarea[name="description"]').value || '',
+        headline: val('input[name="headline"]'),
+        subheadline: val('input[name="subheadline"]'),
+        description: val('textarea[name="description"]'),
         background_image: usableHeroImage(backgroundImage) ? backgroundImage : '',
-        headline_color: form.querySelector('input[name="headline_color"]').value || '#ffffff',
-        subheadline_color: form.querySelector('input[name="subheadline_color"]').value || '#ffffff',
-        slide_interval_ms: parseInt(form.querySelector('input[name="slide_interval_ms"]').value || 5000),
-        slide_direction: form.querySelector('select[name="slide_direction"]').value || 'left',
-        slide_mode: form.querySelector('select[name="slide_mode"]').value || 'marquee',
-        background_size: form.querySelector('select[name="background_size"]').value || 'contain',
-        background_position: form.querySelector('select[name="background_position"]').value || 'center',
-        image_scale: parseFloat(form.querySelector('input[name="image_scale"]').value || 1),
+        headline_color: val('input[name="headline_color"]', '#ffffff'),
+        subheadline_color: val('input[name="subheadline_color"]', '#ffffff'),
+        headline_font: val('select[name="headline_font"]', 'inherit'),
+        subheadline_font: val('select[name="subheadline_font"]', 'inherit'),
+        cta_text: val('input[name="cta_text"]', 'Explore Events'),
+        cta_link: val('input[name="cta_link"]', 'events.html'),
+        cta_bg_color: val('input[name="cta_bg_color_text"]', val('input[name="cta_bg_color"]', '#800020')),
+        cta_text_color: val('input[name="cta_text_color_text"]', val('input[name="cta_text_color"]', '#ffffff')),
+        cta2_text: val('input[name="cta2_text"]', 'Schedule a Visit'),
+        cta2_link: val('input[name="cta2_link"]', 'contact.html'),
+        cta2_bg_color: val('input[name="cta2_bg_color_text"]', 'transparent'),
+        cta2_text_color: val('input[name="cta2_text_color_text"]', val('input[name="cta2_text_color"]', '#ffffff')),
+        slide_interval_ms: parseInt(val('input[name="slide_interval_ms"]', '5000'), 10),
+        slide_direction: val('select[name="slide_direction"]', 'left'),
+        slide_mode: val('select[name="slide_mode"]', 'marquee'),
+        background_size: val('select[name="background_size"]', 'contain'),
+        background_position: val('select[name="background_position"]', 'center'),
+        image_scale: parseFloat(val('input[name="image_scale"]', '1')),
         slides: uniqueSlides
     };
     

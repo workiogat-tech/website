@@ -167,6 +167,9 @@ const HomepageLoader = {
             if (data.headline_color) {
                 title.style.color = data.headline_color;
             }
+            if (data.headline_font && data.headline_font !== 'inherit') {
+                title.style.fontFamily = data.headline_font;
+            }
         }
         
         if (subtitle && data.subheadline) {
@@ -174,10 +177,41 @@ const HomepageLoader = {
             if (data.subheadline_color) {
                 subtitle.style.color = data.subheadline_color;
             }
+            if (data.subheadline_font && data.subheadline_font !== 'inherit') {
+                subtitle.style.fontFamily = data.subheadline_font;
+            }
         }
         
         if (description && data.description) {
             description.textContent = data.description;
+        }
+
+        const buttons = heroSection.querySelector('.hero-buttons');
+        if (buttons) {
+            const primaryBtn = buttons.querySelector('.btn-primary');
+            const secondaryBtn = buttons.querySelector('.btn-outline-white, .btn-secondary, a.btn:not(.btn-primary)');
+            if (primaryBtn) {
+                if (data.cta_text) primaryBtn.textContent = data.cta_text;
+                if (data.cta_link) primaryBtn.setAttribute('href', data.cta_link);
+                const ctaBg = data.cta_bg_color || '#800020';
+                const ctaFg = data.cta_text_color || '#ffffff';
+                primaryBtn.style.setProperty('--hero-cta-bg', ctaBg);
+                primaryBtn.style.setProperty('--hero-cta-color', ctaFg);
+                primaryBtn.style.background = ctaBg;
+                primaryBtn.style.color = ctaFg;
+                primaryBtn.style.borderColor = ctaBg;
+            }
+            if (secondaryBtn) {
+                if (data.cta2_text) secondaryBtn.textContent = data.cta2_text;
+                if (data.cta2_link) secondaryBtn.setAttribute('href', data.cta2_link);
+                const cta2Bg = data.cta2_bg_color || 'transparent';
+                const cta2Fg = data.cta2_text_color || '#ffffff';
+                secondaryBtn.style.setProperty('--hero-cta2-bg', cta2Bg);
+                secondaryBtn.style.setProperty('--hero-cta2-color', cta2Fg);
+                secondaryBtn.style.background = cta2Bg === 'transparent' ? 'transparent' : cta2Bg;
+                secondaryBtn.style.color = cta2Fg;
+                secondaryBtn.style.borderColor = cta2Fg;
+            }
         }
         
         // Get slides
@@ -382,9 +416,20 @@ const HomepageLoader = {
     },
     
     applyBranding(branding) {
-        // Update page title
+        // Update page title (browser tab text)
         if (branding.school_name) {
             document.title = `${branding.school_name} - Home`;
+        }
+
+        // Favicon (browser tab icon)
+        if (branding.favicon) {
+            let link = document.querySelector("link[rel='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = branding.favicon;
         }
         
         // Update logo in header (if header is loaded)
@@ -398,6 +443,11 @@ const HomepageLoader = {
         const logoPlaceholder = document.querySelector('.logo-placeholder span');
         if (logoPlaceholder && branding.school_name) {
             logoPlaceholder.textContent = branding.school_name.charAt(0);
+        }
+
+        if (branding.font_family) {
+            document.documentElement.style.setProperty('--font-family', branding.font_family);
+            document.body.style.fontFamily = branding.font_family;
         }
         
         // Apply colors

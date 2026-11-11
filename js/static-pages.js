@@ -10,6 +10,10 @@ const StaticPages = {
         logo: '',
         favicon: ''
     },
+
+    footerContent: {
+        copyright_text: ''
+    },
     
     // Contact details come from the saved site record. Nothing is invented here.
     contactInfo: {
@@ -65,8 +69,43 @@ const StaticPages = {
                     this.branding = { ...this.branding, ...stored };
                 }
             }
+            this.applyBrandingChrome();
         } catch (e) {
             console.warn('Error loading branding:', e);
+        }
+    },
+
+    applyBrandingChrome() {
+        const branding = this.branding || {};
+        if (branding.school_name) {
+            const base = document.title.replace(/\s*-\s*Home$/i, '').trim();
+            if (!base || /excellence academy|sjs/i.test(base) || base === branding.school_name) {
+                document.title = `${branding.school_name} - Home`;
+            } else if (!document.title.includes(branding.school_name)) {
+                // Keep page-specific titles but prefer saved school name when title is generic
+                if (/home/i.test(document.title) || !document.title.trim()) {
+                    document.title = `${branding.school_name} - Home`;
+                }
+            }
+        }
+        if (branding.favicon) {
+            let link = document.querySelector("link[rel='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = branding.favicon;
+        }
+        if (branding.font_family) {
+            document.documentElement.style.setProperty('--font-family', branding.font_family);
+            document.body.style.fontFamily = branding.font_family;
+        }
+        if (branding.primary_color) {
+            document.documentElement.style.setProperty('--primary-color', branding.primary_color);
+        }
+        if (branding.secondary_color) {
+            document.documentElement.style.setProperty('--secondary-color', branding.secondary_color);
         }
     },
     
@@ -242,6 +281,9 @@ const StaticPages = {
             const url = this.pageUrl(link.url || link.href || '#');
             return `<li><a href="${url}">${label}</a></li>`;
         }).join('');
+        const copyright = (this.footerContent && this.footerContent.copyright_text)
+            ? this.footerContent.copyright_text
+            : (branding.school_name ? `© ${branding.school_name}. All rights reserved.` : '');
 
         return `
             <footer class="site-footer">
@@ -275,7 +317,7 @@ const StaticPages = {
                     </div>
                 </div>
                 <div class="footer-bottom">
-                    <div class="container">${branding.school_name ? `&copy; ${branding.school_name}. All rights reserved.` : ''}</div>
+                    <div class="container">${copyright}</div>
                 </div>
             </footer>
             <div id="newsletterModal" class="newsletter-modal" style="display: none;">
@@ -407,10 +449,12 @@ const StaticPages = {
             if (footer && footer.success && footer.data) {
                 if (footer.data.branding) this.branding = this.mergeFilled(this.branding, footer.data.branding);
                 if (footer.data.contactInfo) this.contactInfo = this.mergeFilled(this.contactInfo, footer.data.contactInfo);
+                if (footer.data.footerContent) this.footerContent = footer.data.footerContent;
                 if (Array.isArray(footer.data.quickLinks) && footer.data.quickLinks.length) {
                     this.quickLinks = footer.data.quickLinks;
                 }
             }
+            this.applyBrandingChrome();
         } catch (error) {
             console.warn('Using saved site details:', error);
         }
@@ -500,11 +544,15 @@ const StaticPages = {
             this.initFooter();
         }
         
-        // Listen for branding updates
+        // Listen for branding / footer updates
         window.addEventListener('adminDataSaved', async (event) => {
-            if (event.detail && event.detail.settingsKey === 'branding') {
-                await this.loadBranding();
-                // Re-render header and footer with updated branding
+            const key = event.detail && event.detail.settingsKey;
+            if (key === 'branding' || key === 'footer') {
+                if (key === 'branding') await this.loadBranding();
+                if (key === 'footer' && event.detail.data) {
+                    this.footerContent = { ...(this.footerContent || {}), ...event.detail.data };
+                }
+                await this.loadFromServer();
                 if (headerPlaceholder) {
                     this.showHeader(headerPlaceholder);
                 }

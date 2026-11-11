@@ -34,10 +34,13 @@ const FooterLoader = {
         
         const branding = data.branding || {};
         const contactInfo = data.contactInfo || {};
+        const footerContent = data.footerContent || {};
         const schoolName = branding.school_name || 'Excellence Academy';
         const address = contactInfo.address || '123 Education Street';
         const phone = contactInfo.phone || '0703574113';
         const email = contactInfo.email || 'info@sjs.com';
+        const copyright = footerContent.copyright_text
+            || (`© ${schoolName}. All rights reserved.`);
         
         const html = `
             <footer class="site-footer">
@@ -76,6 +79,9 @@ const FooterLoader = {
                             </div>
                         </div>
                     </div>
+                </div>
+                <div class="footer-bottom">
+                    <div class="container">${this.escapeHtml(copyright)}</div>
                 </div>
             </footer>
         `;

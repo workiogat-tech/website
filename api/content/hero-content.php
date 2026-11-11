@@ -223,6 +223,14 @@ if ($method === 'GET') {
                     description_color VARCHAR(50) DEFAULT '#ffffff',
                     cta_text VARCHAR(100),
                     cta_link VARCHAR(500),
+                    cta_bg_color VARCHAR(50) DEFAULT '#800020',
+                    cta_text_color VARCHAR(50) DEFAULT '#ffffff',
+                    cta2_text VARCHAR(100),
+                    cta2_link VARCHAR(500),
+                    cta2_bg_color VARCHAR(50) DEFAULT 'transparent',
+                    cta2_text_color VARCHAR(50) DEFAULT '#ffffff',
+                    headline_font VARCHAR(120) DEFAULT 'inherit',
+                    subheadline_font VARCHAR(120) DEFAULT 'inherit',
                     is_active BOOLEAN DEFAULT TRUE,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -250,7 +258,17 @@ if ($method === 'GET') {
                     'image_scale' => "ALTER TABLE hero_content ADD COLUMN image_scale DECIMAL(3,1) DEFAULT 1.0 AFTER background_position",
                     'headline_color' => "ALTER TABLE hero_content ADD COLUMN headline_color VARCHAR(50) DEFAULT '#ffffff' AFTER image_scale",
                     'subheadline_color' => "ALTER TABLE hero_content ADD COLUMN subheadline_color VARCHAR(50) DEFAULT '#ffffff' AFTER headline_color",
-                    'description_color' => "ALTER TABLE hero_content ADD COLUMN description_color VARCHAR(50) DEFAULT '#ffffff' AFTER subheadline_color"
+                    'description_color' => "ALTER TABLE hero_content ADD COLUMN description_color VARCHAR(50) DEFAULT '#ffffff' AFTER subheadline_color",
+                    'cta_text' => "ALTER TABLE hero_content ADD COLUMN cta_text VARCHAR(100) NULL",
+                    'cta_link' => "ALTER TABLE hero_content ADD COLUMN cta_link VARCHAR(500) NULL",
+                    'cta_bg_color' => "ALTER TABLE hero_content ADD COLUMN cta_bg_color VARCHAR(50) DEFAULT '#800020'",
+                    'cta_text_color' => "ALTER TABLE hero_content ADD COLUMN cta_text_color VARCHAR(50) DEFAULT '#ffffff'",
+                    'cta2_text' => "ALTER TABLE hero_content ADD COLUMN cta2_text VARCHAR(100) NULL",
+                    'cta2_link' => "ALTER TABLE hero_content ADD COLUMN cta2_link VARCHAR(500) NULL",
+                    'cta2_bg_color' => "ALTER TABLE hero_content ADD COLUMN cta2_bg_color VARCHAR(50) DEFAULT 'transparent'",
+                    'cta2_text_color' => "ALTER TABLE hero_content ADD COLUMN cta2_text_color VARCHAR(50) DEFAULT '#ffffff'",
+                    'headline_font' => "ALTER TABLE hero_content ADD COLUMN headline_font VARCHAR(120) DEFAULT 'inherit'",
+                    'subheadline_font' => "ALTER TABLE hero_content ADD COLUMN subheadline_font VARCHAR(120) DEFAULT 'inherit'"
                 ];
                 
                 foreach ($requiredColumns as $colName => $sql) {
@@ -309,6 +327,18 @@ if ($method === 'GET') {
             'ctaText' => 'cta_text',
             'cta_link' => 'cta_link',
             'ctaLink' => 'cta_link',
+            'cta_bg_color' => 'cta_bg_color',
+            'cta_bg_color_text' => 'cta_bg_color',
+            'cta_text_color' => 'cta_text_color',
+            'cta_text_color_text' => 'cta_text_color',
+            'cta2_text' => 'cta2_text',
+            'cta2_link' => 'cta2_link',
+            'cta2_bg_color' => 'cta2_bg_color',
+            'cta2_bg_color_text' => 'cta2_bg_color',
+            'cta2_text_color' => 'cta2_text_color',
+            'cta2_text_color_text' => 'cta2_text_color',
+            'headline_font' => 'headline_font',
+            'subheadline_font' => 'subheadline_font',
         ];
         
         // Missing slides means "leave the saved images alone". An empty array clears them.

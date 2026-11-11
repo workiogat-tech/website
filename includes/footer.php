@@ -24,6 +24,10 @@ $schoolName = $branding['school_name'] ?? 'Excellence Academy';
 $address = $contactInfo['address'] ?? '123 Education Street, Learning City';
 $phone = $contactInfo['phone'] ?? '0703574113';
 $email = $contactInfo['email'] ?? 'info@sjs.com';
+$copyrightText = trim((string)($footerContent['copyright_text'] ?? ''));
+if ($copyrightText === '') {
+    $copyrightText = '© ' . $schoolName . '. All rights reserved.';
+}
 
 // Check if we're on the homepage
 $currentPage = basename($_SERVER['PHP_SELF']);
@@ -63,7 +67,7 @@ $isHomepage = ($currentPage === 'index.php' || $currentPage === 'index.html' || 
         </div>
     </div>
     <div class="footer-bottom">
-        <div class="container">&copy; <?php echo htmlspecialchars($schoolName); ?>. All rights reserved.</div>
+        <div class="container"><?php echo htmlspecialchars($copyrightText); ?></div>
     </div>
 </footer>
 
