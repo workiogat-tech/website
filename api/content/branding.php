@@ -20,7 +20,7 @@ header('Content-Type: application/json');
 $db = getDB();
 $method = $_SERVER['REQUEST_METHOD'];
 
-// Ensure branding table exists
+// Ensure branding table exists and favicon column can store long media URLs
 try {
     $tableExists = $db->fetchOne("SHOW TABLES LIKE 'branding'");
     if (!$tableExists) {
@@ -28,8 +28,8 @@ try {
             id INT AUTO_INCREMENT PRIMARY KEY,
             school_name VARCHAR(200),
             tagline TEXT,
-            logo VARCHAR(500),
-            favicon VARCHAR(500),
+            logo TEXT,
+            favicon TEXT,
             primary_color VARCHAR(7),
             secondary_color VARCHAR(7),
             font_family VARCHAR(100),
@@ -37,6 +37,50 @@ try {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+    } else {
+        $columns = $db->fetchAll("SHOW COLUMNS FROM branding");
+        $columnNames = [];
+        foreach ($columns as $column) {
+            $name = strtolower((string)($column['Field'] ?? $column['field'] ?? $column['column_name'] ?? ''));
+            if ($name !== '') {
+                $columnNames[] = $name;
+            }
+        }
+        if (!in_array('favicon', $columnNames, true)) {
+            try {
+                $db->query("ALTER TABLE branding ADD COLUMN favicon TEXT NULL");
+            } catch (Exception $e) {
+                error_log('Branding favicon column add failed: ' . $e->getMessage());
+            }
+        } else {
+            try {
+                $db->query("ALTER TABLE branding MODIFY COLUMN favicon TEXT");
+            } catch (Exception $e) {
+                try {
+                    $db->query("ALTER TABLE branding ALTER COLUMN favicon TYPE TEXT");
+                } catch (Exception $e2) {
+                    error_log('Branding favicon widen skipped: ' . $e2->getMessage());
+                }
+            }
+        }
+        if (!in_array('font_family', $columnNames, true)) {
+            try {
+                $db->query("ALTER TABLE branding ADD COLUMN font_family VARCHAR(100) NULL");
+            } catch (Exception $e) {
+                error_log('Branding font_family column add failed: ' . $e->getMessage());
+            }
+        }
+        if (in_array('logo', $columnNames, true)) {
+            try {
+                $db->query("ALTER TABLE branding MODIFY COLUMN logo TEXT");
+            } catch (Exception $e) {
+                try {
+                    $db->query("ALTER TABLE branding ALTER COLUMN logo TYPE TEXT");
+                } catch (Exception $e2) {
+                    // ignore
+                }
+            }
+        }
     }
 } catch (Exception $e) {
     error_log("Branding table check error: " . $e->getMessage());
@@ -104,6 +148,12 @@ if ($method === 'GET') {
         
         // Get existing content to update or create new
         $existing = $db->fetchOne("SELECT * FROM branding WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
+
+        // Keep the previous favicon if the form submitted an empty one by mistake
+        $faviconIndex = array_search('favicon', $fields, true);
+        if ($faviconIndex !== false && ($values[$faviconIndex] === null || $values[$faviconIndex] === '') && $existing && !empty($existing['favicon'])) {
+            $values[$faviconIndex] = $existing['favicon'];
+        }
         
         if ($existing) {
             // Update existing - deactivate old, create new active one
@@ -118,8 +168,15 @@ if ($method === 'GET') {
         if (!$id) {
             throw new Exception('Failed to save branding');
         }
+
+        $saved = $db->fetchOne("SELECT * FROM branding WHERE id = ?", [$id]) ?: [];
         
-        echo json_encode(['success' => true, 'id' => $id, 'message' => 'Branding saved successfully']);
+        echo json_encode([
+            'success' => true,
+            'id' => $id,
+            'message' => 'Branding saved successfully',
+            'favicon' => $saved['favicon'] ?? ($input['favicon'] ?? null)
+        ]);
     } catch (Exception $e) {
         error_log("Branding API Error: " . $e->getMessage());
         http_response_code(500);

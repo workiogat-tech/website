@@ -423,13 +423,19 @@ const HomepageLoader = {
 
         // Favicon (browser tab icon)
         if (branding.favicon) {
-            let link = document.querySelector("link[rel='icon']");
-            if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.head.appendChild(link);
+            if (typeof window.setSiteFavicon === 'function') {
+                window.setSiteFavicon(branding.favicon);
+            } else {
+                let link = document.querySelector("link[rel='icon'], link[rel='shortcut icon']");
+                if (!link) {
+                    link = document.createElement('link');
+                    link.rel = 'icon';
+                    document.head.appendChild(link);
+                }
+                const bust = branding.favicon + (String(branding.favicon).indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
+                link.type = '';
+                link.href = bust;
             }
-            link.href = branding.favicon;
         }
         
         // Update logo in header (if header is loaded)

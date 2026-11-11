@@ -3,6 +3,32 @@
  * Provides default data and utilities for HTML pages
  */
 
+if (typeof window.setSiteFavicon !== 'function') {
+    window.setSiteFavicon = function(url) {
+        if (!url) return;
+        const clean = String(url).trim();
+        if (!clean || clean.indexOf('data:') === 0) return;
+        const path = clean.split('?')[0].split('#')[0];
+        const ext = (path.split('.').pop() || '').toLowerCase();
+        const type = ext === 'svg' ? 'image/svg+xml'
+            : (ext === 'ico' ? 'image/x-icon'
+            : (ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg'
+            : (ext === 'webp' ? 'image/webp'
+            : (ext === 'gif' ? 'image/gif' : 'image/png'))));
+        const href = clean + (clean.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
+        document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]').forEach(function(el) {
+            if (el.parentNode) el.parentNode.removeChild(el);
+        });
+        [['icon', type], ['shortcut icon', type], ['apple-touch-icon', '']].forEach(function(pair) {
+            const link = document.createElement('link');
+            link.rel = pair[0];
+            if (pair[1]) link.type = pair[1];
+            link.href = href;
+            document.head.appendChild(link);
+        });
+    };
+}
+
 const StaticPages = {
     // Default branding data
     branding: {
@@ -60,21 +86,6 @@ const StaticPages = {
         { label: 'Contact', url: 'contact.html' }
     ],
     
-    // Load branding from storage
-    async loadBranding() {
-        try {
-            if (typeof window.ClientStorage !== 'undefined') {
-                const stored = await window.ClientStorage.branding.get();
-                if (stored && Object.keys(stored).length > 0) {
-                    this.branding = { ...this.branding, ...stored };
-                }
-            }
-            this.applyBrandingChrome();
-        } catch (e) {
-            console.warn('Error loading branding:', e);
-        }
-    },
-
     applyBrandingChrome() {
         const branding = this.branding || {};
         if (branding.school_name) {
@@ -82,20 +93,13 @@ const StaticPages = {
             if (!base || /excellence academy|sjs/i.test(base) || base === branding.school_name) {
                 document.title = `${branding.school_name} - Home`;
             } else if (!document.title.includes(branding.school_name)) {
-                // Keep page-specific titles but prefer saved school name when title is generic
                 if (/home/i.test(document.title) || !document.title.trim()) {
                     document.title = `${branding.school_name} - Home`;
                 }
             }
         }
-        if (branding.favicon) {
-            let link = document.querySelector("link[rel='icon']");
-            if (!link) {
-                link = document.createElement('link');
-                link.rel = 'icon';
-                document.head.appendChild(link);
-            }
-            link.href = branding.favicon;
+        if (branding.favicon && typeof window.setSiteFavicon === 'function') {
+            window.setSiteFavicon(branding.favicon);
         }
         if (branding.font_family) {
             document.documentElement.style.setProperty('--font-family', branding.font_family);
@@ -106,20 +110,6 @@ const StaticPages = {
         }
         if (branding.secondary_color) {
             document.documentElement.style.setProperty('--secondary-color', branding.secondary_color);
-        }
-    },
-    
-    // Load contact from storage
-    async loadContact() {
-        try {
-            if (typeof window.ClientStorage !== 'undefined') {
-                const stored = await window.ClientStorage.contact.get();
-                if (stored && Object.keys(stored).length > 0) {
-                    this.contactInfo = { ...this.contactInfo, ...stored };
-                }
-            }
-        } catch (e) {
-            console.warn('Error loading contact:', e);
         }
     },
     
@@ -389,6 +379,7 @@ const StaticPages = {
                     this.branding = this.mergeFilled(this.branding, stored);
                 }
             }
+            this.applyBrandingChrome();
         } catch (error) {
             console.warn('Error loading branding from localStorage:', error);
         }

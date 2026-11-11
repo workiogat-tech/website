@@ -273,6 +273,14 @@ async function handleBrandingFormSubmit(event, form) {
         }
         
         if (result.success || result.id) {
+            if (result.favicon) data.favicon = result.favicon;
+            if (typeof ClientStorage !== 'undefined' && ClientStorage.branding && ClientStorage.branding.save) {
+                try { await ClientStorage.branding.save(data); } catch (e) {}
+            }
+            if (data.favicon && typeof window.setSiteFavicon === 'function') {
+                window.setSiteFavicon(data.favicon);
+            }
+            updateFaviconPreview(data.favicon || '');
             // Trigger update event for immediate frontend refresh
             window.dispatchEvent(new CustomEvent('adminDataSaved', { 
                 detail: { settingsKey: 'branding', data: data } 
