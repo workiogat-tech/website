@@ -416,6 +416,32 @@ const StaticPages = {
         }
     },
 
+    ensureNewsletterInNav() {
+        // Make sure Newsletter always exists under Who We Are, even if API nav omitted it
+        const menus = document.querySelectorAll('.top-dropdown-menu, .dropdown-menu');
+        menus.forEach((menu) => {
+            const parentTrigger = menu.parentElement && menu.parentElement.querySelector('.top-nav-link, .nav-link, .dropdown-trigger');
+            const parentLabel = parentTrigger ? (parentTrigger.textContent || '').toLowerCase() : '';
+            if (parentLabel.indexOf('who we are') === -1) return;
+            const hasNewsletter = Array.from(menu.querySelectorAll('a')).some((a) => {
+                return ((a.textContent || '').trim().toLowerCase() === 'newsletter');
+            });
+            if (hasNewsletter) return;
+            const link = document.createElement('a');
+            link.href = '#';
+            link.className = 'newsletter-link';
+            link.textContent = 'Newsletter';
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (typeof window.openNewsletterModal === 'function') window.openNewsletterModal();
+            });
+            menu.appendChild(link);
+        });
+        if (typeof window.wireNewsletterLinks === 'function') {
+            window.wireNewsletterLinks();
+        }
+    },
+
     showHeader(headerPlaceholder) {
         if (!headerPlaceholder) return;
         const next = this.renderHeader();
@@ -429,12 +455,20 @@ const StaticPages = {
         const currentLogo = headerPlaceholder.querySelector('.logo-image');
         const nextLogo = holder.querySelector('.logo-image');
         const sameLogo = (currentLogo ? currentLogo.getAttribute('src') : '') === (nextLogo ? nextLogo.getAttribute('src') : '');
-        if (currentText && currentText === nextText && sameLogo) {
+        // Force refresh when Newsletter is missing from the on-screen nav
+        const currentHasNewsletter = /newsletter/i.test(currentText || '');
+        const nextHasNewsletter = /newsletter/i.test(nextText || '');
+        if (currentText && currentText === nextText && sameLogo && currentHasNewsletter) {
             this.initHeader();
+            this.ensureNewsletterInNav();
             return;
         }
-        headerPlaceholder.innerHTML = next;
+        // Prefer the rendered nav that includes Newsletter
+        if (!currentHasNewsletter || nextHasNewsletter || !sameLogo || currentText !== nextText) {
+            headerPlaceholder.innerHTML = next;
+        }
         this.initHeader();
+        this.ensureNewsletterInNav();
     },
 
     // Initialize page
@@ -500,12 +534,22 @@ const StaticPages = {
         if (typeof window.initHeaderChrome === 'function') {
             window.initHeaderChrome();
         }
+        this.ensureNewsletterInNav();
+        if (typeof window.wireNewsletterLinks === 'function') {
+            window.wireNewsletterLinks();
+        }
     },
     
     initFooter() {
-        // Back to top is created by main.js on all content pages
+        // Back to top / newsletter are owned by main.js on all content pages
         if (typeof window.initBackToTop === 'function') {
             window.initBackToTop();
+        }
+        if (typeof window.ensureNewsletterModal === 'function') {
+            window.ensureNewsletterModal();
+        }
+        if (typeof window.wireNewsletterLinks === 'function') {
+            window.wireNewsletterLinks();
         }
     }
 };

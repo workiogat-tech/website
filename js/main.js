@@ -3,6 +3,61 @@
  * Excellence Academy School Management System
  */
 
+// Newsletter helpers are defined immediately so nav onclick works even before DOMContentLoaded.
+window.ensureNewsletterModal = window.ensureNewsletterModal || function ensureNewsletterModal() {
+    var modal = document.getElementById('newsletterModal');
+    if (modal) return modal;
+    if (!document.body) return null;
+
+    modal = document.createElement('div');
+    modal.id = 'newsletterModal';
+    modal.className = 'newsletter-modal';
+    modal.style.display = 'none';
+    modal.innerHTML =
+        '<div class="newsletter-modal-overlay"></div>' +
+        '<div class="newsletter-modal-content">' +
+            '<div class="newsletter-modal-header">' +
+                '<div class="newsletter-header-left">' +
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>' +
+                    '<h3>Subscribe to Newsletter</h3>' +
+                '</div>' +
+                '<button class="newsletter-close" id="newsletterClose" aria-label="Close" type="button">' +
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' +
+                '</button>' +
+            '</div>' +
+            '<div class="newsletter-modal-body">' +
+                '<p class="newsletter-description">Stay updated with the latest news, events, and achievements from our school.</p>' +
+                '<form id="newsletterForm" class="newsletter-form">' +
+                    '<div class="newsletter-form-group"><label for="newsletterName">Your Name (Optional)</label><input type="text" id="newsletterName" name="name" placeholder="Enter your name"></div>' +
+                    '<div class="newsletter-form-group"><label for="newsletterEmail">Email Address <span class="required">*</span></label><input type="email" id="newsletterEmail" name="email" placeholder="Enter your email address" required></div>' +
+                    '<div class="newsletter-form-actions"><button type="button" class="newsletter-btn-cancel" id="newsletterCancel">Cancel</button><button type="submit" class="newsletter-btn-subscribe">Subscribe Now</button></div>' +
+                '</form>' +
+            '</div>' +
+        '</div>';
+    document.body.appendChild(modal);
+    return modal;
+};
+
+window.openNewsletterModal = function openNewsletterModal() {
+    if (!document.body) {
+        document.addEventListener('DOMContentLoaded', function () { window.openNewsletterModal(); }, { once: true });
+        return;
+    }
+    var modal = window.ensureNewsletterModal();
+    if (!modal) return;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    var emailInput = document.getElementById('newsletterEmail');
+    if (emailInput) setTimeout(function () { emailInput.focus(); }, 50);
+};
+
+window.closeNewsletterModal = function closeNewsletterModal() {
+    var modal = document.getElementById('newsletterModal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    document.body.style.overflow = '';
+};
+
 function escapeSearchText(value) {
     return String(value)
         .replace(/&/g, '&amp;')
@@ -633,31 +688,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Newsletter Modal (works even if modal is injected later by static-pages/footer)
-    function openNewsletterModal() {
-        const newsletterModal = document.getElementById('newsletterModal');
-        if (newsletterModal) {
-            newsletterModal.style.display = 'flex';
-            document.body.style.overflow = 'hidden';
-        }
-    }
-    
-    function closeNewsletterModal() {
-        const newsletterModal = document.getElementById('newsletterModal');
-        if (newsletterModal) {
-            newsletterModal.style.display = 'none';
-            document.body.style.overflow = '';
-        }
-    }
-    
-    window.openNewsletterModal = openNewsletterModal;
-    window.closeNewsletterModal = closeNewsletterModal;
+    // Wire any Newsletter nav links, even if they were rendered without onclick
+    window.wireNewsletterLinks = function wireNewsletterLinks() {
+        const links = document.querySelectorAll('a');
+        links.forEach(function(link) {
+            const text = (link.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+            const href = (link.getAttribute('href') || '').toLowerCase();
+            const isNewsletter = text === 'newsletter' || href.indexOf('newsletter') !== -1 || link.classList.contains('newsletter-link');
+            if (!isNewsletter) return;
+            if (link.dataset.newsletterBound === '1') return;
+            link.dataset.newsletterBound = '1';
+            link.setAttribute('href', '#');
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.openNewsletterModal();
+                return false;
+            });
+        });
+    };
+
+    // Create modal early and keep Newsletter links wired after header/footer updates
+    window.ensureNewsletterModal();
+    window.wireNewsletterLinks();
+    setTimeout(window.wireNewsletterLinks, 300);
+    setTimeout(window.wireNewsletterLinks, 1200);
+    setTimeout(window.wireNewsletterLinks, 2500);
 
     document.addEventListener('click', function(e) {
         if (e.target.closest('#newsletterClose') || e.target.closest('#newsletterCancel') || e.target.closest('.newsletter-modal-overlay')) {
-            closeNewsletterModal();
+            window.closeNewsletterModal();
+            return;
         }
-    });
+
+        // Fallback: catch Newsletter clicks even on freshly rendered nav
+        const link = e.target.closest('a');
+        if (!link) return;
+        const text = (link.textContent || '').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (text === 'newsletter' || link.classList.contains('newsletter-link')) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.openNewsletterModal();
+        }
+    }, true);
 
     document.addEventListener('submit', function(e) {
         const form = e.target;
@@ -675,19 +748,20 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch('api/forms/newsletter-subscription.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
             body: JSON.stringify({ email: email, name: name })
         })
-        .then(response => response.json())
-        .then(data => {
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
             if (data.error) {
                 alert(data.error);
             } else {
                 alert(data.message || 'Successfully subscribed to newsletter!');
                 form.reset();
-                closeNewsletterModal();
+                window.closeNewsletterModal();
             }
         })
-        .catch(error => {
+        .catch(function(error) {
             console.error('Error:', error);
             alert('An error occurred. Please try again.');
         });
