@@ -8,8 +8,9 @@
             <strong>How to edit the browser tab & school name</strong>
             <ol style="margin: 10px 0 0 18px; padding: 0;">
                 <li><strong>School Name</strong> sets the browser tab title (example: <em>ZION SCHOOLS - Home</em>) and the name used across the site.</li>
-                <li><strong>Favicon</strong> is the small icon next to the tab title — pick an image from the media library.</li>
-                <li>For the bottom line <em>© ZION SCHOOLS. All rights reserved.</em>, open the <strong>Footer</strong> tab and edit Copyright Text.</li>
+            <li><strong>Favicon</strong> is the small icon next to the tab title — pick an image from the media library, then Save.</li>
+            <li>After saving, open the homepage and press <strong>Ctrl+F5</strong> (or close the tab and reopen) so the browser drops the old icon.</li>
+            <li>For the bottom line <em>© ZION SCHOOLS. All rights reserved.</em>, open the <strong>Footer</strong> tab and edit Copyright Text.</li>
             </ol>
         </div>
         
@@ -220,8 +221,8 @@
         }
         }
         
-        document.getElementById('school_name').value = branding.school_name || 'SJS ACADEMY';
-        document.getElementById('tagline').value = branding.tagline || 'Shaping Tomorrows Leaders Today';
+        document.getElementById('school_name').value = branding.school_name || '';
+        document.getElementById('tagline').value = branding.tagline || '';
         document.getElementById('branding_logo').value = branding.logo || '';
         const faviconInput = document.getElementById('branding_favicon');
         if (faviconInput) faviconInput.value = branding.favicon || '';
@@ -277,10 +278,17 @@ async function handleBrandingFormSubmit(event, form) {
             if (typeof ClientStorage !== 'undefined' && ClientStorage.branding && ClientStorage.branding.save) {
                 try { await ClientStorage.branding.save(data); } catch (e) {}
             }
-            if (data.favicon && typeof window.setSiteFavicon === 'function') {
+            if (typeof window.applyBrandingChromeNow === 'function') {
+                window.applyBrandingChromeNow(data);
+            } else if (data.favicon && typeof window.setSiteFavicon === 'function') {
                 window.setSiteFavicon(data.favicon);
             }
+            if (typeof window.saveBrandingChrome === 'function') {
+                window.saveBrandingChrome(data);
+            }
             updateFaviconPreview(data.favicon || '');
+            const faviconInput = document.getElementById('branding_favicon');
+            if (faviconInput && data.favicon) faviconInput.value = data.favicon;
             // Trigger update event for immediate frontend refresh
             window.dispatchEvent(new CustomEvent('adminDataSaved', { 
                 detail: { settingsKey: 'branding', data: data } 

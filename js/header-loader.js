@@ -33,10 +33,13 @@ const HeaderLoader = {
         const navigation = data.navigation || [];
         const navChildren = data.navigationChildren || {};
         
-        const email = contactInfo.email || 'info@sjs.com';
-        const phone = contactInfo.phone || '0703574113';
-        const schoolName = branding.school_name || 'Excellence Academy';
+        const email = contactInfo.email || '';
+        const phone = contactInfo.phone || '';
+        const schoolName = branding.school_name || '';
         const logo = branding.logo || '';
+        if (typeof window.applyBrandingChromeNow === 'function') {
+            window.applyBrandingChromeNow(branding);
+        }
         
         let html = `
             <header class="site-header" id="mainHeader">
@@ -44,7 +47,7 @@ const HeaderLoader = {
                     <div class="container">
                         <div class="header-top-content">
                             <div class="contact-info">
-                                <a href="mailto:${this.escapeHtml(email)}" class="contact-item">
+                                ${email ? `<a href="mailto:${this.escapeHtml(email)}" class="contact-item">
                                     <span class="contact-icon">
                                         <svg class="icon-mail" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2">
                                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
@@ -52,15 +55,15 @@ const HeaderLoader = {
                                         </svg>
                                     </span>
                                     <span>${this.escapeHtml(email)}</span>
-                                </a>
-                                <a href="tel:${this.escapeHtml(phone)}" class="contact-item">
+                                </a>` : ''}
+                                ${phone ? `<a href="tel:${this.escapeHtml(phone)}" class="contact-item">
                                     <span class="contact-icon">
                                         <svg class="icon-phone" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2">
                                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
                                         </svg>
                                     </span>
                                     <span>${this.escapeHtml(phone)}</span>
-                                </a>
+                                </a>` : ''}
                             </div>
                             <nav class="top-nav-desktop">
                                 ${this.renderNavigation(navigation, navChildren, false)}
@@ -73,8 +76,8 @@ const HeaderLoader = {
                         <div class="header-content">
                             <div class="logo">
                                 <a href="index.html" class="logo-link">
-                                    ${logo ? `<img src="${this.escapeHtml(logo)}" alt="${this.escapeHtml(schoolName)}" class="logo-image">` : 
-                                      `<div class="logo-placeholder"><span>${this.escapeHtml(schoolName.charAt(0))}</span></div>`}
+                                    ${logo ? `<img src="${this.escapeHtml(logo)}" alt="${this.escapeHtml(schoolName || 'School logo')}" class="logo-image">` : 
+                                      (schoolName ? `<div class="logo-placeholder"><span>${this.escapeHtml(schoolName.charAt(0))}</span></div>` : '')}
                                 </a>
                             </div>
                             <div class="header-actions">
@@ -213,17 +216,8 @@ const HeaderLoader = {
     },
     
     renderDefault() {
-        const headerPlaceholder = document.getElementById('header-placeholder');
-        if (headerPlaceholder) {
-            const defaultData = {
-                branding: { school_name: 'Excellence Academy', logo: '' },
-                contactInfo: { email: 'info@sjs.com', phone: '0703574113' },
-                navigation: [],
-                navigationChildren: {}
-            };
-            this.render(defaultData);
-            this.init();
-        }
+        // Keep the existing header markup; do not inject fake school names/emails.
+        this.init();
     },
     
     init() {

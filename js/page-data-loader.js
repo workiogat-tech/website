@@ -252,35 +252,13 @@ const PageDataLoader = {
     getDefaultAboutData() {
         return {
             aboutContent: {
-                title: 'About SJS',
-                content: 'SJS is dedicated to providing quality education and nurturing young minds. We are committed to creating a nurturing and challenging educational environment that empowers students to achieve academic excellence, develop critical thinking skills, and become responsible global citizens.',
-                mission_title: 'Our Mission',
-                mission_content: 'To provide a nurturing and challenging educational environment that empowers students to achieve academic excellence, develop critical thinking skills, and become responsible global citizens.\n\nWe believe in holistic education that balances academic rigor with character development, creativity, and social responsibility. Our dedicated faculty and state-of-the-art facilities create an environment where every student can thrive.',
-                hero_caption: 'Know Us Better',
-                image: '',
-                about_image_2: '',
-                hero_image: '',
-                core_values: ['Faith', 'Discipline', 'Integrity', 'Self-Reliance', 'Patriotism', 'Holistic Development'],
-                statistics: [
-                    {label: 'Students', value: '2,500+', icon: 'Users'},
-                    {label: 'Courses', value: '20+', icon: 'BookOpen'},
-                    {label: 'Awards', value: '25+', icon: 'Award'},
-                    {label: 'Success Rate', value: '98%', icon: 'Target'}
-                ]
+                title: '', content: '', mission_title: '', mission_content: '',
+                hero_caption: '', image: '', about_image_2: '', hero_image: '',
+                core_values: [], statistics: []
             },
-            visionMissionContent: {
-                vision_text: 'To build a developmental generation.'
-            },
-            whyChooseContent: {
-                title: 'Why Choose SJS'
-            },
-            whyChoosePoints: [
-                'Strong spiritual foundation and values',
-                'Academic excellence with experienced teaching staff',
-                'Both day and boarding options',
-                'A nurturing, safe, and inclusive environment',
-                'Commitment to holistic growth and ICT development'
-            ]
+            visionMissionContent: { vision_text: '' },
+            whyChooseContent: { title: '', image: '' },
+            whyChoosePoints: []
         };
     },
     
@@ -330,8 +308,8 @@ const PageDataLoader = {
     getDefaultClubsData() {
         return {
             clubsContent: {
-                title: 'Clubs',
-                subtitle: 'Extracurricular Activities and Student Organizations',
+                title: '',
+                subtitle: '',
                 hero_image: ''
             },
             clubs: []
@@ -355,12 +333,12 @@ const PageDataLoader = {
                     ...content,
                     hero_image: content.hero_image || ''
                 },
-                curriculumPrograms: programs.length ? programs : defaultData.curriculumPrograms,
+                curriculumPrograms: programs,
                 curriculumWhyChoose: {
                     ...defaultData.curriculumWhyChoose,
                     ...whyChoose
                 },
-                curriculumWhyChooseItems: whyItems.length ? whyItems : defaultData.curriculumWhyChooseItems
+                curriculumWhyChooseItems: whyItems
             };
         } catch (error) {
             return this.getDefaultCurriculumData();
@@ -369,49 +347,10 @@ const PageDataLoader = {
     
     getDefaultCurriculumData() {
         return {
-            curriculumContent: {
-                page_title: 'Curriculum',
-                page_subtitle: 'Our Educational Programs',
-                intro_text: 'We offer a comprehensive curriculum designed to develop well-rounded individuals prepared for success in all areas of life.',
-                hero_image: ''
-            },
-            curriculumPrograms: [
-                {
-                    program_title: 'Nursery Education Program',
-                    description: 'Our nursery program focuses on early childhood development, fostering communication skills, creativity, social interaction, and independence in a nurturing environment.',
-                    subjects: 'Language Development\nEarly Mathematics\nCreative Arts\nPhysical Activities'
-                },
-                {
-                    program_title: 'Primary Education Program',
-                    description: 'Our primary education program offers a comprehensive curriculum that builds strong academic foundations. Students develop critical thinking, problem-solving skills, and a love for learning across all subjects.',
-                    subjects: 'Mathematics\nEnglish Language\nScience\nSocial Studies\nReligious Education\nPhysical Education'
-                }
-            ],
-            curriculumWhyChoose: {
-                section_title: 'Why Choose Our Curriculum?'
-            },
-            curriculumWhyChooseItems: [
-                {
-                    title: 'Academic Excellence',
-                    description: 'Rigorous academic programs that challenge and inspire students',
-                    icon_name: 'graduation'
-                },
-                {
-                    title: 'Holistic Development',
-                    description: 'Focus on character building, creativity, and physical well-being',
-                    icon_name: 'user'
-                },
-                {
-                    title: 'Character Building',
-                    description: 'Values-based education that shapes responsible citizens',
-                    icon_name: 'award'
-                },
-                {
-                    title: 'Modern Facilities',
-                    description: 'State-of-the-art resources to support learning',
-                    icon_name: 'book'
-                }
-            ]
+            curriculumContent: { page_title: '', page_subtitle: '', intro_text: '', hero_image: '' },
+            curriculumPrograms: [],
+            curriculumWhyChoose: { section_title: '' },
+            curriculumWhyChooseItems: []
         };
     },
     
@@ -428,7 +367,7 @@ const PageDataLoader = {
                     ...this.pageContent(settings, 'facilitiesSettings'),
                     hero_image: settings.hero_image || ''
                 },
-                facilities: this.asList(settings.facilities).length ? this.asList(settings.facilities) : (defaultData.facilities || []),
+                facilities: this.asList(settings.facilities),
                 features: this.asList(settings.features)
             };
         } catch (error) {
@@ -439,8 +378,8 @@ const PageDataLoader = {
     getDefaultFacilitiesData() {
         return {
             facilitiesSettings: {
-                title: 'School Facilities',
-                subtitle: 'World-Class Facilities for Learning and Growth',
+                title: '',
+                subtitle: '',
                 hero_image: ''
             },
             facilities: [],
@@ -471,8 +410,8 @@ const PageDataLoader = {
     getDefaultTeachersData() {
         return {
             teachersSettings: {
-                title: 'Meet Our Staff',
-                subtitle: 'Our Expert Teachers',
+                title: '',
+                subtitle: '',
                 hero_image: ''
             },
             teachers: []
@@ -502,8 +441,8 @@ const PageDataLoader = {
     getDefaultTestimonialsData() {
         return {
             testimonialsSettings: {
-                title: 'Testimonials',
-                subtitle: 'What Our Community Says',
+                title: '',
+                subtitle: '',
                 hero_image: ''
             },
             testimonials: []
@@ -566,8 +505,8 @@ const PageDataLoader = {
     getDefaultGalleryData() {
         return {
             gallerySettings: {
-                title: 'School Gallery',
-                subtitle: 'Photos and Memories',
+                title: '',
+                subtitle: '',
                 hero_image: ''
             },
             galleryImages: []
@@ -597,8 +536,8 @@ const PageDataLoader = {
     getDefaultEventsData() {
         return {
             activitiesSettings: {
-                title: 'Events',
-                subtitle: 'Upcoming Events',
+                title: '',
+                subtitle: '',
                 hero_image: ''
             },
             activities: []
@@ -628,8 +567,8 @@ const PageDataLoader = {
     getDefaultNewsData() {
         return {
             newsSettings: {
-                title: 'News',
-                subtitle: 'Latest News and Updates',
+                title: '',
+                subtitle: '',
                 hero_image: ''
             },
             news: []
@@ -659,8 +598,8 @@ const PageDataLoader = {
     getDefaultAnnouncementsData() {
         return {
             announcementsSettings: {
-                title: 'Announcements',
-                subtitle: 'Important Announcements and Updates',
+                title: '',
+                subtitle: '',
                 hero_image: ''
             },
             announcements: []
@@ -680,14 +619,14 @@ const PageDataLoader = {
                     ...this.pageContent(settings, 'admissionContent'),
                     hero_image: settings.hero_image || ''
                 },
-                admissionLevels: this.asList(settings.admissionLevels || settings.admission_levels).length ? this.asList(settings.admissionLevels || settings.admission_levels) : defaultData.admissionLevels,
+                admissionLevels: this.asList(settings.admissionLevels || settings.admission_levels),
                 feeStructure: {
                     ...defaultData.feeStructure,
                     ...(typeof settings.fee_structure === 'string' ? { content: settings.fee_structure } : (settings.fee_structure || settings.feeStructure || {}))
                 },
                 contactInfo: {
-                    ...defaultData.contactInfo,
-                    ...settings.contactInfo
+                    phone: (settings.contactInfo && settings.contactInfo.phone) || settings.contact_phone || '',
+                    email: (settings.contactInfo && settings.contactInfo.email) || settings.contact_email || ''
                 }
             };
         } catch (error) {
@@ -700,26 +639,13 @@ const PageDataLoader = {
             admissionContent: {
                 hero_image: ''
             },
-            admissionLevels: [
-                {
-                    icon: '🎒',
-                    heading: 'Nursery Information',
-                    title: 'Nursery',
-                    description: 'Our nursery program provides a nurturing and stimulating environment for young learners. Children are introduced to foundational concepts through play-based learning, developing social skills, creativity, and early literacy. To receive an admission letter, parents must pay an admission fee of 40,000 Ugandan Shillings at the school.'
-                },
-                {
-                    icon: '📚',
-                    heading: 'Primary Information',
-                    title: 'Primary',
-                    description: 'Our primary education program offers a comprehensive curriculum that builds strong academic foundations. Students develop critical thinking, problem-solving skills, and a love for learning across all subjects. To receive an admission letter, parents must pay an admission fee of 40,000 Ugandan Shillings at the school.'
-                }
-            ],
+            admissionLevels: [],
             feeStructure: {
                 image: ''
             },
             contactInfo: {
-                phone: '+256 705666621',
-                email: 'mukonohisc@gmail.com'
+                phone: '',
+                email: ''
             }
         };
     },
@@ -746,8 +672,8 @@ const PageDataLoader = {
                     content_image: content.content_image || ''
                 },
                 historySection: {
-                    title: history.title || content.history_title || (saved ? 'Our History' : defaultData.historySection.title),
-                    content: history.content || content.history_content || (saved ? '' : defaultData.historySection.content),
+                    title: history.title || content.history_title || '',
+                    content: history.content || content.history_content || '',
                     image: history.image || content.history_image || ''
                 },
                 milestones: this.asList(content.milestones || settings.milestones)
@@ -760,25 +686,19 @@ const PageDataLoader = {
     getDefaultSchoolBackgroundData() {
         return {
             backgroundContent: {
-                title: 'School Background',
-                subtitle: 'Know Us Better',
+                title: '',
+                subtitle: '',
                 hero_image: '',
                 content: '',
-                history_section: {
-                    title: 'Our History',
-                    content: 'SJS was founded in 1985 and is proudly celebrating 40 years of excellence in 2025. The school sits on land donated by the Mukono Diocese Church of Uganda, under the leadership of the Late Archbishop Livingstone Mpalanyi Nkoyooyo, the first Bishop of Mukono.\n\nIt began with just seven students at SJS Boarding Primary School, guided by Headteacher Mr. Mugwano Noah. The first Headteacher, Late Mr. Batte Abraham, worked alongside the first Board Chairperson, Rev. Canon Yusufu Tubwomwe, to lay the school\'s strong foundation.',
-                    image: ''
-                },
+                content_title: '',
+                content_image: '',
+                history_section: { title: '', content: '', image: '' },
                 milestones: [],
                 video_url: '',
                 video_embed_code: ''
             },
-            // Also provide historySection at top level for easier access
-            historySection: {
-                title: 'Our History',
-                content: 'SJS was founded in 1985 and is proudly celebrating 40 years of excellence in 2025. The school sits on land donated by the Mukono Diocese Church of Uganda, under the leadership of the Late Archbishop Livingstone Mpalanyi Nkoyooyo, the first Bishop of Mukono.\n\nIt began with just seven students at SJS Boarding Primary School, guided by Headteacher Mr. Mugwano Noah. The first Headteacher, Late Mr. Batte Abraham, worked alongside the first Board Chairperson, Rev. Canon Yusufu Tubwomwe, to lay the school\'s strong foundation.',
-                image: ''
-            }
+            historySection: { title: '', content: '', image: '' },
+            milestones: []
         };
     },
     
@@ -796,8 +716,8 @@ const PageDataLoader = {
                     hero_image: settings.hero_image || ''
                 },
                 successStories: this.asList(settings.successStories || settings.success_stories),
-                sponsorshipLevels: settings.sponsorshipLevels || settings.sponsorship_levels || defaultData.sponsorshipLevels,
-                steps: settings.steps || settings.sponsorship_steps || defaultData.steps
+                sponsorshipLevels: this.asList(settings.sponsorshipLevels || settings.sponsorship_levels),
+                steps: this.asList(settings.steps || settings.sponsorship_steps)
             };
         } catch (error) {
             return this.getDefaultSponsorshipData();
@@ -807,47 +727,16 @@ const PageDataLoader = {
     getDefaultSponsorshipData() {
         return {
             sponsorship: {
-                title: 'Sponsorship',
-                subtitle: 'Support Our Students',
-                hero_image: '',
-                transformations_title: 'Transformations That Inspire',
-                transformations_subtitle: 'See the incredible impact of sponsorship through the eyes of our children. Every story is a testament to the power of education and hope.',
-                impact_level_title: 'Choose Your Impact Level',
-                impact_level_subtitle: 'Every contribution makes a difference. Choose the sponsorship level that fits your heart and budget.',
-                how_it_works_title: 'How Your Sponsorship Works',
-                how_it_works_subtitle: 'Our sponsorship process is simple, transparent, and impactful. Here\'s how you can change a child\'s life.',
-                cta_title: 'Ready to Change a Life?',
-                cta_subtitle: 'Join our sponsorship program today and be part of a child\'s journey to a brighter future.',
-                apply_button_text: 'Apply for Sponsorship',
-                sponsor_button_text: 'Sponsor a Child'
+                title: '', subtitle: '', hero_image: '',
+                transformations_title: '', transformations_subtitle: '',
+                impact_level_title: '', impact_level_subtitle: '',
+                how_it_works_title: '', how_it_works_subtitle: '',
+                cta_title: '', cta_subtitle: '',
+                apply_button_text: '', sponsor_button_text: ''
             },
             successStories: [],
-            sponsorshipLevels: [
-                {
-                    name: 'Full Scholarship',
-                    amount: 'UGX 500,000',
-                    description: 'Complete tuition, books, and uniform for one academic year',
-                    benefits: ['Full tuition coverage', 'Textbooks and supplies', 'School uniform', 'Monthly progress reports']
-                },
-                {
-                    name: 'Partial Scholarship',
-                    amount: 'UGX 250,000',
-                    description: 'Half tuition coverage for one academic year',
-                    benefits: ['50% tuition coverage', 'Textbooks', 'Quarterly progress reports', 'Student communication']
-                },
-                {
-                    name: 'Book & Uniform',
-                    amount: 'UGX 100,000',
-                    description: 'Essential supplies and uniform for one student',
-                    benefits: ['Complete textbook set', 'School uniform', 'School bag', 'Semester progress report']
-                }
-            ],
-            steps: [
-                {title: 'Choose Your Child', description: 'Browse profiles and select a child whose story touches your heart.'},
-                {title: 'Make Your Pledge', description: 'Choose your sponsorship level and set up your monthly contribution.'},
-                {title: 'Stay Connected', description: 'Receive regular updates, photos, and letters from your sponsored child.'},
-                {title: 'See the Impact', description: 'Watch your sponsored child grow, learn, and achieve their dreams.'}
-            ]
+            sponsorshipLevels: [],
+            steps: []
         };
     },
     
@@ -865,7 +754,7 @@ const PageDataLoader = {
                     hero_image: settings.hero_image || ''
                 },
                 needs: this.asList(settings.needs),
-                paymentDetails: settings.paymentDetails || settings.payment_details || defaultData.paymentDetails
+                paymentDetails: settings.paymentDetails || settings.payment_details || null
             };
         } catch (error) {
             return this.getDefaultGiveBackData();
@@ -874,13 +763,7 @@ const PageDataLoader = {
     
     getDefaultGiveBackData() {
         return {
-            giveback: {
-                title: 'Your Gift. Their Game. SJS',
-                subtitle: 'Your generosity helps us provide students with the tools they need to learn, grow, and succeed. From computers and projectors to sports equipment and classroom resources, every donation goes directly toward creating better learning opportunities.',
-                hero_image: '',
-                contact_phone: '+256 705666621',
-                contact_email: 'info@sjs.edu'
-            },
+            giveback: { title: '', subtitle: '', hero_image: '', contact_phone: '', contact_email: '' },
             needs: [],
             paymentDetails: null
         };
@@ -899,9 +782,9 @@ const PageDataLoader = {
                     ...this.pageContent(settings, 'parentsContent'),
                     hero_image: settings.hero_image || ''
                 },
-                upcomingEvents: this.asList(settings.upcomingEvents || settings.upcoming_events).length ? this.asList(settings.upcomingEvents || settings.upcoming_events) : defaultData.upcomingEvents,
-                resources: this.asList(settings.resources).length ? this.asList(settings.resources) : defaultData.resources,
-                contactInfo: this.asList(settings.contactInfo || settings.contact_info).length ? this.asList(settings.contactInfo || settings.contact_info) : defaultData.contactInfo
+                upcomingEvents: this.asList(settings.upcomingEvents || settings.upcoming_events),
+                resources: this.asList(settings.resources),
+                contactInfo: this.asList(settings.contactInfo || settings.contact_info)
             };
         } catch (error) {
             return this.getDefaultParentsData();
@@ -910,28 +793,10 @@ const PageDataLoader = {
     
     getDefaultParentsData() {
         return {
-            parentsContent: {
-                title: 'Parent Portal',
-                subtitle: 'Resources for Parents',
-                hero_image: ''
-            },
-            upcomingEvents: [
-                {title: 'Parent-Teacher Conference', date: 'March 15, 2024', time: '2:00 PM - 4:00 PM', location: 'School Auditorium', type: 'Meeting'},
-                {title: 'Science Fair', date: 'March 22, 2024', time: '10:00 AM - 2:00 PM', location: 'School Gymnasium', type: 'Event'},
-                {title: 'Sports Day', date: 'March 29, 2024', time: '9:00 AM - 3:00 PM', location: 'School Grounds', type: 'Event'}
-            ],
-            resources: [
-                {title: 'Parent Handbook', description: 'Complete guide to school policies and procedures', icon: '📘', link: 'resources.html#parent-handbook'},
-                {title: 'Academic Support', description: 'Resources for helping your child with studies', icon: '🎓', link: 'resources.html#academic-support'},
-                {title: 'Health & Safety', description: 'Important health and safety information', icon: '🏥', link: 'resources.html#health-safety'},
-                {title: 'Transportation', description: 'Bus schedules and transportation policies', icon: '🚌', link: 'resources.html#transportation'}
-            ],
-            contactInfo: [
-                {title: 'Main Office', value: '+256 123 456 789', description: 'General inquiries', icon: '📞', link: 'tel:+256123456789'},
-                {title: 'Email', value: 'info@excellenceacademy.com', description: 'General questions', icon: '✉️', link: 'mailto:info@excellenceacademy.com'},
-                {title: 'Office Hours', value: '7:30 AM - 4:30 PM', description: 'Monday to Friday', icon: '🕐', link: null},
-                {title: 'Address', value: '123 Education Street, Kampala', description: 'Main campus', icon: '📍', link: 'https://maps.google.com/?q=123+Education+Street,+Kampala'}
-            ]
+            parentsContent: { title: '', subtitle: '', hero_image: '' },
+            upcomingEvents: [],
+            resources: [],
+            contactInfo: []
         };
     },
     
@@ -958,8 +823,8 @@ const PageDataLoader = {
     getDefaultPeopleBehindSchoolData() {
         return {
             peopleContent: {
-                title: 'People Behind the School',
-                subtitle: 'Meet the Team',
+                title: '',
+                subtitle: '',
                 hero_image: '',
                 content: '',
                 video_url: '',
@@ -982,7 +847,7 @@ const PageDataLoader = {
                     ...this.pageContent(settings, 'parentsContent'),
                     hero_image: settings.hero_image || ''
                 },
-                resourceDetailSections: this.asList(settings.resourceDetailSections || settings.resource_detail_sections).length ? this.asList(settings.resourceDetailSections || settings.resource_detail_sections) : defaultData.resourceDetailSections
+                resourceDetailSections: this.asList(settings.resourceDetailSections || settings.resource_detail_sections)
             };
         } catch (error) {
             return this.getDefaultResourcesData();
@@ -992,38 +857,10 @@ const PageDataLoader = {
     getDefaultResourcesData() {
         return {
             parentsContent: {
-                hero_caption: 'Resources & Information',
-                hero_title: 'Resources',
-                hero_image: '',
-                section_title: 'Resources & Information',
-                section_subtitle: 'Access important documents, policies, and resources to support your child\'s education.'
+                hero_caption: '', hero_title: '', hero_image: '',
+                section_title: '', section_subtitle: ''
             },
-            resourceDetailSections: [
-                {
-                    title: 'Parent Handbook',
-                    description: 'The Parent Handbook provides clear guidelines on school policies, academic expectations, student behaviour, and communication between the school and parents. It helps parents understand school routines, responsibilities and support available for their children\'s education.',
-                    image: '',
-                    id: 'parent-handbook'
-                },
-                {
-                    title: 'Academic Support',
-                    description: 'Parents are expected to support their children\'s learning by ensuring regular attendance, completing homework, and providing learning materials. They should communicate with teachers, attend meetings, and monitor academic progress. Parental support helps improve discipline, motivation, and overall student achievement.',
-                    image: '',
-                    id: 'academic-support'
-                },
-                {
-                    title: 'Health & Safety',
-                    description: 'The school is committed to providing a safe and healthy learning environment for all learners and staff. Basic health services, hygiene practices, and safety rules are in place to prevent accidents and illness. Parents are encouraged to cooperate with the school to ensure children follow health and safety guidelines.',
-                    image: '',
-                    id: 'health-safety'
-                },
-                {
-                    title: 'Transportation',
-                    description: 'Bus schedules and transportation policies. The school provides safe and reliable transportation services for learners using the school bus. All buses operate on designated routes and follow strict safety rules to protect learners. Parents are advised to ensure timely drop-off and pickup at assigned bus points.',
-                    image: '',
-                    id: 'transportation'
-                }
-            ]
+            resourceDetailSections: []
         };
     }
 };

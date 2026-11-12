@@ -20,12 +20,12 @@ if ($footerContent) {
     }
 }
 
-$schoolName = $branding['school_name'] ?? 'Excellence Academy';
-$address = $contactInfo['address'] ?? '123 Education Street, Learning City';
-$phone = $contactInfo['phone'] ?? '0703574113';
-$email = $contactInfo['email'] ?? 'info@sjs.com';
+$schoolName = $branding['school_name'] ?? '';
+$address = $contactInfo['address'] ?? '';
+$phone = $contactInfo['phone'] ?? '';
+$email = $contactInfo['email'] ?? '';
 $copyrightText = trim((string)($footerContent['copyright_text'] ?? ''));
-if ($copyrightText === '') {
+if ($copyrightText === '' && $schoolName !== '') {
     $copyrightText = '© ' . $schoolName . '. All rights reserved.';
 }
 

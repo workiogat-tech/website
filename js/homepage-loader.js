@@ -190,9 +190,11 @@ const HomepageLoader = {
         if (buttons) {
             const primaryBtn = buttons.querySelector('.btn-primary');
             const secondaryBtn = buttons.querySelector('.btn-outline-white, .btn-secondary, a.btn:not(.btn-primary)');
+            const primaryLabel = data.cta_text || 'Explore Events';
+            const secondaryLabel = data.cta2_text || 'Schedule a Visit';
             if (primaryBtn) {
-                if (data.cta_text) primaryBtn.textContent = data.cta_text;
-                if (data.cta_link) primaryBtn.setAttribute('href', data.cta_link);
+                primaryBtn.textContent = primaryLabel;
+                primaryBtn.setAttribute('href', data.cta_link || 'events.html');
                 const ctaBg = data.cta_bg_color || '#800020';
                 const ctaFg = data.cta_text_color || '#ffffff';
                 primaryBtn.style.setProperty('--hero-cta-bg', ctaBg);
@@ -202,8 +204,8 @@ const HomepageLoader = {
                 primaryBtn.style.borderColor = ctaBg;
             }
             if (secondaryBtn) {
-                if (data.cta2_text) secondaryBtn.textContent = data.cta2_text;
-                if (data.cta2_link) secondaryBtn.setAttribute('href', data.cta2_link);
+                secondaryBtn.textContent = secondaryLabel;
+                secondaryBtn.setAttribute('href', data.cta2_link || 'contact.html');
                 const cta2Bg = data.cta2_bg_color || 'transparent';
                 const cta2Fg = data.cta2_text_color || '#ffffff';
                 secondaryBtn.style.setProperty('--hero-cta2-bg', cta2Bg);
@@ -212,6 +214,7 @@ const HomepageLoader = {
                 secondaryBtn.style.color = cta2Fg;
                 secondaryBtn.style.borderColor = cta2Fg;
             }
+            buttons.hidden = false;
         }
         
         // Get slides
@@ -416,25 +419,17 @@ const HomepageLoader = {
     },
     
     applyBranding(branding) {
-        // Update page title (browser tab text)
-        if (branding.school_name) {
-            document.title = `${branding.school_name} - Home`;
-        }
-
-        // Favicon (browser tab icon)
-        if (branding.favicon) {
-            if (typeof window.setSiteFavicon === 'function') {
+        if (typeof window.applyBrandingChromeNow === 'function') {
+            window.applyBrandingChromeNow(branding);
+        } else {
+            if (branding.school_name) {
+                document.title = `${branding.school_name} - Home`;
+            }
+            if (branding.favicon && typeof window.setSiteFavicon === 'function') {
                 window.setSiteFavicon(branding.favicon);
-            } else {
-                let link = document.querySelector("link[rel='icon'], link[rel='shortcut icon']");
-                if (!link) {
-                    link = document.createElement('link');
-                    link.rel = 'icon';
-                    document.head.appendChild(link);
-                }
-                const bust = branding.favicon + (String(branding.favicon).indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
-                link.type = '';
-                link.href = bust;
+            }
+            if (typeof window.saveBrandingChrome === 'function') {
+                window.saveBrandingChrome(branding);
             }
         }
         

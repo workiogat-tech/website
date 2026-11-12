@@ -116,12 +116,12 @@ if (typeof window.ClientStorage === 'undefined') {
     branding: {
         async get() {
             const data = ClientStorage.get(ClientStorage.KEYS.BRANDING, {
-                school_name: 'SJS ACADEMY',
-                tagline: 'Shaping Tomorrows Leaders Today',
+                school_name: '',
+                tagline: '',
                 logo: '',
                 favicon: '',
-                primary_color: '#800020',
-                secondary_color: '#6B0000',
+                primary_color: '',
+                secondary_color: '',
                 font_family: ''
             });
             return data;
@@ -153,8 +153,8 @@ if (typeof window.ClientStorage === 'undefined') {
     hero: {
         async get() {
             const data = ClientStorage.get(ClientStorage.KEYS.HERO_CONTENT, {
-                headline: 'Welcome to SJS',
-                subheadline: 'Empowering minds, shaping futures',
+                headline: '',
+                subheadline: '',
                 description: '',
                 background_image: '',
                 slides: [],

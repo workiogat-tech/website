@@ -364,31 +364,7 @@
             }
         }
     </style>
-    <script>
-    window.setSiteFavicon = function(url) {
-        if (!url || String(url).indexOf('data:') === 0) return;
-        var clean = String(url).trim();
-        if (!clean) return;
-        var path = clean.split('?')[0].split('#')[0];
-        var ext = (path.split('.').pop() || '').toLowerCase();
-        var type = ext === 'svg' ? 'image/svg+xml'
-            : (ext === 'ico' ? 'image/x-icon'
-            : (ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg'
-            : (ext === 'webp' ? 'image/webp'
-            : (ext === 'gif' ? 'image/gif' : 'image/png'))));
-        var href = clean + (clean.indexOf('?') >= 0 ? '&' : '?') + 'v=' + Date.now();
-        document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]').forEach(function(el) {
-            el.parentNode && el.parentNode.removeChild(el);
-        });
-        [['icon', type], ['shortcut icon', type], ['apple-touch-icon', '']].forEach(function(pair) {
-            var link = document.createElement('link');
-            link.rel = pair[0];
-            if (pair[1]) link.type = pair[1];
-            link.href = href;
-            document.head.appendChild(link);
-        });
-    };
-    </script>
+    <script src="js/branding-boot.js?v=20261112"></script>
 </head>
 <body>
     <div class="admin-wrapper">

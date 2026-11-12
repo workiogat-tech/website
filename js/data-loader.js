@@ -37,13 +37,13 @@ const DataLoader = {
     getDefaultHomepageData() {
         return {
             branding: {
-                school_name: 'Excellence Academy',
+                school_name: '',
                 favicon: ''
             },
             heroContent: {
-                headline: 'Welcome to Excellence Academy',
-                subheadline: 'Empowering minds, shaping futures',
-                description: 'We focus on academic excellence, moral values, and holistic development for every child.',
+                headline: '',
+                subheadline: '',
+                description: '',
                 slides: [],
                 slide_mode: 'marquee',
                 headline_color: '#ffffff',
@@ -51,40 +51,24 @@ const DataLoader = {
             },
             aboutContent: {
                 title: 'About Us',
-                description: 'Excellence Academy is committed to providing quality education.',
+                description: '',
                 image: ''
             },
             contactInfo: {
-                email: 'info@sjs.com',
-                phone: '0703574113',
-                address: '123 Education Street'
+                email: '',
+                phone: '',
+                address: ''
             },
             academicsContent: {
-                title: 'Academics',
-                description: 'SJS Academy is a dynamic and growing co-educational institution.',
-                student_count: '2,524',
-                success_rate: '98%',
-                curriculum_link: 'curriculum.html',
-                button_text: 'Learn More About Our Curriculum',
+                title: '',
+                description: '',
+                student_count: '',
+                success_rate: '',
+                curriculum_link: '',
+                button_text: '',
                 image: ''
             },
-            threeColumnSections: [
-                {
-                    title: 'School Life',
-                    description: 'SJS is a day and boarding school where learners engage in a variety of co-curricular events and clubs.',
-                    image: ''
-                },
-                {
-                    title: 'Health',
-                    description: 'SJS is a Church of Uganda-founded institution operating in partnership with the Government\'s USE Program.',
-                    image: ''
-                },
-                {
-                    title: 'Sports',
-                    description: 'SJS promotes teamwork and community engagement through inter-school and inter-house sports competitions.',
-                    image: ''
-                }
-            ],
+            threeColumnSections: [],
             teachers: [],
             testimonials: [],
             activities: [],
@@ -129,14 +113,14 @@ const DataLoader = {
             const text = await response.text();
             
             if (text.trim().startsWith('<?php') || text.trim().startsWith('<!')) {
-                return { school_name: 'Excellence Academy', favicon: '' };
+                return { school_name: '', favicon: '' };
             }
             
             const result = JSON.parse(text);
             return result.data || result;
         } catch (error) {
             console.error('Error loading branding:', error);
-            return { school_name: 'Excellence Academy', favicon: '' };
+            return { school_name: '', favicon: '' };
         }
     },
     
@@ -169,14 +153,14 @@ const DataLoader = {
             const text = await response.text();
             
             if (text.trim().startsWith('<?php') || text.trim().startsWith('<!')) {
-                return { email: 'info@sjs.com', phone: '0703574113', address: '123 Education Street' };
+                return { email: '', phone: '', address: '' };
             }
             
             const result = JSON.parse(text);
             return result.data || result;
         } catch (error) {
             console.error('Error loading contact info:', error);
-            return { email: 'info@sjs.com', phone: '0703574113', address: '123 Education Street' };
+            return { email: '', phone: '', address: '' };
         }
     }
 };

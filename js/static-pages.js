@@ -98,6 +98,10 @@ const StaticPages = {
                 }
             }
         }
+        if (typeof window.applyBrandingChromeNow === 'function') {
+            window.applyBrandingChromeNow(branding);
+            return;
+        }
         if (branding.favicon && typeof window.setSiteFavicon === 'function') {
             window.setSiteFavicon(branding.favicon);
         }
@@ -110,6 +114,9 @@ const StaticPages = {
         }
         if (branding.secondary_color) {
             document.documentElement.style.setProperty('--secondary-color', branding.secondary_color);
+        }
+        if (typeof window.saveBrandingChrome === 'function') {
+            window.saveBrandingChrome(branding);
         }
     },
     
@@ -516,12 +523,21 @@ const StaticPages = {
             this.branding.logo = keptLogo;
         }
 
-        // Paint the menu before any network request so a reload cannot leave the bar empty.
-        this.showHeader(headerPlaceholder);
+        // Seed from branding-boot cache so we never flash empty/fake branding over the real logo
+        try {
+            const cached = JSON.parse(localStorage.getItem('sjs_branding_chrome') || 'null');
+            if (cached && typeof cached === 'object') {
+                this.branding = this.mergeFilled(this.branding, cached);
+            }
+        } catch (e) {}
 
         // Load branding and contact from localStorage first, then the saved admin data
         await this.loadBranding();
         await this.loadContact();
+
+        // Paint once we have cached/local branding (not fake defaults)
+        this.showHeader(headerPlaceholder);
+
         await this.loadFromServer();
         if (!this.branding.logo && keptLogo) {
             this.branding.logo = keptLogo;
