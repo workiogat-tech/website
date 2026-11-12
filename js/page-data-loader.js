@@ -732,7 +732,10 @@ const PageDataLoader = {
                 impact_level_title: '', impact_level_subtitle: '',
                 how_it_works_title: '', how_it_works_subtitle: '',
                 cta_title: '', cta_subtitle: '',
-                apply_button_text: '', sponsor_button_text: ''
+                apply_button_text: '', sponsor_button_text: '',
+                cta_bg_color: '', cta_title_color: '', cta_subtitle_color: '',
+                cta_apply_bg_color: '', cta_apply_text_color: '',
+                cta_sponsor_bg_color: '', cta_sponsor_text_color: ''
             },
             successStories: [],
             sponsorshipLevels: [],

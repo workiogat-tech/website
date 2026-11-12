@@ -39,6 +39,7 @@ $sections = [
     ['name' => 'resources', 'label' => 'Resources', 'group' => 'Pages'],
     ['name' => 'school-background', 'label' => 'Background', 'group' => 'Pages'],
     ['name' => 'sponsorship', 'label' => 'Sponsorship', 'group' => 'Pages'],
+    ['name' => 'sponsorship-cta', 'label' => 'Sponsorship CTA', 'group' => 'Pages'],
     ['name' => 'teachers', 'label' => 'Teachers', 'group' => 'Pages'],
     ['name' => 'testimonials', 'label' => 'Testimonials', 'group' => 'Pages'],
 ];
@@ -76,56 +77,61 @@ $colorGroupNotes = [
             <p style="margin: 0 0 14px; color: #78716c; font-size: 14px;"><?php echo htmlspecialchars($colorGroupNotes[$section['group']] ?? ''); ?></p>
             <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px;">
         <?php endif; ?>
-                <?php $isCoreValues = $section['name'] === 'core-values'; ?>
+                <?php
+                    $isCoreValues = $section['name'] === 'core-values';
+                    $isSponsorshipCta = $section['name'] === 'sponsorship-cta';
+                ?>
                 <div class="color-section-card" data-color-label="<?php echo htmlspecialchars(strtolower($section['label'] . ' ' . $section['name'])); ?>" style="background: #ffffff; padding: 20px; border-radius: 12px; border: 2px solid #e0e0e0; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <h4 style="font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #333; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px;">
                         <?php echo htmlspecialchars($section['label']); ?>
                     </h4>
                     <?php if ($isCoreValues): ?>
                     <p style="margin: 0 0 12px; color: #57534e; font-size: 13px; line-height: 1.45;">Homepage Core Values boxes. Card color fills each box. Card text is the wording inside it. Title color is the heading above the boxes.</p>
+                    <?php elseif ($isSponsorshipCta): ?>
+                    <p style="margin: 0 0 12px; color: #57534e; font-size: 13px; line-height: 1.45;">Bottom “Ready to Change a Life?” banner on the Sponsorship page. Use light text on a dark banner so the wording stays readable. You can also fine-tune these under Sponsorship → CTA Colors.</p>
                     <?php endif; ?>
                     <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Title color' : 'Primary Color'; ?></label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Title color' : ($isSponsorshipCta ? 'Title color' : 'Primary Color'); ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][primaryColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                   value="<?php echo htmlspecialchars($colorData['primary_color'] ?? '#800020'); ?>">
+                                   value="<?php echo htmlspecialchars($colorData['primary_color'] ?? ($isSponsorshipCta ? '#ffffff' : '#800020')); ?>">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Secondary Color</label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isSponsorshipCta ? 'Sponsor button' : 'Secondary Color'; ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][secondaryColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
                                    value="<?php echo htmlspecialchars($colorData['secondary_color'] ?? '#6B0000'); ?>">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card color' : 'Background Color'; ?></label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card color' : ($isSponsorshipCta ? 'Banner background' : 'Background Color'); ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][backgroundColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                   value="<?php echo htmlspecialchars($colorData['background_color'] ?? ($isCoreValues ? '#f3f4f6' : '#ffffff')); ?>">
+                                   value="<?php echo htmlspecialchars($colorData['background_color'] ?? ($isCoreValues ? '#f3f4f6' : ($isSponsorshipCta ? '#800020' : '#ffffff'))); ?>">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card text' : 'Text Color'; ?></label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card text' : ($isSponsorshipCta ? 'Subtitle color' : 'Text Color'); ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][textColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                   value="<?php echo htmlspecialchars($colorData['text_color'] ?? ($isCoreValues ? '#1f2937' : '#1e293b')); ?>">
+                                   value="<?php echo htmlspecialchars($colorData['text_color'] ?? ($isCoreValues ? '#1f2937' : ($isSponsorshipCta ? '#ffffff' : '#1e293b'))); ?>">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;">Accent Color</label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isSponsorshipCta ? 'Apply button' : 'Accent Color'; ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][accentColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                   value="<?php echo htmlspecialchars($colorData['accent_color'] ?? '#800020'); ?>">
+                                   value="<?php echo htmlspecialchars($colorData['accent_color'] ?? ($isSponsorshipCta ? '#ffffff' : '#800020')); ?>">
                         </div>
                         <div>
-                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card hover' : 'Hover Color'; ?></label>
+                            <label style="display: block; font-size: 12px; font-weight: 500; margin-bottom: 5px; color: #555;"><?php echo $isCoreValues ? 'Card hover' : ($isSponsorshipCta ? 'Button text' : 'Hover Color'); ?></label>
                             <input type="color" 
                                    name="colors[<?php echo htmlspecialchars($section['name']); ?>][hoverColor]" 
                                    style="height: 45px; width: 100%; cursor: pointer; border: 2px solid #ddd; border-radius: 4px;"
-                                   value="<?php echo htmlspecialchars($colorData['hover_color'] ?? ($isCoreValues ? '#e5e7eb' : '#6B0000')); ?>">
+                                   value="<?php echo htmlspecialchars($colorData['hover_color'] ?? ($isCoreValues ? '#e5e7eb' : ($isSponsorshipCta ? '#800020' : '#6B0000'))); ?>">
                         </div>
                     </div>
                     <input type="hidden" name="colors[<?php echo htmlspecialchars($section['name']); ?>][sectionName]" value="<?php echo htmlspecialchars($section['name']); ?>">

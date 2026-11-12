@@ -63,18 +63,12 @@
                     <div class="sponsorship-steps-grid" id="sponsorship-steps"></div>
                 </div>
 
-                <div class="sponsorship-cta-section" style="margin-top: 3rem; padding: 3rem; background: #800020; color: white; border-radius: 1rem; text-align: center;">
-                    <h2 style="font-size: 2rem; margin-bottom: 1rem;">Ready to Change a Life?</h2>
-                    <p style="font-size: 1.125rem; margin-bottom: 2rem; max-width: 42rem; margin-left: auto; margin-right: auto;">
-                        Join our sponsorship program today and be part of a child's journey to a brighter future.
-                    </p>
-                    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                        <button class="btn btn-primary" onclick="openApplicationModal()" style="background: white; color: #800020; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
-                            Apply for Sponsorship
-                        </button>
-                        <button class="btn btn-primary" onclick="openSponsorshipModal('Full Scholarship')" style="background: #6B0000; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 0.5rem; font-weight: 600; cursor: pointer;">
-                            Sponsor a Child
-                        </button>
+                <div class="sponsorship-cta-section" id="sponsorshipCtaSection" hidden>
+                    <h2 class="sponsorship-cta-title" id="sponsorshipCtaTitle"></h2>
+                    <p class="sponsorship-cta-subtitle" id="sponsorshipCtaSubtitle"></p>
+                    <div class="sponsorship-cta-actions">
+                        <button type="button" class="sponsorship-cta-btn sponsorship-cta-btn-apply" id="sponsorshipCtaApplyBtn" onclick="openApplicationModal()"></button>
+                        <button type="button" class="sponsorship-cta-btn sponsorship-cta-btn-sponsor" id="sponsorshipCtaSponsorBtn" onclick="openSponsorshipModal('')"></button>
                     </div>
                 </div>
             </div>
@@ -140,22 +134,34 @@
                 
                 // Update hero
                 if (data.sponsorship) {
+                    const s = data.sponsorship;
                     const hero = document.querySelector('.page-hero-section');
-                    if (data.sponsorship.title) {
+                    if (s.title) {
                         const title = hero.querySelector('.page-hero-title');
-                        if (title) title.textContent = data.sponsorship.title;
+                        if (title) title.textContent = s.title;
                     }
-                    if (data.sponsorship.subtitle) {
+                    if (s.subtitle) {
                         const subtitle = hero.querySelector('.page-hero-subtitle');
-                        if (subtitle) subtitle.textContent = data.sponsorship.subtitle;
+                        if (subtitle) subtitle.textContent = s.subtitle;
                     }
-                    if (data.sponsorship.hero_image) {
+                    if (s.hero_image) {
                         const bg = hero.querySelector('.page-hero-background');
                         if (bg) {
-                            const heroImageUrl = data.sponsorship.hero_image.replace(/'/g, "\\'");
+                            const heroImageUrl = s.hero_image.replace(/'/g, "\\'");
                             PageDataLoader.paintHero(heroImageUrl);
                         }
                     }
+
+                    const sectionTitles = document.querySelectorAll('.section-header .section-title');
+                    const sectionSubs = document.querySelectorAll('.section-header .section-subtitle');
+                    if (s.transformations_title && sectionTitles[0]) sectionTitles[0].textContent = s.transformations_title;
+                    if (s.transformations_subtitle && sectionSubs[0]) sectionSubs[0].textContent = s.transformations_subtitle;
+                    if (s.impact_level_title && sectionTitles[1]) sectionTitles[1].textContent = s.impact_level_title;
+                    if (s.impact_level_subtitle && sectionSubs[1]) sectionSubs[1].textContent = s.impact_level_subtitle;
+                    if (s.how_it_works_title && sectionTitles[2]) sectionTitles[2].textContent = s.how_it_works_title;
+                    if (s.how_it_works_subtitle && sectionSubs[2]) sectionSubs[2].textContent = s.how_it_works_subtitle;
+
+                    applySponsorshipCta(s);
                 }
                 
                 // Render success stories
@@ -259,6 +265,65 @@
                 }
         })();
         
+        function hexOr(value, fallback) {
+            return /^#[0-9A-Fa-f]{6}$/.test(String(value || '').trim()) ? String(value).trim() : fallback;
+        }
+
+        function applySponsorshipCta(s) {
+            const section = document.getElementById('sponsorshipCtaSection');
+            const titleEl = document.getElementById('sponsorshipCtaTitle');
+            const subtitleEl = document.getElementById('sponsorshipCtaSubtitle');
+            const applyBtn = document.getElementById('sponsorshipCtaApplyBtn');
+            const sponsorBtn = document.getElementById('sponsorshipCtaSponsorBtn');
+            if (!section || !titleEl || !subtitleEl || !applyBtn || !sponsorBtn) return;
+
+            const title = (s.cta_title || '').trim();
+            const subtitle = (s.cta_subtitle || '').trim();
+            const applyText = (s.apply_button_text || '').trim();
+            const sponsorText = (s.sponsor_button_text || '').trim();
+            if (!title && !subtitle && !applyText && !sponsorText) {
+                section.hidden = true;
+                return;
+            }
+
+            const bg = hexOr(s.cta_bg_color, '#800020');
+            const titleColor = hexOr(s.cta_title_color, '#ffffff');
+            const subtitleColor = hexOr(s.cta_subtitle_color, '#ffffff');
+            const applyBg = hexOr(s.cta_apply_bg_color, '#ffffff');
+            const applyFg = hexOr(s.cta_apply_text_color, '#800020');
+            const sponsorBg = hexOr(s.cta_sponsor_bg_color, '#6B0000');
+            const sponsorFg = hexOr(s.cta_sponsor_text_color, '#ffffff');
+
+            section.dataset.ctaFromContent = '1';
+            section.style.setProperty('--cta-bg', bg);
+            section.style.setProperty('--cta-title', titleColor);
+            section.style.setProperty('--cta-subtitle', subtitleColor);
+            section.style.setProperty('--cta-apply-bg', applyBg);
+            section.style.setProperty('--cta-apply-fg', applyFg);
+            section.style.setProperty('--cta-sponsor-bg', sponsorBg);
+            section.style.setProperty('--cta-sponsor-fg', sponsorFg);
+            section.style.background = bg;
+
+            titleEl.textContent = title || 'Ready to Change a Life?';
+            titleEl.style.color = titleColor;
+            subtitleEl.textContent = subtitle || 'Join our sponsorship program today and be part of a child\'s journey to a brighter future.';
+            subtitleEl.style.color = subtitleColor;
+
+            applyBtn.textContent = applyText || 'Apply for Sponsorship';
+            applyBtn.style.background = applyBg;
+            applyBtn.style.color = applyFg;
+            applyBtn.style.borderColor = applyBg;
+            applyBtn.hidden = !applyText && !title && !subtitle;
+
+            sponsorBtn.textContent = sponsorText || 'Sponsor a Child';
+            sponsorBtn.style.background = sponsorBg;
+            sponsorBtn.style.color = sponsorFg;
+            sponsorBtn.style.borderColor = sponsorBg;
+            sponsorBtn.hidden = !sponsorText && !title && !subtitle;
+
+            section.hidden = false;
+        }
+
         function openApplicationModal() {
             const modal = document.getElementById('sponsorshipApplicationModal');
             if (modal) {
@@ -331,6 +396,56 @@
     </script>
     <script src="js/main.js?v=20261105fix5"></script>
     <style>
+        .sponsorship-cta-section {
+            margin-top: 3rem;
+            padding: 3rem 1.5rem;
+            background: var(--cta-bg, #800020);
+            color: var(--cta-title, #ffffff);
+            border-radius: 1rem;
+            text-align: center;
+        }
+        .sponsorship-cta-title {
+            font-size: 2rem;
+            margin: 0 0 1rem;
+            color: var(--cta-title, #ffffff) !important;
+            font-weight: 700;
+        }
+        .sponsorship-cta-subtitle {
+            font-size: 1.125rem;
+            margin: 0 auto 2rem;
+            max-width: 42rem;
+            color: var(--cta-subtitle, #ffffff) !important;
+            line-height: 1.6;
+        }
+        .sponsorship-cta-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .sponsorship-cta-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .sponsorship-cta-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+        .sponsorship-cta-btn-apply {
+            background: var(--cta-apply-bg, #ffffff);
+            color: var(--cta-apply-fg, #800020);
+        }
+        .sponsorship-cta-btn-sponsor {
+            background: var(--cta-sponsor-bg, #6B0000);
+            color: var(--cta-sponsor-fg, #ffffff);
+        }
+        @media (max-width: 768px) {
+            .sponsorship-cta-section { padding: 2rem 1.25rem; }
+            .sponsorship-cta-title { font-size: 1.5rem; }
+            .sponsorship-cta-subtitle { font-size: 1rem; }
+        }
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-10px); }

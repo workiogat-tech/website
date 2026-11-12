@@ -473,6 +473,7 @@ function applySavedAppearance() {
             const buttons = byName.buttons;
             if (buttons && buttons.primary_color) {
                 document.querySelectorAll('.btn-primary').forEach(function (el) {
+                    if (el.closest('.sponsorship-cta-section')) return;
                     el.style.background = buttons.primary_color;
                     el.style.borderColor = buttons.primary_color;
                 });
@@ -488,6 +489,40 @@ function applySavedAppearance() {
                 if (coreValues.primary_color) root.style.setProperty('--core-values-title', coreValues.primary_color);
                 if (coreValues.hover_color) root.style.setProperty('--core-values-hover', coreValues.hover_color);
             }
+            const sponsorshipCta = byName['sponsorship-cta'];
+            if (sponsorshipCta) {
+                document.querySelectorAll('.sponsorship-cta-section').forEach(function (section) {
+                    if (section.dataset.ctaFromContent === '1') return;
+                    const bg = sponsorshipCta.background_color || '#800020';
+                    const titleColor = sponsorshipCta.primary_color || '#ffffff';
+                    const subtitleColor = sponsorshipCta.text_color || '#ffffff';
+                    const applyBg = sponsorshipCta.accent_color || '#ffffff';
+                    const sponsorBg = sponsorshipCta.secondary_color || '#6B0000';
+                    const btnText = sponsorshipCta.hover_color || '#800020';
+                    section.style.setProperty('--cta-bg', bg);
+                    section.style.setProperty('--cta-title', titleColor);
+                    section.style.setProperty('--cta-subtitle', subtitleColor);
+                    section.style.setProperty('--cta-apply-bg', applyBg);
+                    section.style.setProperty('--cta-apply-fg', btnText);
+                    section.style.setProperty('--cta-sponsor-bg', sponsorBg);
+                    section.style.setProperty('--cta-sponsor-fg', '#ffffff');
+                    section.style.background = bg;
+                    const titleEl = section.querySelector('.sponsorship-cta-title');
+                    const subtitleEl = section.querySelector('.sponsorship-cta-subtitle');
+                    const applyBtn = section.querySelector('.sponsorship-cta-btn-apply');
+                    const sponsorBtn = section.querySelector('.sponsorship-cta-btn-sponsor');
+                    if (titleEl) titleEl.style.color = titleColor;
+                    if (subtitleEl) subtitleEl.style.color = subtitleColor;
+                    if (applyBtn) {
+                        applyBtn.style.background = applyBg;
+                        applyBtn.style.color = btnText;
+                    }
+                    if (sponsorBtn) {
+                        sponsorBtn.style.background = sponsorBg;
+                        sponsorBtn.style.color = '#ffffff';
+                    }
+                });
+            }
         })
         .catch(function () {});
 
@@ -497,6 +532,7 @@ function applySavedAppearance() {
             const settings = payload && payload.settings;
             if (!settings || !settings.primary_button_color) return;
             document.querySelectorAll('.btn-primary').forEach(function (el) {
+                if (el.closest('.sponsorship-cta-section')) return;
                 el.style.background = settings.primary_button_color;
                 el.style.borderColor = settings.primary_button_color;
             });

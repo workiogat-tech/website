@@ -2672,6 +2672,56 @@ p {
     background: #6B0000;
 }
 
+.sponsorship-cta-section {
+    margin-top: 3rem;
+    padding: 3rem 1.5rem;
+    background: var(--cta-bg, #800020);
+    color: var(--cta-title, #ffffff);
+    border-radius: 1rem;
+    text-align: center;
+}
+
+.sponsorship-cta-title {
+    font-size: 2rem;
+    margin: 0 0 1rem;
+    color: var(--cta-title, #ffffff) !important;
+    font-weight: 700;
+}
+
+.sponsorship-cta-subtitle {
+    font-size: 1.125rem;
+    margin: 0 auto 2rem;
+    max-width: 42rem;
+    color: var(--cta-subtitle, #ffffff) !important;
+    line-height: 1.6;
+}
+
+.sponsorship-cta-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.sponsorship-cta-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.sponsorship-cta-btn-apply {
+    background: var(--cta-apply-bg, #ffffff);
+    color: var(--cta-apply-fg, #800020);
+}
+
+.sponsorship-cta-btn-sponsor {
+    background: var(--cta-sponsor-bg, #6B0000);
+    color: var(--cta-sponsor-fg, #ffffff);
+}
+
 .sponsorship-how-section {
     margin-top: 80px;
     background: #f9fafb;
